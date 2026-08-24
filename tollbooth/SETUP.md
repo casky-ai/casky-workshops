@@ -197,6 +197,14 @@ use" if the container from a previous setup is still around — that's not broke
 setup already succeeded once. Either reuse it (skip straight to `./verify.sh`) or `./cleanup.sh`
 first for a clean container.
 
+**"Checksum verification failed" installing Claude Code?** Transient — the installer script
+downloads a native binary payload after itself and checksums that separately; an occasional
+network blip mid-download trips it. Just re-run the same install command:
+
+```bash
+docker exec kali-tollbooth bash -c "curl -fsSL https://claude.ai/install.sh -o /tmp/install.sh && bash /tmp/install.sh"
+```
+
 ---
 
 *Source data trimmed from [`BHUSA-Anthropic-CyberSecurity-Skills`](https://github.com/mukul975/BHUSA-Anthropic-CyberSecurity-Skills)
