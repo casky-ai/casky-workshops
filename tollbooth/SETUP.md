@@ -24,18 +24,20 @@ build one Kali image, clone to all laptops. We only need one container, not a fl
 ### Prerequisites
 - Docker, with the `kalilinux/kali-rolling` image (`docker pull kalilinux/kali-rolling` if you
   don't have it yet).
-- `.env` checked out locally with a working `ANTHROPIC_API_KEY` — that's the
-  "shared key" the original instructions say to pre-authenticate with. We pass it into the
-  container via `--env-file` so it's never typed or displayed.
+- A `.env` file **in this folder** (`tollbooth/.env`, copied from `casky-runner-phase1/.env`)
+  with a working `ANTHROPIC_API_KEY` — that's the "shared key" the original instructions say to
+  pre-authenticate with. It's git-ignored (`.env*` in `.gitignore`) and lives here, not the repo
+  root, specifically so every command below — `.env`, the scripts, the docker run — is
+  self-contained in one folder with nothing to mix up:
+  ```bash
+  cp /path/to/casky-runner-phase1/.env tollbooth/.env
+  ```
 
 ### Steps
 
 ```bash
-# Run every command below from THIS folder (casky-workshops/tollbooth/), not the repo root —
-# $(pwd) becomes the container's /root/tollbooth, so the wrong cwd silently mounts the wrong
-# directory (live-caught: running this from casky-workshops/ instead mounts the whole repo,
-# and setup-skills.sh/verify.sh end up one level deeper than every command below expects).
-cd casky-workshops/tollbooth 2>/dev/null || true   # no-op if you're already here
+# Run every command below from THIS folder (casky-workshops/tollbooth/) — $(pwd) becomes the
+# container's /root/tollbooth, and .env/the scripts only exist here, not the repo root.
 
 # 0. Start a persistent Kali container with this folder mounted + the shared key available
 docker run -d --name kali-tollbooth \
