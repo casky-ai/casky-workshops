@@ -69,6 +69,17 @@ docker exec -w /root/tollbooth kali-tollbooth ./verify.sh
 
 # 5. Print Arsenal-CheatSheet-Book.pdf (color; answer pages are red) — one per attendee.
 open Arsenal-CheatSheet-Book.pdf   # macOS; use your OS's print/open command
+
+# 6. Bash into the container and start Claude Code interactively — this is what a
+#    participant actually drives during the exercise, not one-off `docker exec` calls
+#    per command (those were only for unattended setup, steps 0-4 above).
+docker exec -it -w /root/tollbooth kali-tollbooth bash
+
+#   ...now inside the container's shell:
+export PATH="$HOME/.local/bin:$PATH"
+./start.sh    # welcome banner + sanity check (confirmed working: "mode: online (shared key)")
+claude        # drops into an interactive Claude Code session — paste the scenario
+              # prompt from Arsenal-CheatSheet-Book.pdf and let it work
 ```
 
 **Verified end-to-end just now:** all packages installed clean, Claude Code 2.1.241 installed and
@@ -97,9 +108,19 @@ RESULT: 9 passed, 0 failed
 This laptop is READY.
 ```
 
-From here, drive it exactly like the original kit: `./start.sh` for the participant welcome
-banner, then work Scenario 1 or 2 with Claude Code (skills already mounted) or the raw
-`tshark`/`jq` commands on the cheat sheet. `./reset.sh` between attendees.
+`./start.sh` (step 6) confirmed too:
+```
+[+] lab data present: pcap + cloudtrail/ (S1) + opendoor/ (S2)
+[+] agent skills mounted at /root/.claude/skills (10 skills)
+[+] Claude Code found.
+    mode: online (shared key)
+```
+
+Step 6 above (`docker exec -it ... bash`, then `claude`) is how you actually drive it from here:
+work Scenario 1 or 2 inside that interactive Claude Code session (skills already mounted), or fall
+back to the raw `tshark`/`jq` commands on the cheat sheet if the agent path isn't available.
+`exit` the `claude` session and the container shell (two `exit`s) between attendees, then
+`docker exec -w /root/tollbooth kali-tollbooth ./reset.sh` from outside to restore the data.
 
 ---
 
