@@ -153,8 +153,17 @@ is pre-built synthetic evidence, so this is a pure **Path A (evidence-driven)** 
 a lab-target exercise.
 
 ### Prerequisites
-- `casky-runner-phase1` running (`docker compose up -d`), same `.env`/`ANTHROPIC_API_KEY` as
-  Section 1.
+- `casky-runner-phase1` running, using **its own `.env`** — nothing to copy in here, unlike
+  Section 1. `docker compose up -d` automatically reads `.env` from the same directory as
+  `docker-compose.yml` for `${ANTHROPIC_API_KEY}` substitution (`docker-compose.yml:38`), no
+  `--env-file` flag needed. Unlike `docker run --env-file` (the Section 1 bug), Compose's own
+  `.env` parser strips quotes correctly, so the file works as-is with no editing:
+  ```bash
+  cd /path/to/casky-runner-phase1
+  docker compose up -d
+  ```
+  If `casky-runner`/`casky-db` are already up from earlier, this is a no-op — just confirm with
+  `docker compose ps`.
 
 ### Steps
 
@@ -175,8 +184,13 @@ docker exec kali-tollbooth tshark -r /root/tollbooth/lab-tollbooth.pcap -Y http 
 # 3. OpenDoor's evidence is already text — just concatenate the configs
 for f in opendoor/*.json; do echo "--- $(basename "$f") ---"; cat "$f"; echo; done > opendoor-full.txt
 
-# 4. Copy both into casky-runner-phase1's evidence bind mount
+# 4. Copy both into casky-runner-phase1's evidence bind mount. That's the whole step —
+#    ./evidence:/var/casky/evidence:ro (docker-compose.yml:81) is a LIVE bind mount, not a
+#    copy-once: anything you drop here shows up inside the running container immediately,
+#    no restart, no remount, no `docker cp` (confirmed: wrote+removed a test file on the
+#    host, appeared/disappeared in the container instantly both ways).
 cp tollbooth-full.txt opendoor-full.txt /path/to/casky-runner-phase1/evidence/
+docker exec casky-runner ls /var/casky/evidence/   # confirm they're already there
 
 # 5. Investigate — TollBooth (reactive). --auto runs every step's agent for real;
 #    drop --auto for the manual mode where you paste each step's tool output yourself.
