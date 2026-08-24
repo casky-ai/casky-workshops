@@ -31,13 +31,22 @@ build one Kali image, clone to all laptops. We only need one container, not a fl
 ### Steps
 
 ```bash
-# From this folder (casky-workshops/tollbooth/)
+# Run every command below from THIS folder (casky-workshops/tollbooth/), not the repo root —
+# $(pwd) becomes the container's /root/tollbooth, so the wrong cwd silently mounts the wrong
+# directory (live-caught: running this from casky-workshops/ instead mounts the whole repo,
+# and setup-skills.sh/verify.sh end up one level deeper than every command below expects).
+cd casky-workshops/tollbooth 2>/dev/null || true   # no-op if you're already here
 
 # 0. Start a persistent Kali container with this folder mounted + the shared key available
 docker run -d --name kali-tollbooth \
   --env-file .env \
   -v "$(pwd)":/root/tollbooth \
   kalilinux/kali-rolling sleep infinity
+
+# Sanity check — catches a wrong-directory mount immediately instead of 3 steps from now
+docker exec kali-tollbooth test -f /root/tollbooth/verify.sh \
+  && echo "[+] mount OK — verify.sh found at /root/tollbooth/verify.sh" \
+  || echo "[!] wrong directory — re-run from casky-workshops/tollbooth/, then: docker rm -f kali-tollbooth"
 
 # 1. apt-get install -y tshark jq (tcpdump, python3-scapy usually present on Kali)
 docker exec kali-tollbooth bash -c \
