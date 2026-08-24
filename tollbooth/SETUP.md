@@ -33,6 +33,21 @@ build one Kali image, clone to all laptops. We only need one container, not a fl
   cp /path/to/casky-runner-phase1/.env tollbooth/.env
   ```
 
+  **Strip the quotes after copying — this WILL break auth otherwise.** `casky-runner-phase1/.env`
+  writes values as `ANTHROPIC_API_KEY="sk-ant-..."` (quoted), which `python-dotenv`/`docker-compose`
+  interpolation (how `casky-runner-phase1` itself reads it) handles fine. `docker run --env-file`
+  does **not** strip quotes — it passes the literal string, quote marks included, straight into
+  the container. The result is a key that starts with `"` instead of `sk-ant-`, and Claude Code
+  fails with `Invalid API key` — live-caught mid-session, looked like a bad/revoked key, wasn't.
+  Fix once, right after copying:
+  ```bash
+  sed -i.bak -E 's/^([A-Z_][A-Z0-9_]*)="(.*)"$/\1=\2/' tollbooth/.env && rm tollbooth/.env.bak
+  ```
+  Confirm it worked before moving on — should print `1`, not `0`:
+  ```bash
+  grep '^ANTHROPIC_API_KEY=' tollbooth/.env | cut -d= -f2- | grep -c '^sk-ant-'
+  ```
+
 ### Steps
 
 ```bash
@@ -83,8 +98,12 @@ claude        # drops into an interactive Claude Code session — paste the scen
 ```
 
 **Verified end-to-end just now:** all packages installed clean, Claude Code 2.1.241 installed and
-on `PATH`, 10/10 skills linked, `ANTHROPIC_API_KEY` present in the container (confirmed by length,
-never printed), and:
+on `PATH`, 10/10 skills linked, and — the part that actually matters, a real round-trip against
+the Anthropic API, not just checking the key is present:
+```
+$ claude --print "Reply with exactly the single word: PONG"
+PONG
+```
 
 ```
 == tooling ==

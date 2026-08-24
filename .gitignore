@@ -5,3 +5,4 @@ tollbooth/Anthropic-Cybersecurity-Skills/
 tollbooth/*.txt
 !tollbooth/SETUP.md
 .env*
+.DS_Store
