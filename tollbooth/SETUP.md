@@ -168,6 +168,13 @@ a lab-target exercise.
 ### Steps
 
 ```bash
+# Run every command below from THIS folder (casky-workshops/tollbooth/) — cloudtrail/*.json,
+# opendoor/*.json below are relative paths. Live-caught twice now (Section 1's container mount,
+# then here): running from casky-runner-phase1/ instead silently writes tollbooth-pcap.txt into
+# the wrong repo and 'cloudtrail/*.json' matches nothing ("zsh: no matches found").
+cd /path/to/casky-workshops/tollbooth
+test -f lab-tollbooth.pcap && echo "[+] correct folder" || echo "[!] wrong folder — cd to casky-workshops/tollbooth first"
+
 # 1. Turn the pcap into readable evidence text (tshark isn't needed inside casky-runner —
 #    reuse the Kali container from Section 1, or run tshark locally if you have it)
 docker exec kali-tollbooth tshark -r /root/tollbooth/lab-tollbooth.pcap -Y http \
