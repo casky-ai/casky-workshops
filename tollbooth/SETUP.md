@@ -24,7 +24,7 @@ build one Kali image, clone to all laptops. We only need one container, not a fl
 ### Prerequisites
 - Docker, with the `kalilinux/kali-rolling` image (`docker pull kalilinux/kali-rolling` if you
   don't have it yet).
-- `casky-runner-phase1/.env` checked out locally with a working `ANTHROPIC_API_KEY` — that's the
+- `.env` checked out locally with a working `ANTHROPIC_API_KEY` — that's the
   "shared key" the original instructions say to pre-authenticate with. We pass it into the
   container via `--env-file` so it's never typed or displayed.
 
@@ -35,7 +35,7 @@ build one Kali image, clone to all laptops. We only need one container, not a fl
 
 # 0. Start a persistent Kali container with this folder mounted + the shared key available
 docker run -d --name kali-tollbooth \
-  --env-file /path/to/casky-runner-phase1/.env \
+  --env-file .env \
   -v "$(pwd)":/root/tollbooth \
   kalilinux/kali-rolling sleep infinity
 
@@ -170,6 +170,32 @@ described in `blogs/blog-first-live-fire.md` back in `claude-skills-security`. O
 | Verification | `verify.sh` — 9 raw tshark/jq checks on the data | `[VERIFIED]` transcript per step — did the agent actually run the assigned skill's script |
 | Output | Cheat-sheet answer pages | Structured plan → findings → CISO-style consolidated report |
 | Reset between attendees | `./reset.sh` (<10s) | Each `casky harness -i` run is already a fresh investigation |
+
+---
+
+## Cleanup
+
+`./cleanup.sh` removes everything a run of this exercise creates outside this folder: the
+`kali-tollbooth` container (Section 1) and any evidence files Section 2 copied into
+`casky-runner-phase1/evidence/`. Safe to re-run — reports what it found and skips what's already
+gone.
+
+```bash
+./cleanup.sh                                          # container + copied evidence
+./cleanup.sh --casky-runner-path ../../casky-runner-phase1   # if that repo isn't a sibling of this one
+./cleanup.sh --with-image                              # also remove the kalilinux/kali-rolling image
+```
+
+It does **not** touch `casky-runner-phase1`'s own containers (`casky-runner`, `casky-db`,
+`skill-lab`, …) — those are your persistent dev environment, not workshop-run output — and it
+doesn't delete Postgres investigation records from `casky harness` runs, since those are history,
+not litter. If `lab-tollbooth.pcap`/`cloudtrail/`/`opendoor/` get modified mid-exercise, restore
+them with `./reset.sh` (copies back from `.pristine/`), separately from cleanup.
+
+**Re-running Section 1 setup?** `docker run --name kali-tollbooth ...` fails with "name already in
+use" if the container from a previous setup is still around — that's not broken, it just means
+setup already succeeded once. Either reuse it (skip straight to `./verify.sh`) or `./cleanup.sh`
+first for a clean container.
 
 ---
 

@@ -4,3 +4,4 @@ tollbooth/Anthropic-Cybersecurity-Skills/
 # Scratch evidence generated while working the exercise
 tollbooth/*.txt
 !tollbooth/SETUP.md
+.env*
