@@ -1,0 +1,14 @@
+{
+  "PolicyName": "acme-webapp-inline",
+  "PolicyDocument": {
+    "Version": "2012-10-17",
+    "Statement": [
+      { "Sid": "AppData", "Effect": "Allow",
+        "Action": ["s3:GetObject","s3:PutObject"],
+        "Resource": "arn:aws:s3:::acme-customer-data/*" },
+      { "Sid": "TooBroad", "Effect": "Allow",
+        "Action": ["iam:PutRolePolicy","iam:AttachRolePolicy","iam:PassRole"],
+        "Resource": "*" }
+    ]
+  }
+}

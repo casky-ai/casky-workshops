@@ -1,0 +1,9 @@
+{ "Reservations": [ { "Instances": [ {
+  "InstanceId": "i-0abc123def4567890",
+  "IamInstanceProfile": { "Arn": "arn:aws:iam::123456789012:instance-profile/acme-webapp-role" },
+  "MetadataOptions": {
+    "State": "applied",
+    "HttpTokens": "optional",
+    "HttpEndpoint": "enabled",
+    "HttpPutResponseHopLimit": 2 }
+} ] } ] }

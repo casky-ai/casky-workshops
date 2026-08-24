@@ -1,0 +1,13 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    { "Sid": "AppReadWrite", "Effect": "Allow",
+      "Principal": { "AWS": "arn:aws:iam::123456789012:role/acme-webapp-role" },
+      "Action": ["s3:GetObject","s3:PutObject"],
+      "Resource": "arn:aws:s3:::acme-customer-data/*" },
+    { "Sid": "PublicRead", "Effect": "Allow",
+      "Principal": "*",
+      "Action": ["s3:GetObject","s3:ListBucket"],
+      "Resource": ["arn:aws:s3:::acme-customer-data","arn:aws:s3:::acme-customer-data/*"] }
+  ]
+}

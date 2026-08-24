@@ -1,0 +1,6 @@
+# Cloned fresh by setup-skills.sh — not committed
+tollbooth/Anthropic-Cybersecurity-Skills/
+
+# Scratch evidence generated while working the exercise
+tollbooth/*.txt
+!tollbooth/SETUP.md
