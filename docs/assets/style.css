@@ -345,6 +345,41 @@ details.answer .answer-body {
   font-size: 0.95rem;
 }
 
+/* ── Hero / QR share card ─────────────────────────────────────────────── */
+
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap-reverse;
+}
+
+.hero-text { flex: 1 1 420px; min-width: 0; }
+
+.qr-card {
+  flex: 0 0 auto;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.9rem;
+  box-shadow: var(--shadow);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.qr-card img { display: block; image-rendering: pixelated; }
+
+.qr-card .qr-url {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  color: #444;
+  line-height: 1.35;
+}
+
 /* ── Cards / grid ─────────────────────────────────────────────────────── */
 
 .grid {
