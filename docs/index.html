@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TollBooth &amp; OpenDoor Workshop</title>
+<meta name="description" content="Hands-on workshop guide: investigate a real breach (TollBooth) and audit the misconfigurations that caused it (OpenDoor), driven by AI agents using the open-source Anthropic Cybersecurity Skills library.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site">
+  <div class="bar">
+    <a class="brand" href="index.html"><span class="mark">▣</span> TollBooth / OpenDoor</a>
+    <nav class="top">
+      <a href="index.html" aria-current="page">Home</a>
+      <a href="setup.html">Setup</a>
+      <a href="tollbooth.html">Scenario 1 · TollBooth</a>
+      <a href="opendoor.html">Scenario 2 · OpenDoor</a>
+      <a href="help.html">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <p class="eyebrow">Live-fire investigation workshop</p>
+    <h1>Investigate a real breach. Then find it before it happens.</h1>
+    <p class="lede">
+      Two scenarios, one shared incident — <strong>Acme Rentals</strong>. An AI agent, armed with
+      the open-source <a href="https://github.com/anthropics/skills" target="_blank" rel="noopener">Anthropic
+      Cybersecurity Skills</a> library, does the actual investigation while you drive and check its work.
+    </p>
+
+    <div class="grid" style="margin-top:1.8rem">
+      <a class="card" href="tollbooth.html">
+        <span class="eyebrow">Scenario 1 · Reactive DFIR</span>
+        <h3>TollBooth</h3>
+        <p>A web server leaked AWS credentials through SSRF. Find how, trace what the attacker
+        stole, and map the full attack chain to MITRE ATT&amp;CK. ~20 min.</p>
+      </a>
+      <a class="card" href="opendoor.html">
+        <span class="eyebrow">Scenario 2 · Proactive audit</span>
+        <h3>OpenDoor</h3>
+        <p>Same account, before the breach. Audit the AWS configs, find the three
+        misconfigurations, and work out which one the attacker actually used. ~20 min.</p>
+      </a>
+    </div>
+
+    <h2 id="which">Which path do I run?</h2>
+    <p>Both scenarios can be driven two different ways. Pick whichever matches today's room setup
+    — your facilitator will tell you which, but here's the difference:</p>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th></th><th>Section 1 — Kali + Claude Code</th><th>Section 2 — Casky Box</th></tr></thead>
+        <tbody>
+          <tr><td>Skill selection</td><td>10 hand-picked skills, symlinked per laptop</td><td>Auto-classified from all 817 skills, per investigation</td></tr>
+          <tr><td>Agent runtime</td><td>Claude Code installed per laptop</td><td>One shared <code>casky-runner</code> container</td></tr>
+          <tr><td>Verification</td><td><code>verify.sh</code> — 9 raw tshark/jq checks on the data</td><td><code>[VERIFIED]</code> transcript per step — did the agent actually run the assigned skill's script</td></tr>
+          <tr><td>Output</td><td>Cheat-sheet answer pages</td><td>Structured plan → findings → CISO-style consolidated report</td></tr>
+          <tr><td>Reset between attendees</td><td><code>./reset.sh</code> (&lt;10s)</td><td>Each investigation run is already fresh</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Full setup for both is on the <a href="setup.html"><strong>Setup page</strong></a> — do that first, before opening either scenario page.</p>
+
+    <h2>The printed cheat sheet</h2>
+    <p>Everyone should have (or can grab) the original color-coded cheat sheet — teal instruction
+    pages, orange checkpoints, red answer pages. This wiki mirrors it exactly, with the answers
+    collapsed so you can attempt each phase before checking.</p>
+    <p><a class="btn" href="assets/Arsenal-CheatSheet-Book.pdf" target="_blank">Download the PDF</a></p>
+
+    <hr class="rule">
+
+    <p style="color:var(--ink-dim); font-size:0.9rem;">
+      Authorized &amp; lawful use only. All data in both scenarios is synthetic and self-contained —
+      no live systems are touched. Built on the open-source
+      <a href="https://github.com/anthropics/skills" target="_blank" rel="noopener">Anthropic Cybersecurity Skills</a>
+      library (Apache-2.0); not affiliated with Anthropic PBC.
+      Source data trimmed from
+      <a href="https://github.com/mukul975/BHUSA-Anthropic-CyberSecurity-Skills" target="_blank" rel="noopener">BHUSA-Anthropic-CyberSecurity-Skills</a>.
+    </p>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>TollBooth / OpenDoor workshop guide · <a href="https://github.com/casky-ai/casky-workshops" target="_blank" rel="noopener">casky-ai/casky-workshops</a></p>
+  </div>
+</footer>
+</body>
+</html>

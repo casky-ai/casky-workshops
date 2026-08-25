@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Setup — TollBooth / OpenDoor Workshop</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site">
+  <div class="bar">
+    <a class="brand" href="index.html"><span class="mark">▣</span> TollBooth / OpenDoor</a>
+    <nav class="top">
+      <a href="index.html">Home</a>
+      <a href="setup.html" aria-current="page">Setup</a>
+      <a href="tollbooth.html">Scenario 1 · TollBooth</a>
+      <a href="opendoor.html">Scenario 2 · OpenDoor</a>
+      <a href="help.html">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap wrap-wide">
+    <p class="eyebrow">Setup</p>
+    <h1>Get your environment running</h1>
+    <p class="lede">Two independent paths to the same two scenarios. Run whichever your
+    facilitator points you at — both were run end-to-end against this exact data before this
+    guide was written, not just described.</p>
+
+    <div class="toc">
+      <span class="eyebrow">On this page</span>
+      <ul>
+        <li><a href="#section1">Section 1 — Kali + Claude Code (the exact Arsenal setup)</a></li>
+        <li><a href="#section2">Section 2 — Casky Box (auto-classified, all 817 skills)</a></li>
+      </ul>
+    </div>
+
+    <h2 id="section1">Section 1 — Exact Arsenal setup, in a Kali Docker container</h2>
+    <p>Original instructions:
+      <a href="https://github.com/mukul975/BHUSA-Anthropic-CyberSecurity-Skills#day-before-setup-build-one-kali-image-clone-to-all-laptops" target="_blank" rel="noopener">build one Kali image, clone to all laptops</a>.
+      One container instead of a fleet — same steps, no physical laptops to provision.</p>
+
+    <h3>Prerequisites</h3>
+    <ul>
+      <li>Docker, with the <code>kalilinux/kali-rolling</code> image
+        (<code>docker pull kalilinux/kali-rolling</code> if you don't have it yet).</li>
+      <li>A <code>.env</code> file <strong>in the <code>tollbooth/</code> folder</strong> (copied from
+        <code>casky-runner-phase1/.env</code>) with a working <code>ANTHROPIC_API_KEY</code> — the
+        shared key. It's git-ignored and lives here, not the repo root, so every command below is
+        self-contained in one folder:
+<pre><code>cp /path/to/casky-runner-phase1/.env tollbooth/.env</code></pre>
+      </li>
+    </ul>
+
+    <div class="callout callout-amber">
+      <span class="callout-label">Strip the quotes — this will break auth otherwise</span>
+      <p><code>casky-runner-phase1/.env</code> writes values as <code>ANTHROPIC_API_KEY="sk-ant-..."</code>
+      (quoted). <code>docker run --env-file</code> does <strong>not</strong> strip quotes — it
+      passes the literal string, quote marks included. Result: a key that starts with <code>"</code>
+      instead of <code>sk-ant-</code>, and Claude Code fails with <code>Invalid API key</code> —
+      looks like a bad/revoked key, isn't. Fix once, right after copying:</p>
+<pre><code>sed -i.bak -E 's/^([A-Z_][A-Z0-9_]*)="(.*)"$/\1=\2/' tollbooth/.env && rm tollbooth/.env.bak</code></pre>
+      <p>Confirm it worked before moving on — should print <code>1</code>, not <code>0</code>:</p>
+<pre><code>grep '^ANTHROPIC_API_KEY=' tollbooth/.env | cut -d= -f2- | grep -c '^sk-ant-'</code></pre>
+    </div>
+
+    <h3>Steps</h3>
+<pre><code># Run every command below from THIS folder (casky-workshops/tollbooth/) — $(pwd) becomes the
+# container's /root/tollbooth, and .env/the scripts only exist here, not the repo root.
+
+# 0. Start a persistent Kali container with this folder mounted + the shared key available
+docker run -d --name kali-tollbooth \
+  --env-file .env \
+  -v "$(pwd)":/root/tollbooth \
+  kalilinux/kali-rolling sleep infinity
+
+# Sanity check — catches a wrong-directory mount immediately instead of 3 steps from now
+docker exec kali-tollbooth test -f /root/tollbooth/verify.sh \
+  && echo "[+] mount OK — verify.sh found at /root/tollbooth/verify.sh" \
+  || echo "[!] wrong directory — re-run from casky-workshops/tollbooth/, then: docker rm -f kali-tollbooth"
+
+# 1. tshark, jq (tcpdump, python3-scapy usually present on Kali)
+docker exec kali-tollbooth bash -c \
+  "apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y tshark jq tcpdump python3-scapy git curl ca-certificates"
+
+# 2. Install Claude Code; pre-authenticate with the shared key
+#    (ANTHROPIC_API_KEY is already in the container's env via --env-file above — Claude Code
+#    picks it up automatically, no login flow needed)
+docker exec kali-tollbooth bash -c "curl -fsSL https://claude.ai/install.sh -o /tmp/install.sh && bash /tmp/install.sh"
+docker exec kali-tollbooth bash -c 'export PATH="$HOME/.local/bin:$PATH"; claude --version'
+
+# 3. Mount skills into ~/.claude/skills
+docker exec -w /root/tollbooth kali-tollbooth bash -c "chmod +x setup-skills.sh verify.sh reset.sh start.sh && ./setup-skills.sh"
+
+# 4. This folder is already at /root/tollbooth (bind-mounted in step 0 — no copy needed).
+#    Run ./verify.sh — expect 9/9 PASS.
+docker exec -w /root/tollbooth kali-tollbooth ./verify.sh
+
+# 5. Print Arsenal-CheatSheet-Book.pdf (color; answer pages are red) — one per attendee.
+open Arsenal-CheatSheet-Book.pdf   # macOS; use your OS's print/open command
+
+# 6. Bash into the container and start Claude Code interactively — this is what you
+#    actually drive during the exercise (steps 0-4 above were one-off unattended setup).
+docker exec -it -w /root/tollbooth kali-tollbooth bash
+
+#   ...now inside the container's shell:
+export PATH="$HOME/.local/bin:$PATH"
+./start.sh    # welcome banner + sanity check
+claude        # drops into an interactive Claude Code session — paste the scenario
+              # prompt from the cheat sheet (or this wiki's scenario pages) and let it work</code></pre>
+
+    <div class="callout callout-teal">
+      <span class="callout-label">Verified end-to-end</span>
+      <p>All packages installed clean, Claude Code 2.1.241 on <code>PATH</code>, 10/10 skills
+      linked, and a real round-trip against the Anthropic API:</p>
+<pre><code>$ claude --print "Reply with exactly the single word: PONG"
+PONG</code></pre>
+<pre><code>== tooling ==
+  ok      tshark
+  ok      jq
+  ok      tcpdump
+== pcap ==
+  PASS  IMDS HTTP traffic present (2)
+  PASS  SSRF request references metadata service (2)
+  PASS  leaked AccessKeyId recoverable from pcap (2)
+== cloudtrail ==
+  PASS  attacker actions on leaked key (12)
+  PASS  S3 GetObject exfil events (9)
+  PASS  IAM enumeration present (2)
+== scenario 2 (opendoor) ==
+  PASS  S3 bucket policy is public (Principal *) (1)
+  PASS  IAM privilege-escalation path present (3)
+  PASS  IMDSv1 allowed (HttpTokens=optional)
+----
+RESULT: 9 passed, 0 failed
+This laptop is READY.</code></pre>
+      <p><code>./start.sh</code> (step 6) confirmed too:</p>
+<pre><code>[+] lab data present: pcap + cloudtrail/ (S1) + opendoor/ (S2)
+[+] agent skills mounted at /root/.claude/skills (10 skills)
+[+] Claude Code found.
+    mode: online (shared key)</code></pre>
+    </div>
+
+    <p>Work Scenario 1 or 2 inside that interactive Claude Code session (skills already mounted),
+    or fall back to the raw <code>tshark</code>/<code>jq</code> commands on the cheat sheet if the
+    agent path isn't available. <code>exit</code> the <code>claude</code> session and the container
+    shell (two <code>exit</code>s) between attendees, then run
+    <code>docker exec -w /root/tollbooth kali-tollbooth ./reset.sh</code> from outside to restore
+    the data.</p>
+
+    <hr class="rule">
+
+    <h2 id="section2">Section 2 — Same scenarios, run on Casky Box</h2>
+    <p>Casky Box doesn't need per-laptop Claude Code installs or hand-picked skill symlinks — the
+    <code>casky-runner</code> container already ships <strong>all 817 skills</strong> (including
+    the 10 this kit hand-picks) mounted read-only, and its classifier picks the relevant ones from
+    evidence automatically instead of you curating a list. The trade: no live "attack traffic"
+    step here — TollBooth/OpenDoor's data is pre-built synthetic evidence, so this is a pure
+    <strong>Path A (evidence-driven)</strong> investigation, not a lab-target exercise.</p>
+
+    <h3>Prerequisites</h3>
+    <p><code>casky-runner-phase1</code> running, using <strong>its own <code>.env</code></strong> —
+    nothing to copy in here, unlike Section 1. <code>docker compose up -d</code> automatically
+    reads <code>.env</code> from the same directory as <code>docker-compose.yml</code>, no
+    <code>--env-file</code> flag needed, and (unlike Section 1's <code>docker run --env-file</code>)
+    Compose's own parser strips quotes correctly, so the file works as-is:</p>
+<pre><code>cd /path/to/casky-runner-phase1
+docker compose up -d</code></pre>
+    <p>If <code>casky-runner</code>/<code>casky-db</code> are already up from earlier, this is a
+    no-op — just confirm with <code>docker compose ps</code>.</p>
+
+    <h3>Steps</h3>
+<pre><code># Run every command below from THIS folder (casky-workshops/tollbooth/) — cloudtrail/*.json,
+# opendoor/*.json below are relative paths. Live-caught twice: running from
+# casky-runner-phase1/ instead silently writes into the wrong repo and
+# 'cloudtrail/*.json' matches nothing ("zsh: no matches found").
+cd /path/to/casky-workshops/tollbooth
+test -f lab-tollbooth.pcap && echo "[+] correct folder" || echo "[!] wrong folder — cd to casky-workshops/tollbooth first"
+
+# 1. Turn the pcap into readable evidence text (tshark isn't needed inside casky-runner —
+#    reuse the Kali container from Section 1, or run tshark locally if you have it)
+docker exec kali-tollbooth tshark -r /root/tollbooth/lab-tollbooth.pcap -Y http \
+  -T fields -e frame.time -e ip.src -e ip.dst -e http.request.method -e http.request.full_uri -e http.response.code \
+  > tollbooth-pcap.txt
+
+# 2. Combine with the CloudTrail evidence (same incident, later stage of the same attack)
+{
+  echo "=== HTTP/pcap traffic (SSRF -> IMDS credential leak) ==="; cat tollbooth-pcap.txt
+  echo; echo "=== CloudTrail events (same account, following hours) ==="
+  jq -c '.Records[]' cloudtrail/*.json
+} > tollbooth-full.txt
+
+# 3. OpenDoor's evidence is already text — just concatenate the configs
+for f in opendoor/*.json; do echo "--- $(basename "$f") ---"; cat "$f"; echo; done > opendoor-full.txt
+
+# 4. Copy both into casky-runner-phase1's evidence bind mount — a LIVE bind mount, not a
+#    copy-once. Anything dropped here shows up inside the running container immediately.
+cp tollbooth-full.txt opendoor-full.txt /path/to/casky-runner-phase1/evidence/
+docker exec casky-runner ls /var/casky/evidence/   # confirm they're already there
+
+# 5. Investigate — TollBooth (reactive). --auto runs every step's agent for real;
+#    drop --auto for the manual mode where you paste each step's tool output yourself.
+docker exec -it casky-runner casky harness --auto -i /var/casky/evidence/tollbooth-full.txt
+
+# 6. Investigate — OpenDoor (proactive)
+docker exec -it casky-runner casky harness --auto -i /var/casky/evidence/opendoor-full.txt</code></pre>
+
+    <div class="callout callout-teal">
+      <span class="callout-label">Verified just now</span>
+      <p>Against the real TollBooth evidence, the classifier independently found and validated
+      <strong>7 MITRE techniques at 83.4% confidence</strong> from the combined pcap + CloudTrail
+      text alone — no hints, no pre-picked skill list:</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>#</th><th>Technique</th><th>Skill</th><th>Category</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Exploit Public-Facing Application (T1190)</td><td>exploiting-server-side-request-forgery</td><td>web-app</td></tr>
+            <tr><td>2</td><td>Unsecured Credentials: Credentials In Files (T1552.001)</td><td>detecting-aws-credential-exposure-with-trufflehog</td><td>cloud</td></tr>
+            <tr><td>3</td><td>Gather Cloud Infrastructure Details (T1526)</td><td>detecting-aws-cloudtrail-anomalies</td><td>cloud</td></tr>
+            <tr><td>4</td><td>Data from Cloud Storage (T1530)</td><td>detecting-s3-data-exfiltration-attempts</td><td>cloud</td></tr>
+            <tr><td>5</td><td>Valid Accounts: Cloud Accounts (T1078.004)</td><td>detecting-compromised-cloud-credentials</td><td>cloud</td></tr>
+            <tr><td>6</td><td>Unsecured Credentials: Cloud Instance Metadata API (T1552.007) — the core TollBooth story</td><td>analyzing-kubernetes-audit-logs</td><td>cloud</td></tr>
+            <tr><td>7</td><td>Remote Services: SSH (T1021.004)</td><td>detecting-aws-cloudtrail-anomalies</td><td>cloud</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>That's the same territory the original kit's 10 hand-picked skills cover, reached without
+      anyone curating a list — including step 6 correctly landing on <strong>T1552.007</strong>,
+      the exact technique this scenario is built around, purely from the evidence text.</p>
+    </div>
+
+    <p><code>--auto</code> runs every step's agent for real and produces a real, inspectable
+    tool-call transcript per step (<code>[VERIFIED] Skill script executed: YES/NO</code>) — a
+    non-hallucination guarantee. Open casky-ui (<code>http://localhost:8766</code>) afterward for
+    the Plan / Execution / Findings / Remediation tabs.</p>
+
+    <p>See the <a href="index.html#which">comparison table on the home page</a> for what's
+    different between Section 1 and Section 2.</p>
+
+    <hr class="rule">
+    <p>Done for the day, or resetting for the next attendee? See
+    <a href="help.html#cleanup">Cleanup</a> on the Troubleshooting page.</p>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>TollBooth / OpenDoor workshop guide · <a href="https://github.com/casky-ai/casky-workshops" target="_blank" rel="noopener">casky-ai/casky-workshops</a></p>
+  </div>
+</footer>
+</body>
+</html>

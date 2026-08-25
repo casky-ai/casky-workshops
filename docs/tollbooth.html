@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TollBooth — Scenario 1</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site">
+  <div class="bar">
+    <a class="brand" href="index.html"><span class="mark">▣</span> TollBooth / OpenDoor</a>
+    <nav class="top">
+      <a href="index.html">Home</a>
+      <a href="setup.html">Setup</a>
+      <a href="tollbooth.html" aria-current="page">Scenario 1 · TollBooth</a>
+      <a href="opendoor.html">Scenario 2 · OpenDoor</a>
+      <a href="help.html">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <p class="eyebrow">Scenario 1 of 2 · Reactive DFIR</p>
+    <h1>TollBooth — investigate the breach</h1>
+    <p class="lede">A web server's credentials leaked. Find how, follow the leaked key into the
+    cloud, and write the incident report.</p>
+
+    <div class="callout callout-teal">
+      <span class="callout-label">Setup (do this once)</span>
+      <p>1. Open a terminal. 2. <code>cd ~/tollbooth</code>. 3. Start the agent: <code>claude</code>.
+      4. Paste each prompt below, in order, in the <strong>same chat</strong>, so it remembers.
+      Type only the prompt text — no quotes.</p>
+      <p>~20 min per visit. Do the <span class="pill pill-core">CORE</span> phases (1, 2, 5) for
+      the full story. <span class="pill pill-deep">DEEP</span> phases (3, 4) are for a quiet moment
+      or to run later — this page is yours to keep. No agent? Terminal fallback commands are at
+      the bottom.</p>
+    </div>
+
+    <!-- Phase 1 -->
+    <div class="phase" id="phase-1">
+      <div class="phase-head">
+        <span class="phase-num">Phase 1</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>Network forensics</h3>
+      <p>Paste this, then Enter:</p>
+      <div class="prompt">Using your cybersecurity skills, investigate lab-tollbooth.pcap: find how the web server's credentials leaked, extract the leaked AccessKeyId (it starts with ASIA), and tell me which external IP sent the malicious request. List the skills you used.</div>
+      <p class="will-see">You will see: an SSRF request to 169.254.169.254 and a leaked key starting with ASIA.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>SSRF: <code>GET /proxy?url=http://169.254.169.254/...</code> → a JSON cred blob with an
+        AccessKeyId starting <code>ASIA</code>, and exactly one external attacker IP.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p>SSRF on <code>/proxy</code> (10.0.1.50) forced a fetch of <code>169.254.169.254</code>
+          (IMDSv1) → role creds leaked. Key <code>ASIAJ7A6EXAMPLEK3Y99</code> (role
+          <code>acme-webapp-role</code>). Injector: <code>203.0.113.66</code>.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="phase" id="phase-2">
+      <div class="phase-head">
+        <span class="phase-num">Phase 2</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>Cloud forensics — the pivot</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Now use your CloudTrail and S3 skills on the cloudtrail/ folder: with that leaked AccessKeyId, list everything the attacker did and which files they stole from the S3 bucket.</div>
+      <p class="will-see">You will see: recon calls, then 6 GetObject downloads of customer data by the leaked key.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>The same key does recon (<code>GetCallerIdentity</code>, <code>ListBuckets</code>, IAM
+        listing) then a burst of <code>GetObject</code> — arriving from an <strong>OUTSIDE IP</strong>,
+        unlike the legit calls from the instance itself.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p>Same key from <code>203.0.113.66</code> (external) vs <code>10.0.1.50</code> (legit):
+          recon, then 6× <code>GetObject</code> on <code>acme-customer-data</code>
+          (<code>payment_tokens.csv</code>, <code>ssn_index.parquet</code>, db-dump). Attacker IP in
+          pcap <strong>and</strong> CloudTrail = proof of pivot.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase" id="phase-3">
+      <div class="phase-head">
+        <span class="phase-num">Phase 3</span>
+        <span class="pill pill-deep">Deep</span>
+      </div>
+      <h3>Baseline vs. anomaly</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Separate the attacker from normal use: what does legitimate activity on this account look like, and what makes the attacker's calls stand out? Could you have caught them WITHOUT already knowing the key?</div>
+      <p class="will-see">You will see: legit calls come from the instance's own IP; the attacker's come from outside — catchable by origin, not just the key.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>Legit baseline = the instance's own IP / console. Attacker = same key, different origin.
+        The tell is location + burst, not the key value — so yes, findable without it.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p>Legit calls originate from the instance / console; the attacker reuses the key from an
+          external IP in a tight burst. Detectable by origin + rate even with the key unknown.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 4 -->
+    <div class="phase" id="phase-4">
+      <div class="phase-head">
+        <span class="phase-num">Phase 4</span>
+        <span class="pill pill-deep">Deep</span>
+      </div>
+      <h3>Map it — and check the agent</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Map the full attack to MITRE ATT&amp;CK technique IDs, then add the NIST CSF 2.0 categories and MITRE D3FEND techniques that are relevant to this incident. Skip MITRE ATLAS and NIST AI RMF - this is not an AI-system attack, so they do not apply; say so rather than forcing a mapping. Check whether MITRE F3 (fraud) applies given the stolen payment data, and say if it does not. For every ID in every framework: is it directly evidenced in THIS data, or are you inferring it?</div>
+      <p class="will-see">You will see: a clean ATT&amp;CK chain, plus CSF categories (PR.AA / PR.PS /
+      DE.CM) and D3FEND countermeasures (D3-ITF / D3-OTF / D3-NTA) — and watch it correctly
+      <strong>skip</strong> ATLAS/AI RMF instead of forcing them in, and catch it if it
+      <strong>over-maps</strong> ("exfiltration/T1567" when the data only shows reads = T1530).
+      Correct any of these — this is the whole point of the exercise.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>A per-step chain of ATT&amp;CK IDs. The agent may over-map (S3 reads tagged as
+        exfiltration/T1567). Correct read = T1530 (data from cloud storage). The catch is the
+        learning.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p><strong>ATT&amp;CK:</strong> T1552.005 (IMDS) → T1078.004 (stolen key) → T1580 /
+          T1087.004 (discovery) → T1530 (S3 read). <strong>Not</strong> T1567 — no exfil-OUT event
+          exists here; that's the agent's classic over-map to catch.</p>
+          <p><strong>CSF 2.0:</strong> PR.AA (credential/identity exposure), PR.PS
+          (platform-hardening gap = IMDSv1), DE.CM (nothing alerted on the burst — the real
+          detection gap).</p>
+          <p><strong>D3FEND:</strong> D3-ITF / D3-OTF (traffic-filtering fixes), D3-NTA (the
+          detection approach itself).</p>
+          <p><strong>ATLAS / AI RMF:</strong> do not apply — no AI system in this incident; the
+          agent should say so, not force a tag.</p>
+          <p><strong>F3 (fraud):</strong> a judgment call given the stolen payment tokens — "maybe,
+          but this attack is not a fraud-scheme TTP" is the strong answer.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 5 -->
+    <div class="phase" id="phase-5">
+      <div class="phase-head">
+        <span class="phase-num">Phase 5</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>Incident report</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Write a short incident report: the full attack chain, the VERIFIED ATT&amp;CK IDs, and the single change that would have stopped it.</div>
+      <p class="will-see">You will see: SSRF → stolen creds → discovery → S3 read, and "enforce
+      IMDSv2" as the one fix.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>One chain, an ID per step, and a single fix (IMDSv2) that breaks the whole thing.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p>Enforce IMDSv2 (<code>HttpTokens=required</code>) — breaks the entire chain at step
+          one.</p>
+        </div>
+      </details>
+    </div>
+
+    <h2>Explore without spoiling it</h2>
+    <p>Want to poke at the raw data yourself, agent aside?</p>
+<pre><code>cat cloudtrail/*.json | jq -r '.Records[].sourceIPAddress' | sort -u        # who is talking?
+cat cloudtrail/*.json | jq -r '.Records[].userIdentity.accessKeyId' | sort | uniq -c</code></pre>
+
+    <h2>Terminal fallbacks (no agent)</h2>
+<pre><code>tshark -r lab-tollbooth.pcap -Y 'http.request.uri contains "169.254"' -T fields -e ip.src
+tcpdump -nA -r lab-tollbooth.pcap | grep -A6 AccessKeyId    # the leaked JSON
+cat cloudtrail/*.json | jq \
+  '.Records[]|select(.userIdentity.accessKeyId=="ASIAJ7A6EXAMPLEK3Y99")|{t:.eventTime,e:.eventName}'</code></pre>
+
+    <h2>Advanced — does it scale? <span style="font-weight:400; color:var(--ink-dim); font-size:0.7em;">(optional, if a queue is thin)</span></h2>
+<pre><code>python3 generate-bigdata.py --events 1000000 --days 3
+python3 bigquery.py --build
+python3 bigquery.py --key ASIAJ7A6EXAMPLEK3Y99   # same 12 events out of ~1,000,000, in seconds
+python3 bigquery.py --anomaly                     # finds the needle WITHOUT the key</code></pre>
+
+    <hr class="rule">
+    <p style="color:var(--ink-dim); font-size:0.9rem;">
+      Authorized &amp; lawful use only. All data is synthetic and self-contained; no live systems
+      are touched. Promotes the open-source Anthropic Cybersecurity Skills library (Apache-2.0);
+      not affiliated with Anthropic PBC.
+    </p>
+    <p><a href="opendoor.html">Next → Scenario 2: OpenDoor</a></p>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>TollBooth / OpenDoor workshop guide · <a href="https://github.com/casky-ai/casky-workshops" target="_blank" rel="noopener">casky-ai/casky-workshops</a></p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenDoor — Scenario 2</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site">
+  <div class="bar">
+    <a class="brand" href="index.html"><span class="mark">▣</span> TollBooth / OpenDoor</a>
+    <nav class="top">
+      <a href="index.html">Home</a>
+      <a href="setup.html">Setup</a>
+      <a href="tollbooth.html">Scenario 1 · TollBooth</a>
+      <a href="opendoor.html" aria-current="page">Scenario 2 · OpenDoor</a>
+      <a href="help.html">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <p class="eyebrow">Scenario 2 of 2 · Proactive audit</p>
+    <h1>OpenDoor — find it before the breach</h1>
+    <p class="lede">Same account, same incident — but this time you're auditing the
+    configuration <em>before</em> anything happened, to find the misconfigurations that made
+    TollBooth possible.</p>
+
+    <div class="callout callout-teal">
+      <span class="callout-label">Setup (if you closed the terminal)</span>
+      <p>Open a terminal. <code>cd ~/tollbooth/opendoor</code>. <code>claude</code>. Paste only the
+      prompt text below.</p>
+      <p>~20 min. <span class="pill pill-core">CORE</span> phases (1, 3, 5) tell the full story.
+      <span class="pill pill-deep">DEEP</span> phases (2, 4) are for a quiet queue or to run later.
+      No agent? Terminal fallback commands are at the bottom.</p>
+    </div>
+
+    <!-- Phase 1 -->
+    <div class="phase" id="phase-1">
+      <div class="phase-head">
+        <span class="phase-num">Phase 1</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>Full configuration audit</h3>
+      <p>Paste this, then Enter:</p>
+      <div class="prompt">Using your cloud-audit skills, audit every AWS config file in this folder: the S3 bucket policy, the IAM role's permissions, and the EC2 instance-metadata setting. Map each misconfiguration to its CIS control AND its NIST CSF 2.0 category. List the skills you used.</div>
+      <p class="will-see">You will see: three findings — a public S3 bucket, an over-permissioned
+      IAM role, and IMDSv1 still allowed — each tagged with a CIS control and a CSF category.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>Three findings: bucket policy <code>Principal '*'</code> + Public Access Block
+        all-false (public S3, CIS 2.1.4 / CSF PR.PS); IAM with <code>PutRolePolicy</code>/
+        <code>AttachRolePolicy</code>/<code>PassRole</code> on <code>*</code> (self-privesc, CIS
+        1.15 — <strong>not</strong> 1.16, that's stale v1.5 numbering / CSF PR.AA);
+        <code>MetadataOptions.HttpTokens='optional'</code> (IMDSv1, CIS 5.7 — <strong>not</strong>
+        5.6, that's stale v3.0 numbering / CSF PR.PS). CIS numbers drift between benchmark
+        versions — always confirm against the current release (v5.0.0), never quote from memory.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p><strong>Public bucket:</strong> <code>'PublicRead'</code> (Principal <code>*</code>) +
+          Block Public Access all-false. CIS v5.0.0 2.1.4 (S3 Block Public Access) / CSF PR.PS.</p>
+          <p><strong>IAM privesc:</strong> <code>'TooBroad'</code> =
+          PutRolePolicy/AttachRolePolicy/PassRole on <code>*</code> (role can self-admin). CIS
+          v5.0.0 1.15 (full-admin IAM policy attached — 1.16 in the current benchmark is an
+          unrelated AWS-Support-role control, an easy stale-number mistake) / CSF PR.AA.</p>
+          <p><strong>IMDSv1:</strong> <code>HttpTokens='optional'</code>. CIS v5.0.0 5.7 (EC2
+          Metadata Service IMDSv2-only — 5.6 in the current benchmark is VPC peering routing, also
+          unrelated) / CSF PR.PS.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="phase" id="phase-2">
+      <div class="phase-head">
+        <span class="phase-num">Phase 2</span>
+        <span class="pill pill-deep">Deep</span>
+      </div>
+      <h3>Rank by blast radius</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Of those findings, which single one is most dangerous, and why? Rank all three by how much damage each enables on its own.</div>
+      <p class="will-see">You will see: reasoning about which matters most — credential theft vs.
+      self-admin IAM vs. public data exposure.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>A defended ordering. Reasonable top pick: IMDSv1, because it's the actual entry point
+        for credential theft. The point is the reasoning, not one "right" order.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p>Defensible top pick = IMDSv1: it's the <em>live</em> entry point (creds actually
+          stolen through it). IAM privesc = highest <em>potential</em> (full admin) but unused.
+          Public bucket = real exposure, but not the path here.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase" id="phase-3">
+      <div class="phase-head">
+        <span class="phase-num">Phase 3</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>Correlate with the breach</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Now look at ../lab-tollbooth.pcap and ../cloudtrail: for each misconfiguration, did the attacker EXPLOIT it, only PROBE it, or IGNORE it? Show me the evidence for each.</div>
+      <p class="will-see">You will see: IMDSv1 exploited, the IAM role only probed, the public
+      bucket bypassed — and they are <strong>not</strong> all the same.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>Each finding labelled exploited / probed / bypassed with log evidence — and they are
+        deliberately not all the same.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p><strong>IMDSv1</strong> = exploited (creds stolen, used from 203.0.113.66).
+          <strong>IAM</strong> = probed only (enumeration, no PutRolePolicy in logs).
+          <strong>Public bucket</strong> = bypassed (see Phase 4).</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 4 -->
+    <div class="phase" id="phase-4">
+      <div class="phase-head">
+        <span class="phase-num">Phase 4</span>
+        <span class="pill pill-deep">Deep</span>
+      </div>
+      <h3>Check the agent's call</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Double-check the public bucket: the data WAS stolen, so was the public policy actually the path? Check whether the exfil requests were anonymous or authenticated with the stolen key.</div>
+      <p class="will-see">You will see: the theft was <strong>authenticated</strong> with the
+      stolen key — the public policy was <strong>not</strong> the route. A latent exposure, not
+      the breach path. Correct the agent if it said "exploited."</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>The exfil <code>GetObject</code>s are authenticated (stolen key), not anonymous — so
+        the public policy was not the path. If the agent said the bucket was "exploited," this is
+        where you correct it.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p>Exfil <code>GetObject</code>s are <strong>authenticated</strong> with the stolen key,
+          not anonymous — the public policy was never used. The bucket is a latent exposure, not
+          the breach route. Agents often mis-call this "exploited" — this is the deliberate catch
+          in this phase.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 5 -->
+    <div class="phase" id="phase-5">
+      <div class="phase-head">
+        <span class="phase-num">Phase 5</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>Prioritized remediation</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Give me a prioritized fix list: what to change FIRST to break the actual attack, versus what to fix because it is a latent risk even though it was not used here. For each fix, name the MITRE D3FEND countermeasure technique it implements.</div>
+      <p class="will-see">You will see: IMDSv2 first (breaks the real chain); tighten IAM; close
+      the public bucket anyway — each tied to a D3FEND ID.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>Ordered by real risk: IMDSv2 first (breaks the chain), then IAM least-privilege, then
+        close the public bucket (latent).</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p><strong>1)</strong> <code>HttpTokens=required</code> (IMDSv2) — breaks the chain.
+          D3FEND: D3-ITF (inbound traffic filtering on the /proxy SSRF).</p>
+          <p><strong>2)</strong> Remove <code>iam:*</code> on <code>*</code>. D3FEND: no direct
+          technique — this is an authorization-scoping fix, not a traffic control.</p>
+          <p><strong>3)</strong> Block Public Access + drop Principal <code>*</code>. D3FEND:
+          D3-OTF (outbound/access filtering on the bucket).</p>
+        </div>
+      </details>
+    </div>
+
+    <h2>Explore without spoiling it</h2>
+<pre><code>jq '.Statement[].Principal' s3-bucket-policy.json                              # any wildcard?
+jq '.Reservations[].Instances[].MetadataOptions.HttpTokens' ec2-metadata-options.json</code></pre>
+
+    <h2>Terminal fallbacks (no agent)</h2>
+<pre><code>jq -r '.Statement[]|select(.Principal=="*")|.Sid' s3-bucket-policy.json        # public grant
+jq -r '.Reservations[].Instances[].MetadataOptions.HttpTokens' ec2-metadata-options.json
+cat ../cloudtrail/*.json | jq -r '.Records[]|select(.sourceIPAddress=="203.0.113.66")|.eventName'</code></pre>
+
+    <hr class="rule">
+    <p style="color:var(--ink-dim); font-size:0.9rem;">
+      Authorized &amp; lawful use only. All data is synthetic and self-contained; no live systems
+      are touched. Promotes the open-source Anthropic Cybersecurity Skills library (Apache-2.0);
+      not affiliated with Anthropic PBC.
+    </p>
+    <p><a href="tollbooth.html">← Back to Scenario 1: TollBooth</a></p>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>TollBooth / OpenDoor workshop guide · <a href="https://github.com/casky-ai/casky-workshops" target="_blank" rel="noopener">casky-ai/casky-workshops</a></p>
+  </div>
+</footer>
+</body>
+</html>

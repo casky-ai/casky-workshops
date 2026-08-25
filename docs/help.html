@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Troubleshooting &amp; Cleanup</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site">
+  <div class="bar">
+    <a class="brand" href="index.html"><span class="mark">▣</span> TollBooth / OpenDoor</a>
+    <nav class="top">
+      <a href="index.html">Home</a>
+      <a href="setup.html">Setup</a>
+      <a href="tollbooth.html">Scenario 1 · TollBooth</a>
+      <a href="opendoor.html">Scenario 2 · OpenDoor</a>
+      <a href="help.html" aria-current="page">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <p class="eyebrow">Help</p>
+    <h1>Troubleshooting &amp; cleanup</h1>
+    <p class="lede">Every issue below was actually hit and fixed while building this workshop —
+    not hypothetical.</p>
+
+    <h2>Troubleshooting</h2>
+
+    <div class="callout callout-amber">
+      <span class="callout-label">"name already in use" on docker run --name kali-tollbooth</span>
+      <p>Not broken — it means setup already succeeded once for this attendee/session. Either
+      reuse the existing container (skip straight to <code>./verify.sh</code>) or run
+      <code>./cleanup.sh</code> first for a clean container.</p>
+    </div>
+
+    <div class="callout callout-amber">
+      <span class="callout-label">"Checksum verification failed" installing Claude Code</span>
+      <p>Transient — the installer script downloads a native binary payload after itself and
+      checksums that separately; an occasional network blip mid-download trips it. Just re-run
+      the same install command:</p>
+<pre><code>docker exec kali-tollbooth bash -c "curl -fsSL https://claude.ai/install.sh -o /tmp/install.sh && bash /tmp/install.sh"</code></pre>
+    </div>
+
+    <div class="callout callout-amber">
+      <span class="callout-label">Commands fail with "no such file" / "no matches found"</span>
+      <p>Almost always a wrong working directory. Every command on the Setup page assumes you're
+      in <code>casky-workshops/tollbooth/</code> — both sections start with a one-line sanity
+      check for exactly this reason:</p>
+<pre><code># Section 1 (inside the Kali container)
+docker exec kali-tollbooth test -f /root/tollbooth/verify.sh \
+  && echo "[+] mount OK" || echo "[!] wrong directory — re-run from casky-workshops/tollbooth/"
+
+# Section 2 (on the host, before copying evidence)
+test -f lab-tollbooth.pcap && echo "[+] correct folder" || echo "[!] cd to casky-workshops/tollbooth first"</code></pre>
+    </div>
+
+    <div class="callout callout-amber">
+      <span class="callout-label">Invalid API key inside the Kali container</span>
+      <p>Almost certainly the quoted-value bug — see the <a href="setup.html#section1">Section 1
+      prerequisites</a> on the Setup page. <code>docker run --env-file</code> does not strip quotes
+      from <code>.env</code> values the way <code>docker-compose</code> does, so a key copied
+      straight from <code>casky-runner-phase1/.env</code> ends up starting with a literal
+      <code>"</code> character. Re-run the <code>sed</code> fix from the Setup page and confirm
+      with the <code>grep -c '^sk-ant-'</code> check before retrying.</p>
+    </div>
+
+    <div class="callout callout-amber">
+      <span class="callout-label">Casky Box itself won't start / docker compose networking errors</span>
+      <p>That's a <code>casky-runner-phase1</code> issue, not a TollBooth/OpenDoor one — see that
+      repo's own README troubleshooting section (it covers stale exited-container/network-ID
+      conflicts and has a <code>scripts/fix-stack.sh</code> for it).</p>
+    </div>
+
+    <h2 id="cleanup">Cleanup</h2>
+    <p><code>./cleanup.sh</code> removes everything a run of this exercise creates outside the
+    <code>tollbooth/</code> folder: the <code>kali-tollbooth</code> container (Section 1) and any
+    evidence files Section 2 copied into <code>casky-runner-phase1/evidence/</code>. Safe to
+    re-run — it reports what it found and skips what's already gone.</p>
+
+<pre><code>./cleanup.sh                                                  # container + copied evidence
+./cleanup.sh --casky-runner-path ../../casky-runner-phase1    # if that repo isn't a sibling of this one
+./cleanup.sh --with-image                                      # also remove the kalilinux/kali-rolling image</code></pre>
+
+    <p>It does <strong>not</strong> touch <code>casky-runner-phase1</code>'s own containers
+    (<code>casky-runner</code>, <code>casky-db</code>, <code>skill-lab</code>, …) — those are the
+    persistent dev/workshop environment, not per-run litter — and it doesn't delete Postgres
+    investigation records from <code>casky harness</code> runs, since those are history, not
+    litter.</p>
+
+    <p>If <code>lab-tollbooth.pcap</code>/<code>cloudtrail/</code>/<code>opendoor/</code> get
+    modified mid-exercise, restore them separately with:</p>
+<pre><code>docker exec -w /root/tollbooth kali-tollbooth ./reset.sh</code></pre>
+    <p>Do this between attendees on the same Kali container — takes under 10 seconds.</p>
+
+    <hr class="rule">
+    <p style="color:var(--ink-dim); font-size:0.9rem;">
+      Authorized &amp; lawful use only. All data is synthetic and self-contained; no live systems
+      are touched.
+    </p>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>TollBooth / OpenDoor workshop guide · <a href="https://github.com/casky-ai/casky-workshops" target="_blank" rel="noopener">casky-ai/casky-workshops</a></p>
+  </div>
+</footer>
+</body>
+</html>
