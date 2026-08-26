@@ -162,6 +162,25 @@ nav.top a:hover, nav.top a[aria-current="page"] {
   border-bottom-color: var(--teal);
 }
 
+/* Casky.AI brand link — a "powered by" mark, not a same-site nav item, so it gets its own
+   visual treatment (colored wordmark, left divider) instead of the plain nav underline. */
+nav.top a.casky-brand-link {
+  display: inline-flex;
+  align-items: baseline;
+  padding-left: 1rem;
+  margin-left: 0.15rem;
+  border-left: 1px solid var(--border);
+}
+nav.top a.casky-brand-link, nav.top a.casky-brand-link:hover {
+  border-bottom-color: transparent;
+}
+nav.top a.casky-brand-link:hover { opacity: 0.75; }
+.casky-brand-link .casky-name { color: var(--ink); font-weight: 800; letter-spacing: -0.02em; }
+.casky-brand-link .casky-ai { color: #00c0a3; font-weight: 800; letter-spacing: -0.02em; }
+
+/* Footer "Built by Casky.AI" link — same wordmark treatment, smaller. */
+footer.site .casky-brand-link { font-size: 0.95em; }
+
 main { padding: 2.5rem 0 4rem; }
 
 /* ── Typography ───────────────────────────────────────────────────────── */
