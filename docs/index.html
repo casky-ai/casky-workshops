@@ -3,21 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TollBooth &amp; OpenDoor Workshop</title>
-<meta name="description" content="Hands-on workshop guide: investigate a real breach (TollBooth) and audit the misconfigurations that caused it (OpenDoor), driven by AI agents using the open-source Anthropic Cybersecurity Skills library.">
+<title>Casky Workshops</title>
+<meta name="description" content="Hands-on, open-source security workshops driven by AI agents using the open-source Anthropic Cybersecurity Skills library. Free to run yourself, always — live delivery is the paid part.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2718%27 fill=%27%230f6e6e%27/%3E%3Crect x=%2724%27 y=%2724%27 width=%2752%27 height=%2752%27 rx=%278%27 fill=%27none%27 stroke=%27%23fbfaf6%27 stroke-width=%278%27/%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 <header class="site">
   <div class="bar">
-    <a class="brand" href="index.html"><span class="mark">▣</span> TollBooth / OpenDoor</a>
+    <a class="brand" href="index.html"><span class="mark">▣</span> Casky Workshops</a>
     <nav class="top">
-      <a href="index.html" aria-current="page">Home</a>
-      <a href="setup.html">Setup</a>
-      <a href="tollbooth.html">Scenario 1 · TollBooth</a>
-      <a href="opendoor.html">Scenario 2 · OpenDoor</a>
-      <a href="help.html">Troubleshooting</a>
+      <a href="https://github.com/casky-ai/casky-workshops" target="_blank" rel="noopener">GitHub</a>
     </nav>
   </div>
 </header>
@@ -26,12 +22,15 @@
   <div class="wrap">
     <div class="hero">
       <div class="hero-text">
-        <p class="eyebrow">Live-fire investigation workshop</p>
+        <p class="eyebrow">Live-fire investigation workshops</p>
         <h1>Investigate a real breach. Then find it before it happens.</h1>
         <p class="lede">
-          Two scenarios, one shared incident — <strong>Acme Rentals</strong>. An AI agent, armed with
-          the open-source <a href="https://github.com/mukul975/Anthropic-Cybersecurity-Skills" target="_blank" rel="noopener">Anthropic
-          Cybersecurity Skills</a> library, does the actual investigation while you drive and check its work.
+          Every workshop below is free and open-source, always — the exercise, the evidence, the
+          wiki, no login, no paywall. An AI agent, armed with the open-source
+          <a href="https://github.com/mukul975/Anthropic-Cybersecurity-Skills" target="_blank" rel="noopener">Anthropic
+          Cybersecurity Skills</a> library, does the actual investigation while you drive and check
+          its work. What's for sale is a live seat in the room — see
+          <a href="#how-this-works">how that works</a> below.
         </p>
       </div>
       <div class="qr-card">
@@ -40,62 +39,87 @@
       </div>
     </div>
 
-    <div class="grid" style="margin-top:1.8rem">
+    <h2 id="workshops">Workshops</h2>
+    <div class="grid" style="margin-top:0.6rem">
       <a class="card" href="tollbooth.html">
-        <span class="eyebrow">Scenario 1 · Reactive DFIR</span>
-        <h3>TollBooth</h3>
-        <p>A web server leaked AWS credentials through SSRF. Find how, trace what the attacker
-        stole, and map the full attack chain to MITRE ATT&amp;CK. ~20 min.</p>
+        <span class="eyebrow">Cloud · SSRF → IMDS → S3 exfil</span>
+        <h3>TollBooth / OpenDoor</h3>
+        <p>A web server leaked AWS credentials through SSRF. Investigate the breach (TollBooth),
+        then audit the configs that caused it (OpenDoor). ~20 min each, free to run yourself.</p>
       </a>
-      <a class="card" href="opendoor.html">
-        <span class="eyebrow">Scenario 2 · Proactive audit</span>
-        <h3>OpenDoor</h3>
-        <p>Same account, before the breach. Audit the AWS configs, find the three
-        misconfigurations, and work out which one the attacker actually used. ~20 min.</p>
+      <a class="card" href="tailgate.html">
+        <span class="eyebrow">DFIR · Phishing → AD domain compromise</span>
+        <h3>Tailgate / GuestList</h3>
+        <p>A phishing email leads to lateral movement and a full Kerberoasting domain compromise —
+        a 3-act kill chain. Then audit the email/network/AD hygiene that let it happen (GuestList).
+        ~25 min each, free to run yourself.</p>
+      </a>
+      <a class="card" href="fastlane.html">
+        <span class="eyebrow">AppSec · Vibe-coded app breach</span>
+        <h3>FastLane / SpeedBump</h3>
+        <p>"The Vibe Coding Security Top 10 Gotchas" — a vibe-coded SaaS app breached through a
+        real, sourced pattern (RLS misconfig, leaked secrets, IDOR, slopsquatting). Then audit it
+        before it ships (SpeedBump). ~25 min each, free to run yourself.</p>
       </a>
     </div>
 
     <h2 id="which">Which path do I run?</h2>
-    <p>Both scenarios can be driven two different ways. Pick whichever matches today's room setup
+    <p>Every workshop can be driven two different ways. Pick whichever matches today's room setup
     — your facilitator will tell you which, but here's the difference:</p>
 
     <div class="table-scroll">
       <table>
         <thead><tr><th></th><th>Section 1 — Kali + Claude Code</th><th>Section 2 — Casky Box</th></tr></thead>
         <tbody>
-          <tr><td>Skill selection</td><td>10 hand-picked skills, symlinked per laptop</td><td>Auto-classified from all 817 skills, per investigation</td></tr>
+          <tr><td>Skill selection</td><td>10 hand-picked skills, symlinked per laptop</td><td>Auto-classified from all 818 skills, per investigation</td></tr>
           <tr><td>Agent runtime</td><td>Claude Code installed per laptop</td><td>One shared <code>casky-runner</code> container</td></tr>
-          <tr><td>Verification</td><td><code>verify.sh</code> — 9 raw tshark/jq checks on the data</td><td><code>[VERIFIED]</code> transcript per step — did the agent actually run the assigned skill's script</td></tr>
+          <tr><td>Verification</td><td><code>verify.sh</code> — raw grep/jq checks on the data</td><td><code>[VERIFIED]</code> transcript per step — did the agent actually run the assigned skill's script</td></tr>
           <tr><td>Output</td><td>Cheat-sheet answer pages</td><td>Structured plan → findings → CISO-style consolidated report</td></tr>
           <tr><td>Reset between attendees</td><td><code>./reset.sh</code> (&lt;10s)</td><td>Each investigation run is already fresh</td></tr>
         </tbody>
       </table>
     </div>
 
-    <p>Full setup for both is on the <a href="setup.html"><strong>Setup page</strong></a> — do that first, before opening either scenario page.</p>
+    <p>Each workshop's own Setup page has the exact steps — do that first, before opening either
+    scenario page. Every setup has been run end-to-end for real before being written down, not
+    just described.</p>
 
-    <h2>The printed cheat sheet</h2>
-    <p>Everyone should have (or can grab) the original color-coded cheat sheet — teal instruction
-    pages, orange checkpoints, red answer pages. This wiki mirrors it exactly, with the answers
-    collapsed so you can attempt each phase before checking.</p>
-    <p><a class="btn" href="assets/Arsenal-CheatSheet-Book.pdf" target="_blank">Download the PDF</a></p>
+    <h2 id="how-this-works">How this works</h2>
+    <p>Every exercise here — the scenario, the evidence, the wiki, the scripts — is free and
+    open-source in this repo, permanently. What's for sale is <strong>live delivery</strong>: a
+    seat in a real session, taught in person or virtual, working through the material with an
+    instructor and a cohort. A short free "Lightning Lesson" runs periodically as a preview of the
+    format before any paid session — same content, shorter and live.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Tier</th><th>What it is</th><th>Price</th></tr></thead>
+        <tbody>
+          <tr><td>Run it yourself</td><td>Everything on this site — the full exercise, self-guided</td><td>Free, always</td></tr>
+          <tr><td>Lightning Lesson</td><td>A short live preview session</td><td>Free</td></tr>
+          <tr><td>Full session</td><td>The complete workshop, taught live, in-person or virtual</td><td>Paid — dates announced per workshop</td></tr>
+        </tbody>
+      </table>
+    </div>
 
     <hr class="rule">
 
     <p style="color:var(--ink-dim); font-size:0.9rem;">
-      Authorized &amp; lawful use only. All data in both scenarios is synthetic and self-contained —
+      Authorized &amp; lawful use only. All data in every scenario is synthetic and self-contained —
       no live systems are touched. Built on the open-source
       <a href="https://github.com/mukul975/Anthropic-Cybersecurity-Skills" target="_blank" rel="noopener">Anthropic Cybersecurity Skills</a>
       library (Apache-2.0); not affiliated with Anthropic PBC.
-      Source data trimmed from
+      TollBooth/OpenDoor's source data is trimmed from
       <a href="https://github.com/mukul975/BHUSA-Anthropic-CyberSecurity-Skills" target="_blank" rel="noopener">BHUSA-Anthropic-CyberSecurity-Skills</a>.
+      Tailgate/GuestList and FastLane/SpeedBump feature entirely fictional companies and, where
+      referenced, real publicly-documented incidents (CVE-2025-48757, the Moltbook breach, etc.) —
+      cited for accuracy, not affiliated with or endorsed by those companies.
     </p>
   </div>
 </main>
 
 <footer class="site">
   <div class="wrap">
-    <p>TollBooth / OpenDoor workshop guide · <a href="https://github.com/casky-ai/casky-workshops" target="_blank" rel="noopener">casky-ai/casky-workshops</a></p>
+    <p>Casky Workshops · <a href="https://github.com/casky-ai/casky-workshops" target="_blank" rel="noopener">casky-ai/casky-workshops</a></p>
   </div>
 </footer>
 </body>
