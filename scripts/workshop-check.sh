@@ -141,6 +141,50 @@ else
 fi
 
 echo
+echo "== FastLane/SpeedBump: Kali container =="
+if container_running kali-fastlane; then
+  ok "kali-fastlane is running"
+
+  if docker exec kali-fastlane sh -c "command -v jq" >/dev/null 2>&1; then ok "jq present in kali-fastlane"
+  else bad "jq MISSING in kali-fastlane"; fi
+
+  if docker exec kali-fastlane bash -c 'export PATH="$HOME/.local/bin:$PATH"; command -v claude' >/dev/null 2>&1; then
+    ver=$(docker exec kali-fastlane bash -c 'export PATH="$HOME/.local/bin:$PATH"; claude --version' 2>/dev/null)
+    ok "claude CLI installed ($ver)"
+  else
+    soft "claude CLI not found in kali-fastlane — attendees fall back to the printed ANSWER page (dry-run mode)"
+  fi
+
+  if docker exec kali-fastlane sh -c 'case "$ANTHROPIC_API_KEY" in sk-ant-*) exit 0;; *) exit 1;; esac' >/dev/null 2>&1; then
+    ok "ANTHROPIC_API_KEY present in kali-fastlane (sk-ant- prefix)"
+  else
+    soft "ANTHROPIC_API_KEY missing/malformed in kali-fastlane — check fastlane/.env is unquoted (see SETUP.md)"
+  fi
+
+  for f in /root/fastlane/app /root/fastlane/speedbump; do
+    if docker exec kali-fastlane test -e "$f" >/dev/null 2>&1; then ok "$f present"
+    else bad "$f MISSING in kali-fastlane — run: docker exec -w /root/fastlane kali-fastlane ./reset.sh"; fi
+  done
+else
+  bad "kali-fastlane is not running — see fastlane/SETUP.md Section 1"
+fi
+
+echo
+echo "== FastLane/SpeedBump data integrity (verify.sh, run inside kali-fastlane) =="
+if container_running kali-fastlane && docker exec kali-fastlane test -f /root/fastlane/verify.sh >/dev/null 2>&1; then
+  out=$(docker exec -w /root/fastlane kali-fastlane ./verify.sh 2>&1)
+  echo "$out" | sed 's/^/  /'
+  fails_in_verify=$(echo "$out" | grep -o 'RESULT: [0-9]* passed, [0-9]* failed' | grep -o '[0-9]* failed' | grep -o '[0-9]*')
+  if [ -n "$fails_in_verify" ] && [ "$fails_in_verify" -eq 0 ]; then
+    ok "fastlane/verify.sh: all data checks passed"
+  else
+    bad "fastlane/verify.sh: ${fails_in_verify:-an unknown number of} check(s) failed (see above) — try: docker exec -w /root/fastlane kali-fastlane ./reset.sh"
+  fi
+else
+  soft "verify.sh not found in kali-fastlane (or container not running) — skipping data-integrity checks"
+fi
+
+echo
 echo "== Section 2: Casky Box (casky-runner-phase1) — shared by all exercises =="
 if [ -d "$CASKY_RUNNER_DIR" ]; then
   ok "casky-runner-phase1 found at $CASKY_RUNNER_DIR"

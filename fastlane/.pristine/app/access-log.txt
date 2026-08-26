@@ -1,0 +1,32 @@
+# Loopline — Vercel + Supabase access logs, incident window (synthetic training data).
+# Times UTC. External actor IP: 203.0.113.90 (TEST-NET-3, same convention as TollBooth/Tailgate).
+
+## Supabase REST API — direct customers table pull (RLS off, gotcha #1/#5)
+2026-08-18T14:10:02Z src=203.0.113.90 method=GET path=/rest/v1/customers?select=* \
+  apikey=eyJhbGci...SYNTHETIC_SERVICE_ROLE_c71d status=200 rows_returned=1842
+  # entire customers table, all 40 orgs, in one request — the service-role key from
+  # client-bundle-excerpt.txt bypasses RLS by design; RLS being off on this table means it didn't
+  # even need the bypass, but the key made it trivial regardless.
+
+## Loopline API — /api/tickets/{id} enumeration (IDOR probe, gotcha #4)
+2026-08-18T14:22:11Z src=203.0.113.90 method=GET path=/api/tickets/1001 status=200 org_id=7
+2026-08-18T14:22:12Z src=203.0.113.90 method=GET path=/api/tickets/1002 status=200 org_id=7
+2026-08-18T14:22:13Z src=203.0.113.90 method=GET path=/api/tickets/1003 status=200 org_id=12
+2026-08-18T14:22:14Z src=203.0.113.90 method=GET path=/api/tickets/1004 status=200 org_id=12
+2026-08-18T14:22:15Z src=203.0.113.90 method=GET path=/api/tickets/1005 status=200 org_id=31
+  # sequential ID sweep across THREE different orgs' tickets (7, 12, 31) from one session token
+  # belonging to org_id=7 — every request returns 200 instead of 403, confirming the missing
+  # org_id check in api-tickets-route.js. No evidence beyond this sweep that ticket CONTENT was
+  # exfiltrated at scale via this path specifically (the customers-table pull above covers the
+  # same underlying data more directly) — treat as PROBED, not a separate confirmed exfil.
+
+## Loopline API — /api/debug/seed (gotcha #9)
+2026-08-18T14:31:47Z src=203.0.113.90 method=POST path=/api/debug/seed status=200 auth_header=none
+  # single hit, no auth header required, no evidence of repeated/damaging use in this window.
+
+## Origin header on the customers-table pull and the ticket sweep (CORS, gotcha #7)
+2026-08-18T14:10:02Z origin_header="https://attacker-controlled-demo.example" \
+  cors_response_header="Access-Control-Allow-Origin: *"
+  # confirms the wildcard CORS policy would have allowed this request to be triggered from
+  # any origin, not just app.loopline.io — compounding factor, not independently evidenced as
+  # the delivery mechanism here (the request could equally have been a direct curl/API call).

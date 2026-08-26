@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FastLane — Scenario 1</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2718%27 fill=%27%230f6e6e%27/%3E%3Crect x=%2724%27 y=%2724%27 width=%2752%27 height=%2752%27 rx=%278%27 fill=%27none%27 stroke=%27%23fbfaf6%27 stroke-width=%278%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site">
+  <div class="bar">
+    <a class="brand" href="index.html"><span class="mark">▣</span> FastLane / SpeedBump</a>
+    <nav class="top">
+      <a href="index.html">Home</a>
+      <a href="fastlane-setup.html">Setup</a>
+      <a href="fastlane.html" aria-current="page">Scenario 1 · FastLane</a>
+      <a href="speedbump.html">Scenario 2 · SpeedBump</a>
+      <a href="fastlane-help.html">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <p class="eyebrow">Scenario 1 of 2 · Reactive DFIR · The Vibe Coding Security Top 10 Gotchas</p>
+    <h1>FastLane — investigate the breach</h1>
+    <p class="lede">Loopline shipped in a weekend, straight to production, no security review.
+    Find out what that actually cost them.</p>
+
+    <div class="callout callout-teal">
+      <span class="callout-label">Setup (do this once)</span>
+      <p>1. Open a terminal. 2. <code>cd ~/fastlane</code>. 3. Start the agent: <code>claude</code>.
+      4. Paste each prompt below, in order, in the <strong>same chat</strong>. Type only the
+      prompt text — no quotes.</p>
+      <p>~25 min per visit. Do the <span class="pill pill-core">CORE</span> phases (1, 2, 5) for
+      the full story. <span class="pill pill-deep">DEEP</span> phases (3, 4) are for a quiet moment
+      or to run later. No agent? Terminal fallback commands are at the bottom.</p>
+    </div>
+
+    <!-- Phase 1 -->
+    <div class="phase" id="phase-1">
+      <div class="phase-head">
+        <span class="phase-num">Phase 1</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>Data exposure — how did they get in</h3>
+      <p>Paste this, then Enter:</p>
+      <div class="prompt">Using your cybersecurity skills, investigate app/rls-policies.json, app/client-bundle-excerpt.txt, and app/git-history-env-leak.txt: find how Loopline's customer data was exposed, and tell me the exact same secret that appears in two independent places. List the skills you used.</div>
+      <p class="will-see">You will see: a database table with no access control at all, and the
+      same Supabase key recoverable from two completely different places.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>The <code>customers</code> table has Row-Level Security disabled entirely; the
+        <code>tickets</code> table "has" RLS but the policy is <code>USING (true)</code> — same
+        practical effect. And the service-role key ending <code>...c71d</code> shows up in both
+        the live client bundle and an old git commit.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p><code>customers</code> table: RLS never enabled — same root cause pattern as
+          CVE-2025-48757 (Lovable, 170+ apps affected). <code>tickets</code> table: RLS "on" but
+          functionally open. The same Supabase <strong>service-role key</strong> — Supabase's
+          admin key, meant to bypass RLS for trusted server code only — is exposed two independent
+          ways: shipped in the client bundle (a <code>NEXT_PUBLIC_</code>-prefixed env var mistake)
+          <em>and</em> recoverable from a git commit a later "fix" never actually purged from
+          history. <code>access-log.txt</code> shows this key used to pull the entire
+          <code>customers</code> table — 1,842 rows, every org, one request.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="phase" id="phase-2">
+      <div class="phase-head">
+        <span class="phase-num">Phase 2</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>A second, independent way in</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Now look at app/api-tickets-route.js, app/next-config-cors.txt, and app/access-log.txt: is there a second, independent way into the same data, and how far could it have reached from any website on the internet?</div>
+      <p class="will-see">You will see: an API route missing one authorization check, a wildcard
+      CORS policy, and a sequential ID sweep across three different customers' data.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p><code>/api/tickets/[id]</code> checks that <em>someone</em> is logged in but never
+        checks the ticket's <code>org_id</code>. <code>Access-Control-Allow-Origin: *</code> means
+        this could be triggered from any site. The log shows exactly that — IDs across
+        <code>org_id</code> 7, 12, and 31, all returning 200.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p>A second, independent path: any authenticated user (from any org) can view or edit
+          any other org's ticket by changing the numeric ID — the route never checks ownership.
+          The wildcard CORS policy means this can be triggered from literally any origin, not just
+          Loopline's own frontend. <code>access-log.txt</code> shows exactly this pattern already
+          probed — but no separate confirmed large-scale exfiltration through this path alone; the
+          Phase 1 pull already covers the same underlying data more directly.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase" id="phase-3">
+      <div class="phase-head">
+        <span class="phase-num">Phase 3</span>
+        <span class="pill pill-deep">Deep</span>
+      </div>
+      <h3>Check the agent — did the bad package ship?</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Check app/package.json against app/pr-branch-diff.txt: was the AI-suggested dependency react-csv-parser-pro actually shipped to production? Show your reasoning, not just a guess.</div>
+      <p class="will-see">You will see: a real, plausible-looking package that the AI assistant
+      suggested — and a merge status that changes the whole answer.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p><code>package.json</code> (main branch) has no such dependency. <code>pr-branch-diff.txt</code>
+        shows the PR is still <strong>OPEN</strong>, never merged. The correct answer is
+        <strong>no, it never shipped</strong> — checking the branch diff alone, without the merge
+        status, is the trap.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p><code>react-csv-parser-pro</code> never reached production. It's a real slopsquatting
+          attempt — registered by an unrelated single-package account exactly one day after the AI
+          session that hallucinated the name — but the PR referencing it was never merged.
+          Loopline avoided this one by a slow reviewer, not by process. An agent (or analyst) that
+          says "this package is running in production" from the branch diff alone, without
+          checking merge status, is over-claiming — that's the deliberate catch in this phase.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 4 -->
+    <div class="phase" id="phase-4">
+      <div class="phase-head">
+        <span class="phase-num">Phase 4</span>
+        <span class="pill pill-deep">Deep</span>
+      </div>
+      <h3>Map it — confirmed vs. latent</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Map every finding to MITRE ATT&amp;CK technique IDs. Then check app/dev-environment-audit.txt and app/code-scan-summary.txt: are these two findings part of the confirmed breach, or separate latent risks? Be specific about which is which.</div>
+      <p class="will-see">You will see: a clean chain for the confirmed breach — and two more
+      findings that are real but should <strong>not</strong> get folded into "what the attacker
+      did."</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>Confirmed chain: T1552 (the leaked key) → T1190 (RLS/IDOR exploitation) → T1526/T1087
+        (customer data gathered). The starter-template MCP auto-trust and the XSS/rate-limit
+        findings are real but <strong>latent</strong> — nothing ties them to this specific
+        incident.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p><strong>Confirmed:</strong> T1552 (Unsecured Credentials) → T1190 (Exploit
+          Public-Facing Application, via the open RLS/IDOR paths) → T1526 / T1087 (the customer
+          data actually gathered). <strong>Latent, not confirmed as part of this breach:</strong>
+          the starter template's auto-trusted MCP config (a developer-tooling risk, real but
+          unused here) and the reflected-XSS/no-rate-limiting findings from the general code
+          scan — genuine vulnerabilities, but nothing in the evidence ties either to this
+          incident.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 5 -->
+    <div class="phase" id="phase-5">
+      <div class="phase-head">
+        <span class="phase-num">Phase 5</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>Incident report</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Write a short incident report: the full chain, confirmed vs. latent findings, and the single change that would have stopped the confirmed breach at the earliest point.</div>
+      <p class="will-see">You will see: the chain, clearly separated confirmed/latent findings, and
+      one fix that would have mattered most.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>One fix, clearly justified as the earliest, most systemic point in the chain — not just
+        "rotate the key" (necessary, but doesn't fix the next leaked key).</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p>Enable correctly-scoped Row-Level Security on <strong>every</strong> table, including
+          <code>customers</code>. This is the systemic fix: it would have limited the blast radius
+          of the leaked key regardless of how the key leaked, and protects against the <em>next</em>
+          leaked credential too — rotating this one key fixes today's incident but not the
+          underlying gap.</p>
+        </div>
+      </details>
+    </div>
+
+    <h2>Explore without spoiling it</h2>
+<pre><code>jq '.tables[] | select(.rowsecurity == false)' app/rls-policies.json
+grep -c "SYNTHETIC_SERVICE_ROLE" app/client-bundle-excerpt.txt app/git-history-env-leak.txt</code></pre>
+
+    <h2>Terminal fallbacks (no agent)</h2>
+<pre><code>grep "path=/api/tickets/" app/access-log.txt
+grep -A2 "FINDING" app/pr-branch-diff.txt   # the slopsquatting catch</code></pre>
+
+    <hr class="rule">
+    <p style="color:var(--ink-dim); font-size:0.9rem;">
+      Authorized &amp; lawful use only. All data is synthetic and self-contained; no live systems
+      are touched. "Loopline" is a fictional company. Grounded in real, sourced 2025-2026 incidents
+      (CVE-2025-48757, the Moltbook breach, Base44/Wiz, GitGuardian, slopsquatting research) — see
+      <code>NARRATIVE.md</code> for citations. Promotes the open-source Anthropic Cybersecurity
+      Skills library (Apache-2.0); not affiliated with Anthropic PBC.
+    </p>
+    <p><a href="speedbump.html">Next → Scenario 2: SpeedBump</a></p>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>FastLane / SpeedBump workshop guide · <a href="https://github.com/casky-ai/casky-workshops" target="_blank" rel="noopener">casky-ai/casky-workshops</a></p>
+  </div>
+</footer>
+</body>
+</html>

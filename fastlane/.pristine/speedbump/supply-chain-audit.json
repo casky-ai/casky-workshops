@@ -1,0 +1,22 @@
+{
+  "audit_area": "supply chain (dependencies, AI coding-tool config)",
+  "correlates_to_fastlane_gotchas": [3, 6],
+  "findings": [
+    {
+      "id": "SUP-1",
+      "title": "Slopsquatted package referenced in an open PR — never merged",
+      "correlation_label": "not exploited — caught pre-merge",
+      "correlation_note": "This is the deliberate 'catch the agent' check for FastLane: pr-branch-diff.txt shows react-csv-parser-pro was hallucinated by the AI assistant, registered by an unrelated party one day later, but PR #47 was never merged to main. package.json on main has no such dependency. An agent or attendee that claims this package 'was installed and running in production' is over-claiming from the branch diff alone without checking merge status.",
+      "detail": "The pattern (AI hallucinates a plausible package name -> an attacker registers it -> unsuspecting developers who DO merge get compromised) is real and documented — see PSF's slopsquatting research and the real huggingface-cli case. Loopline avoided it by luck (a slow reviewer), not by process.",
+      "recommended_fix": "Verify any AI-suggested package actually exists on the registry, has a real maintainer history, and predates the AI session referencing it, BEFORE merging — not as an afterthought."
+    },
+    {
+      "id": "SUP-2",
+      "title": "Starter template's .mcp.json auto-connects to an unvetted remote MCP server",
+      "correlation_label": "latent",
+      "correlation_note": "Found during this audit, no evidence of malicious use — a developer-tooling risk (the real TrustFall pattern: coding agents auto-trust project-defined MCP config once a folder is accepted), not a confirmed incident.",
+      "detail": "See dev-environment-audit.txt.",
+      "recommended_fix": "Review any cloned starter template's agent/MCP config before opening it in a coding agent that auto-trusts project folders."
+    }
+  ]
+}

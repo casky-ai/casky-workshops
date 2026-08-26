@@ -1,0 +1,19 @@
+# Loopline — general code scan summary (synthetic training data)
+# Context, not a Loopline-specific statistic: Veracode's 2026 GenAI Code Security Report found
+# ~44-45% of AI code-generation tasks contain a detectable OWASP Top 10 flaw, roughly flat for two
+# years despite near-100% syntax correctness. This scan finding is consistent with that general
+# elevated-defect-rate pattern, not evidence that Loopline is somehow unusually bad.
+
+FINDING: reflected XSS in ticket comment rendering
+  file: components/TicketComment.jsx
+  detail: comment body is rendered via dangerouslySetInnerHTML with no sanitization; an attacker
+  submitting a comment containing a <script> payload would have it executed in any viewer's
+  browser (support agents included).
+
+FINDING: no rate limiting on /api/auth/login
+  detail: the login route has no attempt-throttling — a credential-stuffing or brute-force run
+  would go unthrottled.
+
+Both are ordinary OWASP Top 10 categories (A03: Injection / XSS, and missing brute-force
+protection) — not unique to vibe coding, but part of the same "shipped fast, unreviewed" pattern
+as the rest of this scenario.

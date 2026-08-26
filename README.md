@@ -8,6 +8,7 @@ Hands-on materials for live workshop sessions.
 |---|---|---|---|
 | [`tollbooth/`](tollbooth/SETUP.md) | TollBooth / OpenDoor — SSRF → IMDS credential leak → S3 exfil, plus the proactive cloud-config audit that would've prevented it. Trimmed from [BHUSA-Anthropic-CyberSecurity-Skills](https://github.com/mukul975/BHUSA-Anthropic-CyberSecurity-Skills). | [casky-ai.github.io/casky-workshops](https://casky-ai.github.io/casky-workshops/) | [casky.ai/blog/blackhat-workshop-lab02](https://casky.ai/blog/blackhat-workshop-lab02) |
 | [`tailgate/`](tailgate/SETUP.md) | Tailgate / GuestList — a phishing email → lateral movement → AD domain compromise (Kerberoasting/AS-REP), a 3-act kill chain, plus the proactive email/network/AD audit that would've prevented it. | [tailgate.html](https://casky-ai.github.io/casky-workshops/tailgate.html) | — |
+| [`fastlane/`](fastlane/SETUP.md) | FastLane / SpeedBump — "The Vibe Coding Security Top 10 Gotchas." A vibe-coded SaaS app breached through a real, sourced pattern (RLS misconfig, leaked secrets, IDOR, slopsquatting), grounded in CVE-2025-48757/Moltbook/Base44, plus the proactive pre-ship audit. | [fastlane.html](https://casky-ai.github.io/casky-workshops/fastlane.html) | — |
 
 Each exercise's own `SETUP.md` has the full walkthrough — the source of truth, kept in sync with
 the hosted wiki. Each `SETUP.md` covers two ways to run the same scenario: the original

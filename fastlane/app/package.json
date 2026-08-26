@@ -1,0 +1,13 @@
+{
+  "name": "loopline",
+  "version": "0.4.2",
+  "private": true,
+  "//_note": "main branch package.json — synthetic training data. Does NOT include react-csv-parser-pro; see pr-branch-diff.txt for why that matters.",
+  "dependencies": {
+    "next": "16.2.1",
+    "react": "19.2.0",
+    "@supabase/supabase-js": "2.58.0",
+    "papaparse": "5.4.1",
+    "date-fns": "4.1.0"
+  }
+}

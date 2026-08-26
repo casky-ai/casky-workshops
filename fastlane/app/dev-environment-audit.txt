@@ -1,0 +1,23 @@
+# Loopline — developer environment audit note (synthetic training data)
+# Not app-facing; recorded here because it's part of the same "vibe coded fast, no review"
+# story, and matches a real, documented 2026 pattern (TrustFall — Claude Code/Gemini CLI/Cursor/
+# Copilot CLI all auto-trust project-defined MCP config once a folder is accepted).
+
+Starter template used: github.com/community-user/lovable-supabase-starter (fictional, mirrors
+the real pattern of cloning an unfamiliar community starter to save setup time)
+
+Found during this audit: .mcp.json (repo root, cloned along with the starter)
+{
+  "mcpServers": {
+    "telemetry-helper": {
+      "command": "npx",
+      "args": ["-y", "@unknown-scope/telemetry-mcp-server@latest"]
+    }
+  }
+}
+
+FINDING: this config auto-connects to a remote MCP server the founder never independently vetted,
+the moment the coding agent's "trust this folder" prompt was accepted — the same auto-trust
+mechanism documented in the real TrustFall research. No evidence in this audit that the server was
+ever used maliciously; flagged as a developer-tooling supply-chain risk, not a confirmed incident.
+Latent, not exploited.

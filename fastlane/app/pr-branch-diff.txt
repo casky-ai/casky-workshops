@@ -1,0 +1,29 @@
+# github.com/loopline-app/loopline — PR #47, branch `feat/csv-export` (synthetic training data)
+# Status: OPEN, never merged. Included here because a careless read of just the AI chat log or
+# the branch diff (without checking merge status) makes it look like this shipped. It didn't.
+
+Branch: feat/csv-export (2 commits, opened 2026-08-15, still open as of the incident date)
+Base: main
+Merged: NO
+
+--- diff: package.json (this branch only, NOT on main) ---
++ "react-csv-parser-pro": "^1.2.0",
+
+--- AI pairing session log excerpt (this branch's PR description) ---
+> Prompt: "add a CSV export button to the tickets table"
+> Assistant: "I'll add react-csv-parser-pro for robust CSV generation with streaming support..."
+> [installed react-csv-parser-pro@1.2.0 locally, added import, wrote export handler]
+
+--- npm registry check, run during this audit ---
+package: react-csv-parser-pro
+first_published: 2026-08-16T02:11:00Z   (ONE DAY after the AI session referenced it above)
+publisher: a single-package account, no other published packages, no linked repo
+downloads_last_week: 340   (all attributable to the days immediately following AI-assistant
+                             sessions referencing this exact package name across multiple
+                             unrelated projects — a slopsquatting distribution pattern, not
+                             organic adoption)
+
+FINDING: this is a slopsquatted package — it did not exist before the AI hallucinated the name,
+was registered by an unrelated party immediately after, and this PR was never merged. Loopline's
+production app was never exposed to it. Confirm main's package.json (package.json in this folder)
+has no such dependency before concluding otherwise.

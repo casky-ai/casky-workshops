@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpeedBump — Scenario 2</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2718%27 fill=%27%230f6e6e%27/%3E%3Crect x=%2724%27 y=%2724%27 width=%2752%27 height=%2752%27 rx=%278%27 fill=%27none%27 stroke=%27%23fbfaf6%27 stroke-width=%278%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site">
+  <div class="bar">
+    <a class="brand" href="index.html"><span class="mark">▣</span> FastLane / SpeedBump</a>
+    <nav class="top">
+      <a href="index.html">Home</a>
+      <a href="fastlane-setup.html">Setup</a>
+      <a href="fastlane.html">Scenario 1 · FastLane</a>
+      <a href="speedbump.html" aria-current="page">Scenario 2 · SpeedBump</a>
+      <a href="fastlane-help.html">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <p class="eyebrow">Scenario 2 of 2 · Proactive audit · The Vibe Coding Security Top 10 Gotchas</p>
+    <h1>SpeedBump — find it before it ships</h1>
+    <p class="lede">Same app, same company — but this time you're reviewing Loopline's code and
+    config <em>before</em> it goes live, to find the gotchas that made FastLane possible.</p>
+
+    <div class="callout callout-teal">
+      <span class="callout-label">Setup (if you closed the terminal)</span>
+      <p>Open a terminal. <code>cd ~/fastlane</code>. <code>claude</code>. Paste only the prompt
+      text below.</p>
+      <p>~20 min. <span class="pill pill-core">CORE</span> phases (1, 3, 5) tell the full story.
+      <span class="pill pill-deep">DEEP</span> phases (2, 4) are for a quiet queue or to run later.
+      No agent? Terminal fallback commands are at the bottom.</p>
+    </div>
+
+    <!-- Phase 1 -->
+    <div class="phase" id="phase-1">
+      <div class="phase-head">
+        <span class="phase-num">Phase 1</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>Full pre-ship audit</h3>
+      <p>Paste this, then Enter:</p>
+      <div class="prompt">Using your application-security, database-security, and supply-chain skills, audit every report in speedbump/: the database security audit, application security audit, supply chain audit, and secrets audit. List the skills you used and summarize each area's findings.</div>
+      <p class="will-see">You will see: findings across four areas — database, application, supply
+      chain, and secrets — each with its own correlation label.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>Database: RLS gaps on two tables. Application: IDOR, CORS wildcard, an exposed debug
+        route, and general OWASP-flavored defects. Supply chain: a slopsquatted package and an
+        auto-trusted MCP config. Secrets: the same service-role key, twice.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p><strong>Database:</strong> <code>customers</code> table has no RLS at all;
+          <code>tickets</code> table's RLS policy is <code>USING (true)</code> — functionally the
+          same gap. <strong>Application:</strong> IDOR on <code>/api/tickets/[id]</code>, wildcard
+          CORS, an unauthenticated <code>/api/debug/seed</code> route, plus reflected XSS and
+          missing login rate-limiting. <strong>Supply chain:</strong> a slopsquatted npm package
+          referenced in an open PR, and a starter template's MCP config that auto-connects to an
+          unvetted remote server. <strong>Secrets:</strong> the same Supabase service-role key
+          recoverable both from the client bundle and from git history.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="phase" id="phase-2">
+      <div class="phase-head">
+        <span class="phase-num">Phase 2</span>
+        <span class="pill pill-deep">Deep</span>
+      </div>
+      <h3>Rank by blast radius</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Of those findings, which single one is most dangerous, and why? Rank all four areas by how much damage each enables on its own.</div>
+      <p class="will-see">You will see: reasoning about which matters most — the database gap that
+      needs no exploit at all, versus everything else.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>A defended ordering. Reasonable top pick: the database/RLS gap, because it requires no
+        clever exploit — just knowing (or leaking) any working key. The point is the reasoning,
+        not one "right" order.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p>Defensible top pick = database/RLS: with RLS off, <em>any</em> valid key (anon or
+          service-role) reads everything — no clever exploit needed, which is what makes it the
+          highest-severity, lowest-effort path. Secrets exposure = the actual delivery mechanism
+          here (a leaked key needs somewhere permissive to point at). Application-layer (IDOR/CORS)
+          = a second, independent path to similar data. Supply chain = highest potential
+          damage (a compromised dependency runs code) but, in this case, never actually reached
+          production.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase" id="phase-3">
+      <div class="phase-head">
+        <span class="phase-num">Phase 3</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>Correlate with the breach</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Now look at ../app/access-log.txt and ../app/pr-branch-diff.txt: for each speedbump finding, did the attacker EXPLOIT it, only PROBE it, or was it never actually used at all? Show me the evidence for each.</div>
+      <p class="will-see">You will see: findings split three ways — exploited, probed, and one
+      that never shipped at all. Not all the same.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>RLS + secrets exposure = exploited (the actual data pull). IDOR + the debug route =
+        probed only. The slopsquatted package = <strong>never exploited — it never shipped.</strong></p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p><strong>Exploited:</strong> the RLS gaps and the leaked service-role key — together,
+          the direct cause of the 1,842-row <code>customers</code> pull. <strong>Probed, not
+          confirmed exploited:</strong> the IDOR sweep (5 IDs across 3 orgs, no separate large-scale
+          exfil confirmed via this path) and the <code>/api/debug/seed</code> hit (one request, no
+          evidence of damaging use). <strong>Never exploited — never shipped:</strong> the
+          slopsquatted <code>react-csv-parser-pro</code> package, which stayed on an unmerged PR
+          branch the entire time.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 4 -->
+    <div class="phase" id="phase-4">
+      <div class="phase-head">
+        <span class="phase-num">Phase 4</span>
+        <span class="pill pill-deep">Deep</span>
+      </div>
+      <h3>Check the agent's call</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Double-check the supply-chain finding: was the slopsquatted package actually running in Loopline's production code, or does the evidence only show it was suggested? Show the specific check you'd run to confirm either way.</div>
+      <p class="will-see">You will see: the package is real and malicious-adjacent, but a merge-status
+      check settles whether it ever mattered.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>Checking PR #47's merge status (OPEN, never merged) and confirming
+        <code>package.json</code> on <code>main</code> has no such dependency — not just reading
+        the AI chat log or the branch diff in isolation.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p>Never running in production. <code>pr-branch-diff.txt</code> shows PR #47 is still
+          open; <code>package.json</code> (main branch) has no such dependency. The package itself
+          is a genuine slopsquatting attempt — registered one day after an AI session referenced
+          the hallucinated name — but this specific instance never reached Loopline's shipped
+          code. Confirming "exposed" vs. "exploited" here requires checking merge status, not just
+          the existence of the suggestion — the same nuance FastLane's Phase 3 tests, from the
+          audit side this time.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 5 -->
+    <div class="phase" id="phase-5">
+      <div class="phase-head">
+        <span class="phase-num">Phase 5</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>Prioritized remediation</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Give me a prioritized fix list: what to change FIRST to close the actual breach path, versus what to fix because it's a real risk even though it wasn't confirmed as used. For each fix, name which Top 10 gotcha it addresses.</div>
+      <p class="will-see">You will see: RLS first (systemic, breaks the chain), then secret
+      rotation, then the application-layer gaps, with the never-shipped package and dev-tooling
+      risk flagged as real-but-latent.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>Ordered by real risk: RLS first (closes the systemic gap), then rotate the leaked key
+        and purge git history, then fix the IDOR/CORS/debug-route trio, then the two latent
+        findings — never treating "never shipped" the same as "not worth fixing."</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p><strong>1)</strong> Enable correctly-scoped RLS on every table (gotchas #1, #5) —
+          the systemic fix. <strong>2)</strong> Rotate the service-role key and rewrite git history
+          to purge the old <code>.env</code> commit (gotchas #2, #8). <strong>3)</strong> Add the
+          missing <code>org_id</code> check, scope CORS to known origins, and remove the debug
+          route (gotchas #4, #7, #9). <strong>4)</strong> Verify AI-suggested packages against the
+          registry before merging, going forward (gotcha #3 — even though this instance was
+          caught). <strong>5)</strong> Review any cloned starter template's agent/MCP config before
+          opening it (gotcha #6) — latent, but still worth doing.</p>
+        </div>
+      </details>
+    </div>
+
+    <h2>Explore without spoiling it</h2>
+<pre><code>jq '.findings[].correlation_label' speedbump/application-security-audit.json
+jq '.findings[].correlation_label' speedbump/supply-chain-audit.json</code></pre>
+
+    <h2>Terminal fallbacks (no agent)</h2>
+<pre><code>jq -r '.findings[] | select(.correlation_label=="exploited") | .id' speedbump/*.json
+grep -B1 "never reached" ../app/pr-branch-diff.txt</code></pre>
+
+    <hr class="rule">
+    <p style="color:var(--ink-dim); font-size:0.9rem;">
+      Authorized &amp; lawful use only. All data is synthetic and self-contained; no live systems
+      are touched. "Loopline" is a fictional company. Promotes the open-source Anthropic
+      Cybersecurity Skills library (Apache-2.0); not affiliated with Anthropic PBC.
+    </p>
+    <p><a href="fastlane.html">← Back to Scenario 1: FastLane</a></p>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>FastLane / SpeedBump workshop guide · <a href="https://github.com/casky-ai/casky-workshops" target="_blank" rel="noopener">casky-ai/casky-workshops</a></p>
+  </div>
+</footer>
+</body>
+</html>

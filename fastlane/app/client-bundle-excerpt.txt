@@ -1,0 +1,16 @@
+# Loopline production bundle — `strings`-style excerpt from
+# .next/static/chunks/pages/_app-a91f3c2e.js (synthetic training data, real Next.js behavior)
+#
+# Any env var prefixed NEXT_PUBLIC_ is inlined into the client bundle at build time by design —
+# that part is standard Next.js, not a bug. The bug is what got that prefix.
+
+grep -o 'NEXT_PUBLIC_[A-Z_]*"[^"]*"' _app-a91f3c2e.js | head -5:
+
+NEXT_PUBLIC_SUPABASE_URL:"https://xzqlnrjk.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIn0.SYNTHETIC_ANON_9f2a"
+NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UifQ.SYNTHETIC_SERVICE_ROLE_c71d"
+
+# The third line is the finding: the service_role key bypasses RLS entirely by design (it's
+# Supabase's admin key, meant for trusted server-side code only) — and it's sitting in a variable
+# name that Next.js ships to every visitor's browser. Confirmed reachable: this exact string is
+# present in the live bundle served from app.loopline.io as of the incident date.

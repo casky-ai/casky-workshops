@@ -1,0 +1,20 @@
+{
+  "audit_area": "database security (Supabase RLS)",
+  "correlates_to_fastlane_gotchas": [1, 5],
+  "correlation_label": "exploited",
+  "correlation_note": "The customers-table pull in access-log.txt used exactly this gap — RLS was off, so the service-role key (or even the anon key) was sufficient.",
+  "findings": [
+    {
+      "id": "DB-1",
+      "title": "customers table: Row-Level Security never enabled",
+      "detail": "Scaffolded by Lovable without RLS turned on. Same root cause pattern as CVE-2025-48757 (Lovable, 170+ apps affected) and the Moltbook breach (1.5M tokens, 35K emails exposed).",
+      "recommended_fix": "Enable RLS on every table at creation time, not as an afterthought. Lovable has since made this the default — confirm your project's migrations actually reflect the current default."
+    },
+    {
+      "id": "DB-2",
+      "title": "tickets table: RLS enabled but policy is USING (true)",
+      "detail": "Technically 'has RLS' but the policy matches every row for every requester — functionally identical to no RLS. A schema diff or migration review that only checks rowsecurity=true would miss this.",
+      "recommended_fix": "Review policy EXPRESSIONS, not just whether RLS is toggled on. Scope to auth.uid()/org membership like ticket_comments already does correctly."
+    }
+  ]
+}

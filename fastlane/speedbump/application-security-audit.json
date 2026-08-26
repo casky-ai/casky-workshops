@@ -1,0 +1,38 @@
+{
+  "audit_area": "application security (API authorization, CORS, general defects)",
+  "correlates_to_fastlane_gotchas": [4, 7, 9, 10],
+  "findings": [
+    {
+      "id": "APP-1",
+      "title": "IDOR on /api/tickets/[id] — no org_id check",
+      "correlation_label": "probed",
+      "correlation_note": "access-log.txt shows a sequential ID sweep across 3 different orgs, all returning 200 — but no separate confirmed large-scale data exfiltration via this specific path (the direct customers-table pull covers the same data more directly).",
+      "detail": "GET and PATCH both authenticate the session but never verify the requested ticket belongs to that session's org. See api-tickets-route.js.",
+      "recommended_fix": "Add `AND org_id = $session.org_id` to every query keyed by a client-supplied ID. Consider row-level security as a second, defense-in-depth layer here too."
+    },
+    {
+      "id": "APP-2",
+      "title": "CORS wildcard on /api/*",
+      "correlation_label": "latent",
+      "correlation_note": "Confirmed present (next-config-cors.txt) and confirmed in the response headers during the incident, but not independently evidenced as the delivery mechanism for the actual breach.",
+      "detail": "Access-Control-Allow-Origin: * on every API route, added as a quick fix during development and never scoped down.",
+      "recommended_fix": "Allowlist only app.loopline.io and known preview-deployment domains."
+    },
+    {
+      "id": "APP-3",
+      "title": "Exposed /api/debug/seed with no auth",
+      "correlation_label": "probed",
+      "correlation_note": "access-log.txt shows exactly one external hit, no evidence of repeated or damaging use.",
+      "detail": "Leftover Lovable scaffolding route that reseeds/wipes demo data, reachable in production with no authentication.",
+      "recommended_fix": "Remove debug/seed routes before production deploy, or gate them behind an admin-only auth check plus an environment check (never respond in production)."
+    },
+    {
+      "id": "APP-4",
+      "title": "General OWASP-flavored defects (reflected XSS, no rate-limiting)",
+      "correlation_label": "latent",
+      "correlation_note": "Consistent with Veracode's 2026 finding that ~44-45% of AI code-generation tasks contain a detectable OWASP Top 10 flaw — a general elevated-defect-rate pattern, not something uniquely wrong with Loopline.",
+      "detail": "See code-scan-summary.txt for the two specific findings.",
+      "recommended_fix": "Sanitize rendered user content (ticket comments); add rate limiting to /api/auth/login."
+    }
+  ]
+}

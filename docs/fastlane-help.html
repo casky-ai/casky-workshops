@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Troubleshooting &amp; Cleanup — FastLane / SpeedBump</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2718%27 fill=%27%230f6e6e%27/%3E%3Crect x=%2724%27 y=%2724%27 width=%2752%27 height=%2752%27 rx=%278%27 fill=%27none%27 stroke=%27%23fbfaf6%27 stroke-width=%278%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site">
+  <div class="bar">
+    <a class="brand" href="index.html"><span class="mark">▣</span> FastLane / SpeedBump</a>
+    <nav class="top">
+      <a href="index.html">Home</a>
+      <a href="fastlane-setup.html">Setup</a>
+      <a href="fastlane.html">Scenario 1 · FastLane</a>
+      <a href="speedbump.html">Scenario 2 · SpeedBump</a>
+      <a href="fastlane-help.html" aria-current="page">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <p class="eyebrow">Help</p>
+    <h1>Troubleshooting &amp; cleanup</h1>
+    <p class="lede">Same failure modes as every other exercise in this repo — this one reuses the
+    identical Kali-container/Casky-Box pattern, just with different container and evidence-file
+    names, and no pcap tooling to worry about.</p>
+
+    <h2>Troubleshooting</h2>
+
+    <div class="callout callout-amber">
+      <span class="callout-label">"name already in use" on docker run --name kali-fastlane</span>
+      <p>Not broken — setup already succeeded once. Either reuse the existing container (skip
+      straight to <code>./verify.sh</code>) or run <code>./cleanup.sh</code> first.</p>
+    </div>
+
+    <div class="callout callout-amber">
+      <span class="callout-label">"Checksum verification failed" installing Claude Code</span>
+      <p>Transient — re-run the same install command:</p>
+<pre><code>docker exec kali-fastlane bash -c "curl -fsSL https://claude.ai/install.sh -o /tmp/install.sh && bash /tmp/install.sh"</code></pre>
+    </div>
+
+    <div class="callout callout-amber">
+      <span class="callout-label">Commands fail with "no such file" / "no matches found"</span>
+      <p>Almost always a wrong working directory. Every command on the Setup page assumes you're in
+      <code>casky-workshops/fastlane/</code>:</p>
+<pre><code># Section 1 (inside the Kali container)
+docker exec kali-fastlane test -f /root/fastlane/verify.sh \
+  && echo "[+] mount OK" || echo "[!] wrong directory — re-run from casky-workshops/fastlane/"
+
+# Section 2 (on the host, before copying evidence)
+test -f app/rls-policies.json && echo "[+] correct folder" || echo "[!] cd to casky-workshops/fastlane first"</code></pre>
+    </div>
+
+    <div class="callout callout-amber">
+      <span class="callout-label">Invalid API key inside the Kali container</span>
+      <p>The quoted-value bug — see <a href="fastlane-setup.html#section1">Section 1 prerequisites</a>.
+      Re-run the <code>sed</code> fix and confirm with <code>grep -c '^sk-ant-'</code> before
+      retrying.</p>
+    </div>
+
+    <div class="callout callout-amber">
+      <span class="callout-label">Casky Box itself won't start / docker compose networking errors</span>
+      <p>That's a <code>casky-runner-phase1</code> issue, not a FastLane/SpeedBump one — see that
+      repo's own README troubleshooting section.</p>
+    </div>
+
+    <h2 id="cleanup">Cleanup</h2>
+    <p><code>./cleanup.sh</code> removes everything a run of this exercise creates outside the
+    <code>fastlane/</code> folder: the <code>kali-fastlane</code> container and any evidence files
+    copied into <code>casky-runner-phase1/evidence/</code>. Safe to re-run.</p>
+
+<pre><code>./cleanup.sh                                                  # container + copied evidence
+./cleanup.sh --casky-runner-path ../../casky-runner-phase1    # if that repo isn't a sibling
+./cleanup.sh --with-image                                      # also remove kalilinux/kali-rolling</code></pre>
+
+    <p>It does <strong>not</strong> touch <code>casky-runner-phase1</code>'s own containers, and
+    doesn't delete Postgres investigation records — those are history, not litter.</p>
+
+    <p>If the evidence files get modified mid-exercise, restore them with:</p>
+<pre><code>docker exec -w /root/fastlane kali-fastlane ./reset.sh</code></pre>
+
+    <hr class="rule">
+    <p style="color:var(--ink-dim); font-size:0.9rem;">
+      Authorized &amp; lawful use only. All data is synthetic and self-contained; no live systems
+      are touched.
+    </p>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>FastLane / SpeedBump workshop guide · <a href="https://github.com/casky-ai/casky-workshops" target="_blank" rel="noopener">casky-ai/casky-workshops</a></p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# github.com/loopline-app/loopline — git history excerpt (synthetic training data)
+
+$ git log --all --oneline -- .env
+a4f1e2c wip: supabase setup
+9b3d071 fix: remove committed .env, add to .gitignore   (2026-08-02, one day later)
+
+$ git show a4f1e2c:.env
+SUPABASE_URL=https://xzqlnrjk.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIn0.SYNTHETIC_ANON_9f2a
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UifQ.SYNTHETIC_SERVICE_ROLE_c71d
+STRIPE_TEST_KEY=sk_test_SYNTHETIC51H8
+
+# FINDING: commit 9b3d071's "fix" only removes the file from the CURRENT tree — it does not
+# rewrite history. `git show a4f1e2c:.env` recovers the exact same service-role key found live in
+# the production client bundle (client-bundle-excerpt.txt) — same value, two independent leak
+# paths into the same secret. The repo is public (github.com/loopline-app/loopline), so this
+# history is available to anyone, no special access needed.

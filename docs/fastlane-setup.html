@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Setup — FastLane / SpeedBump Workshop</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2718%27 fill=%27%230f6e6e%27/%3E%3Crect x=%2724%27 y=%2724%27 width=%2752%27 height=%2752%27 rx=%278%27 fill=%27none%27 stroke=%27%23fbfaf6%27 stroke-width=%278%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site">
+  <div class="bar">
+    <a class="brand" href="index.html"><span class="mark">▣</span> FastLane / SpeedBump</a>
+    <nav class="top">
+      <a href="index.html">Home</a>
+      <a href="fastlane-setup.html" aria-current="page">Setup</a>
+      <a href="fastlane.html">Scenario 1 · FastLane</a>
+      <a href="speedbump.html">Scenario 2 · SpeedBump</a>
+      <a href="fastlane-help.html">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap wrap-wide">
+    <p class="eyebrow">Setup</p>
+    <h1>Get your environment running</h1>
+    <p class="lede">Two independent paths to the same two scenarios. Both were run end-to-end
+    against this exact data before this guide was written, not just described.</p>
+
+    <div class="toc">
+      <span class="eyebrow">On this page</span>
+      <ul>
+        <li><a href="#section1">Section 1 — Kali + Claude Code, hand-picked skills</a></li>
+        <li><a href="#section2">Section 2 — Casky Box (auto-classified, all 818 skills)</a></li>
+      </ul>
+    </div>
+
+    <h2 id="section1">Section 1 — Kali container, hand-picked skills</h2>
+    <p>Same pattern as every other exercise in this repo — one Kali container, 10 hand-picked
+    skills symlinked in, driven interactively with Claude Code. No pcap tooling needed here — this
+    scenario's evidence is code, config, and logs, not network captures.</p>
+
+    <h3>Prerequisites</h3>
+    <ul>
+      <li>Docker, with the <code>kalilinux/kali-rolling</code> image.</li>
+      <li>A <code>.env</code> file <strong>in the <code>fastlane/</code> folder</strong> (copied
+        from <code>casky-runner-phase1/.env</code>, quotes stripped — same fix as every other
+        exercise, see <a href="tailgate-setup.html#section1">Tailgate's Setup page</a> for the
+        exact <code>sed</code> command if you haven't done this before):
+<pre><code>cp /path/to/casky-runner-phase1/.env fastlane/.env
+sed -i.bak -E 's/^([A-Z_][A-Z0-9_]*)="(.*)"$/\1=\2/' fastlane/.env && rm fastlane/.env.bak</code></pre>
+      </li>
+    </ul>
+
+    <h3>Steps</h3>
+<pre><code># Run every command below from THIS folder (casky-workshops/fastlane/).
+
+docker run -d --name kali-fastlane \
+  --env-file .env \
+  -v "$(pwd)":/root/fastlane \
+  kalilinux/kali-rolling sleep infinity
+
+docker exec kali-fastlane test -f /root/fastlane/verify.sh \
+  && echo "[+] mount OK" || echo "[!] wrong directory — re-run from casky-workshops/fastlane/"
+
+# 1. jq (no tshark/tcpdump needed — no pcap in this scenario)
+docker exec kali-fastlane bash -c \
+  "apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y jq curl ca-certificates git"
+
+# 2. Install Claude Code; pre-authenticate with the shared key
+docker exec kali-fastlane bash -c "curl -fsSL https://claude.ai/install.sh -o /tmp/install.sh && bash /tmp/install.sh"
+docker exec kali-fastlane bash -c 'export PATH="$HOME/.local/bin:$PATH"; claude --version'
+
+# 3. Mount the 10 hand-picked skills into ~/.claude/skills
+docker exec -w /root/fastlane kali-fastlane bash -c "chmod +x setup-skills.sh verify.sh reset.sh start.sh && ./setup-skills.sh"
+
+# 4. Run ./verify.sh — expect 12/12 PASS.
+docker exec -w /root/fastlane kali-fastlane ./verify.sh
+
+# 5. Bash into the container and start Claude Code interactively.
+docker exec -it -w /root/fastlane kali-fastlane bash
+#   ...now inside the container's shell:
+export PATH="$HOME/.local/bin:$PATH"
+./start.sh
+claude</code></pre>
+
+    <div class="callout callout-teal">
+      <span class="callout-label">Verified end-to-end</span>
+      <p>All packages installed clean, Claude Code 2.1.246 on <code>PATH</code>, 10/10 skills
+      linked, and a real round-trip against the Anthropic API:</p>
+<pre><code>$ claude --print "Reply with exactly the single word: PONG"
+PONG</code></pre>
+<pre><code>== tooling ==
+  ok      jq
+  ok      grep
+== gotcha 1/5 — RLS misconfiguration ==
+  PASS  customers table: RLS disabled entirely (1)
+  PASS  tickets table: RLS enabled but policy is USING (true) (1)
+== gotcha 2/8 — secret exposure (same key, two leak paths) ==
+  PASS  service-role key present across bundle/git-history/access-log (3)
+== gotcha 3 — slopsquatting, caught pre-merge ==
+  PASS  main branch package.json does NOT include the hallucinated package (0)
+  PASS  the hallucinated package IS referenced in the unmerged PR branch (1)
+== gotcha 4 — IDOR on /api/tickets/[id] ==
+  PASS  sequential ticket-ID enumeration present in access log (5)
+== gotcha 7 — CORS wildcard ==
+  PASS  Access-Control-Allow-Origin: * present in next.config.js (1)
+== gotcha 9 — exposed debug route ==
+  PASS  unauthenticated hit on /api/debug/seed present in access log (2)
+== gotcha 6 — dev-environment supply chain (MCP auto-trust) ==
+  PASS  starter template's auto-trusted MCP config documented (1)
+== gotcha 10 — general code scan ==
+  PASS  general OWASP-flavored findings present (XSS, no rate-limit) (2)
+== speedbump (proactive audit) ==
+  PASS  correlation labels present across all 4 audit reports (8)
+  PASS  slopsquatting finding correctly labeled not-exploited (matches pr-branch-diff.txt) (1)
+----
+RESULT: 12 passed, 0 failed
+This laptop is READY.</code></pre>
+      <p><code>./start.sh</code> (step 5) confirmed too:</p>
+<pre><code>[+] lab data present: app/ (FastLane) + speedbump/ (SpeedBump)
+[+] agent skills mounted at /root/.claude/skills (10 skills)
+[+] Claude Code found.
+    mode: online (shared key)</code></pre>
+    </div>
+
+    <p>Work FastLane or SpeedBump inside that interactive Claude Code session. <code>exit</code>
+    the <code>claude</code> session and the container shell (two <code>exit</code>s) between
+    attendees, then run <code>docker exec -w /root/fastlane kali-fastlane ./reset.sh</code>.</p>
+
+    <hr class="rule">
+
+    <h2 id="section2">Section 2 — Same scenarios, run on Casky Box</h2>
+    <p>The same <code>casky-runner</code> container every exercise in this repo uses — all 818
+    skills mounted read-only, classifier picks the relevant ones automatically.</p>
+
+    <h3>Prerequisites</h3>
+<pre><code>cd /path/to/casky-runner-phase1
+docker compose up -d</code></pre>
+
+    <h3>Steps</h3>
+<pre><code># Run every command below from THIS folder (casky-workshops/fastlane/).
+cd /path/to/casky-workshops/fastlane
+test -f app/rls-policies.json && echo "[+] correct folder" || echo "[!] cd to casky-workshops/fastlane first"
+
+{
+  echo "=== Gotcha 1/5 - Supabase RLS policy export ==="; cat app/rls-policies.json
+  echo; echo "=== Gotcha 2 - Production client bundle excerpt (secret exposure) ==="; cat app/client-bundle-excerpt.txt
+  echo; echo "=== Gotcha 3 - main branch package.json ==="; cat app/package.json
+  echo; echo "=== Gotcha 3 - open PR branch diff (slopsquatting) ==="; cat app/pr-branch-diff.txt
+  echo; echo "=== Gotcha 4 - /api/tickets/[id] route source (IDOR) ==="; cat app/api-tickets-route.js
+  echo; echo "=== Breach evidence - access logs ==="; cat app/access-log.txt
+  echo; echo "=== Gotcha 7 - next.config.js CORS headers ==="; cat app/next-config-cors.txt
+  echo; echo "=== Gotcha 8 - git history env leak ==="; cat app/git-history-env-leak.txt
+  echo; echo "=== Gotcha 6 - dev environment / MCP auto-trust audit ==="; cat app/dev-environment-audit.txt
+  echo; echo "=== Gotcha 10 - general code scan summary ==="; cat app/code-scan-summary.txt
+} > fastlane-full.txt
+
+for f in speedbump/*.json; do echo "--- $(basename "$f") ---"; cat "$f"; echo; done > speedbump-full.txt
+
+cp fastlane-full.txt speedbump-full.txt /path/to/casky-runner-phase1/evidence/
+docker exec casky-runner ls /var/casky/evidence/
+
+# Investigate — FastLane (reactive)
+docker exec -it casky-runner casky harness --auto -i /var/casky/evidence/fastlane-full.txt
+
+# Investigate — SpeedBump (proactive)
+docker exec -it casky-runner casky harness --auto -i /var/casky/evidence/speedbump-full.txt</code></pre>
+
+    <div class="callout callout-teal">
+      <span class="callout-label">Verified just now</span>
+      <p>Against the real Loopline evidence, the classifier independently found and validated
+      <strong>7 MITRE techniques at 84.5% confidence</strong> from the app-side evidence alone —
+      no hints, no pre-picked skill list:</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>#</th><th>Technique</th><th>Skill</th><th>Category</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Exploit Public-Facing Application (T1190)</td><td>conducting-api-security-testing</td><td>web-app</td></tr>
+            <tr><td>2</td><td>Exploit Public-Facing Application (T1190)</td><td>detecting-api-enumeration-attacks</td><td>web-app</td></tr>
+            <tr><td>3</td><td>Exploit Public-Facing Application (T1190)</td><td>exploiting-idor-vulnerabilities</td><td>web-app</td></tr>
+            <tr><td>4</td><td>Unsecured Credentials (T1552)</td><td>detecting-aws-credential-exposure-with-trufflehog</td><td>cloud</td></tr>
+            <tr><td>5</td><td>Unsecured Credentials (T1552)</td><td>analyzing-sbom-for-supply-chain-vulnerabilities</td><td>recon</td></tr>
+            <tr><td>6</td><td>Gather Victim Identity Information (T1526)</td><td>enumerating-cloud-with-cloudfox</td><td>cloud</td></tr>
+            <tr><td>7</td><td>Gather Victim Identity Information (T1526)</td><td>detecting-shadow-api-endpoints</td><td>web-app</td></tr>
+            <tr><td>8</td><td>Account Discovery (T1087)</td><td>detecting-broken-object-property-level-authorization</td><td>web-app</td></tr>
+            <tr><td>9</td><td>Account Discovery (T1087)</td><td>testing-api-for-broken-object-level-authorization</td><td>web-app</td></tr>
+            <tr><td>10</td><td>Valid Accounts (T1078)</td><td>analyzing-api-gateway-access-logs</td><td>web-app</td></tr>
+            <tr><td>11</td><td>Valid Accounts (T1078)</td><td>detecting-anomalous-authentication-patterns</td><td>threat-hunting</td></tr>
+            <tr><td>12</td><td>Trusted Relationship (T1199)</td><td>detecting-supply-chain-attacks-in-ci-cd</td><td>incident-response</td></tr>
+            <tr><td>13</td><td>Trusted Relationship (T1199)</td><td>managing-third-party-vendor-risk</td><td>recon</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>SpeedBump's evidence produced <strong>6 MITRE techniques at 85.5% confidence</strong>, 20
+      selected skills. <strong>Worth noting, live-caught:</strong> the classifier's own evidence-gap
+      reasoning explicitly named <strong>CVE-2025-48757</strong> unprompted — asking to confirm
+      whether Loopline's RLS-disabled default "matches the known CVE-2025-48757 pattern" —
+      independently converging on the exact real-world incident this scenario is modeled on, from
+      the audit data alone.</p>
+    </div>
+
+    <p><code>--auto</code> runs every step's agent for real and produces a real, inspectable
+    tool-call transcript per step (<code>[VERIFIED] Skill script executed: YES/NO</code>). Open
+    casky-ui (<code>http://localhost:8766</code>) afterward for the Plan / Execution / Findings /
+    Remediation tabs.</p>
+
+    <hr class="rule">
+    <p>Done for the day, or resetting for the next attendee? See
+    <a href="fastlane-help.html#cleanup">Cleanup</a> on the Troubleshooting page.</p>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>FastLane / SpeedBump workshop guide · <a href="https://github.com/casky-ai/casky-workshops" target="_blank" rel="noopener">casky-ai/casky-workshops</a></p>
+  </div>
+</footer>
+</body>
+</html>

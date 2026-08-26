@@ -1,0 +1,17 @@
+# Loopline — next.config.js excerpt (synthetic training data), production as deployed
+
+async headers() {
+  return [
+    {
+      source: "/api/:path*",
+      headers: [
+        // FINDING: added by the AI assistant to unblock a local dev cross-origin error while
+        // testing the CSV-export feature against a separate preview deployment URL. Never
+        // scoped down to an allowlist before merging to main. Compounds gotcha #4 (IDOR) and
+        // gotcha #1 (RLS) — any origin can trigger authenticated-looking requests.
+        { key: "Access-Control-Allow-Origin", value: "*" },
+        { key: "Access-Control-Allow-Methods", value: "GET,POST,PATCH,DELETE" },
+      ],
+    },
+  ];
+}

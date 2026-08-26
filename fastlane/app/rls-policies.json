@@ -1,0 +1,37 @@
+{
+  "project": "loopline-prod",
+  "exported_at": "2026-08-18T14:02:00Z",
+  "note": "pg_policies + pg_tables.rowsecurity export via Supabase CLI, synthetic training data",
+  "tables": [
+    {
+      "table": "customers",
+      "rowsecurity": false,
+      "policies": [],
+      "finding": "RLS never enabled on this table since it was scaffolded by Lovable. Anyone with the anon key (public, ships in every client bundle by design) can SELECT/UPDATE/DELETE every row."
+    },
+    {
+      "table": "tickets",
+      "rowsecurity": true,
+      "policies": [
+        {
+          "policyname": "tickets_select_policy",
+          "cmd": "SELECT",
+          "qual": "true",
+          "finding": "RLS is technically enabled, but the policy expression is literally `true` — it matches every row for every requester, same practical effect as no RLS at all. Looks fixed in a schema diff; isn't."
+        }
+      ]
+    },
+    {
+      "table": "ticket_comments",
+      "rowsecurity": true,
+      "policies": [
+        {
+          "policyname": "comments_select_policy",
+          "cmd": "SELECT",
+          "qual": "auth.uid() = author_id OR org_id = (select org_id from memberships where user_id = auth.uid())",
+          "finding": "Correctly scoped — added by the founder after a security blog post scared them into fixing at least one table. customers and tickets were never revisited."
+        }
+      ]
+    }
+  ]
+}
