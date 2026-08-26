@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# TollBooth / OpenDoor — workshop readiness check.
-# Run this right before attendees show up. Checks BOTH sections:
-#   Section 1 (Arsenal/Kali)  -> kali-tollbooth container + tooling + lab data
-#   Section 2 (Casky Box)     -> casky-runner-phase1's docker compose stack
+# Casky Workshops — readiness check, all exercises.
+# Run this right before attendees show up. Checks, per exercise:
+#   Section 1 (Kali)      -> kali-<exercise> container + tooling + lab data
+#   Section 2 (Casky Box) -> casky-runner-phase1's docker compose stack (shared across exercises)
 # Safe to re-run any number of times; makes no changes.
 #
 # Usage:
@@ -38,7 +38,7 @@ container_healthy_or_running() {
 }
 
 echo "=================================================="
-echo "  TollBooth / OpenDoor — workshop readiness check"
+echo "  Casky Workshops — readiness check"
 echo "=================================================="
 
 echo
@@ -95,7 +95,53 @@ else
 fi
 
 echo
-echo "== Section 2: Casky Box (casky-runner-phase1) =="
+echo "== Tailgate/GuestList: Kali container =="
+if container_running kali-tailgate; then
+  ok "kali-tailgate is running"
+
+  for t in tshark jq tcpdump; do
+    if docker exec kali-tailgate sh -c "command -v $t" >/dev/null 2>&1; then ok "$t present in kali-tailgate"
+    else bad "$t MISSING in kali-tailgate"; fi
+  done
+
+  if docker exec kali-tailgate bash -c 'export PATH="$HOME/.local/bin:$PATH"; command -v claude' >/dev/null 2>&1; then
+    ver=$(docker exec kali-tailgate bash -c 'export PATH="$HOME/.local/bin:$PATH"; claude --version' 2>/dev/null)
+    ok "claude CLI installed ($ver)"
+  else
+    soft "claude CLI not found in kali-tailgate — attendees fall back to the printed ANSWER page (dry-run mode)"
+  fi
+
+  if docker exec kali-tailgate sh -c 'case "$ANTHROPIC_API_KEY" in sk-ant-*) exit 0;; *) exit 1;; esac' >/dev/null 2>&1; then
+    ok "ANTHROPIC_API_KEY present in kali-tailgate (sk-ant- prefix)"
+  else
+    soft "ANTHROPIC_API_KEY missing/malformed in kali-tailgate — check tailgate/.env is unquoted (see SETUP.md)"
+  fi
+
+  for f in /root/tailgate/phishing-email.eml /root/tailgate/network /root/tailgate/ad /root/tailgate/guestlist; do
+    if docker exec kali-tailgate test -e "$f" >/dev/null 2>&1; then ok "$f present"
+    else bad "$f MISSING in kali-tailgate — run: docker exec -w /root/tailgate kali-tailgate ./reset.sh"; fi
+  done
+else
+  bad "kali-tailgate is not running — see tailgate/SETUP.md Section 1"
+fi
+
+echo
+echo "== Tailgate/GuestList data integrity (verify.sh, run inside kali-tailgate — needs tshark) =="
+if container_running kali-tailgate && docker exec kali-tailgate test -f /root/tailgate/verify.sh >/dev/null 2>&1; then
+  out=$(docker exec -w /root/tailgate kali-tailgate ./verify.sh 2>&1)
+  echo "$out" | sed 's/^/  /'
+  fails_in_verify=$(echo "$out" | grep -o 'RESULT: [0-9]* passed, [0-9]* failed' | grep -o '[0-9]* failed' | grep -o '[0-9]*')
+  if [ -n "$fails_in_verify" ] && [ "$fails_in_verify" -eq 0 ]; then
+    ok "tailgate/verify.sh: all data checks passed"
+  else
+    bad "tailgate/verify.sh: ${fails_in_verify:-an unknown number of} check(s) failed (see above) — try: docker exec -w /root/tailgate kali-tailgate ./reset.sh"
+  fi
+else
+  soft "verify.sh not found in kali-tailgate (or container not running) — skipping data-integrity checks"
+fi
+
+echo
+echo "== Section 2: Casky Box (casky-runner-phase1) — shared by all exercises =="
 if [ -d "$CASKY_RUNNER_DIR" ]; then
   ok "casky-runner-phase1 found at $CASKY_RUNNER_DIR"
 else

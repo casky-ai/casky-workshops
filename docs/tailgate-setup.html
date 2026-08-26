@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Setup — Tailgate / GuestList Workshop</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2718%27 fill=%27%230f6e6e%27/%3E%3Crect x=%2724%27 y=%2724%27 width=%2752%27 height=%2752%27 rx=%278%27 fill=%27none%27 stroke=%27%23fbfaf6%27 stroke-width=%278%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site">
+  <div class="bar">
+    <a class="brand" href="index.html"><span class="mark">▣</span> Tailgate / GuestList</a>
+    <nav class="top">
+      <a href="index.html">Home</a>
+      <a href="tailgate-setup.html" aria-current="page">Setup</a>
+      <a href="tailgate.html">Scenario 1 · Tailgate</a>
+      <a href="guestlist.html">Scenario 2 · GuestList</a>
+      <a href="tailgate-help.html">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap wrap-wide">
+    <p class="eyebrow">Setup</p>
+    <h1>Get your environment running</h1>
+    <p class="lede">Two independent paths to the same two scenarios. Run whichever your
+    facilitator points you at — both were run end-to-end against this exact data before this
+    guide was written, not just described.</p>
+
+    <div class="toc">
+      <span class="eyebrow">On this page</span>
+      <ul>
+        <li><a href="#section1">Section 1 — Kali + Claude Code, hand-picked skills</a></li>
+        <li><a href="#section2">Section 2 — Casky Box (auto-classified, all 818 skills)</a></li>
+      </ul>
+    </div>
+
+    <h2 id="section1">Section 1 — Kali container, hand-picked skills</h2>
+    <p>Same pattern as TollBooth/OpenDoor's Section 1 — one Kali container, 10 hand-picked skills
+    symlinked in, driven interactively with Claude Code.</p>
+
+    <h3>Prerequisites</h3>
+    <ul>
+      <li>Docker, with the <code>kalilinux/kali-rolling</code> image
+        (<code>docker pull kalilinux/kali-rolling</code> if you don't have it yet).</li>
+      <li>A <code>.env</code> file <strong>in the <code>tailgate/</code> folder</strong> (copied from
+        <code>casky-runner-phase1/.env</code>) with a working <code>ANTHROPIC_API_KEY</code>:
+<pre><code>cp /path/to/casky-runner-phase1/.env tailgate/.env</code></pre>
+      </li>
+    </ul>
+
+    <div class="callout callout-amber">
+      <span class="callout-label">Strip the quotes — this will break auth otherwise</span>
+      <p>Same quoted-value bug as TollBooth/OpenDoor: <code>docker run --env-file</code> does
+      <strong>not</strong> strip quotes from <code>.env</code> values. Fix once, right after
+      copying:</p>
+<pre><code>sed -i.bak -E 's/^([A-Z_][A-Z0-9_]*)="(.*)"$/\1=\2/' tailgate/.env && rm tailgate/.env.bak</code></pre>
+      <p>Confirm it worked — should print <code>1</code>, not <code>0</code>:</p>
+<pre><code>grep '^ANTHROPIC_API_KEY=' tailgate/.env | cut -d= -f2- | grep -c '^sk-ant-'</code></pre>
+    </div>
+
+    <h3>Steps</h3>
+<pre><code># Run every command below from THIS folder (casky-workshops/tailgate/).
+
+# 0. Start a persistent Kali container with this folder mounted + the shared key available
+docker run -d --name kali-tailgate \
+  --env-file .env \
+  -v "$(pwd)":/root/tailgate \
+  kalilinux/kali-rolling sleep infinity
+
+docker exec kali-tailgate test -f /root/tailgate/verify.sh \
+  && echo "[+] mount OK" || echo "[!] wrong directory — re-run from casky-workshops/tailgate/"
+
+# 1. tshark, jq, tcpdump
+docker exec kali-tailgate bash -c \
+  "apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y tshark jq tcpdump python3-scapy git curl ca-certificates"
+
+# 2. Install Claude Code; pre-authenticate with the shared key
+docker exec kali-tailgate bash -c "curl -fsSL https://claude.ai/install.sh -o /tmp/install.sh && bash /tmp/install.sh"
+docker exec kali-tailgate bash -c 'export PATH="$HOME/.local/bin:$PATH"; claude --version'
+
+# 3. Mount the 10 hand-picked skills into ~/.claude/skills
+docker exec -w /root/tailgate kali-tailgate bash -c "chmod +x setup-skills.sh verify.sh reset.sh start.sh && ./setup-skills.sh"
+
+# 4. Run ./verify.sh — expect 14/14 PASS.
+docker exec -w /root/tailgate kali-tailgate ./verify.sh
+
+# 5. Bash into the container and start Claude Code interactively.
+docker exec -it -w /root/tailgate kali-tailgate bash
+
+#   ...now inside the container's shell:
+export PATH="$HOME/.local/bin:$PATH"
+./start.sh    # welcome banner + sanity check
+claude        # drops into an interactive Claude Code session — paste the scenario
+              # prompt from this wiki's scenario pages and let it work</code></pre>
+
+    <div class="callout callout-teal">
+      <span class="callout-label">Verified end-to-end</span>
+      <p>All packages installed clean, Claude Code 2.1.246 on <code>PATH</code>, 10/10 skills
+      linked, and a real round-trip against the Anthropic API:</p>
+<pre><code>$ claude --print "Reply with exactly the single word: PONG"
+PONG</code></pre>
+<pre><code>== tooling ==
+  ok      tshark
+  ok      jq
+  ok      tcpdump
+== act 1 — initial access (T1566.001, T1078, T1133) ==
+  PASS  malicious attachment hash present across phishing-email.eml/mail-gateway.log/endpoint-alert.log (3)
+  PASS  mail gateway ALLOWED verdict (DMARC p=none let it through) (1)
+  PASS  Valid Accounts (T1078) sign-in event present (1)
+  PASS  External Remote Services (T1133) VPN session event present (1)
+== act 2 — lateral movement (T1570, T1021.002, T1021.001) ==
+  PASS  first-time-seen internal host-pair flows (lateral tool transfer signal) (3)
+  PASS  SMB/Admin Shares (T1021.002) logon event present (1)
+  PASS  RDP (T1021.001) logon event present (1)
+== act 3 — domain compromise (T1558.003, T1558.004) ==
+  PASS  Kerberoasting TGS burst with RC4 downgrade (T1558.003) (6)
+  PASS  AS-REP Roasting (T1558.004) confirmed NOT exploited — the built-in over-claim check (1)
+  PASS  SPN-registered service accounts with stale passwords (3)
+  PASS  service account with Kerberos preauth disabled (svc-legacyapp) (1)
+== guestlist (proactive audit) ==
+  PASS  DMARC p=none finding present (2)
+  PASS  network segmentation findings present (3)
+  PASS  AD-2 correctly labeled probed-not-exploited (matches ad/kerberos-events.txt's NOT FOUND) (1)
+----
+RESULT: 14 passed, 0 failed
+This laptop is READY.</code></pre>
+      <p><code>./start.sh</code> (step 5) confirmed too:</p>
+<pre><code>[+] lab data present: Act 1-3 evidence (Tailgate) + guestlist/ (GuestList)
+[+] agent skills mounted at /root/.claude/skills (10 skills)
+[+] Claude Code found.
+    mode: online (shared key)</code></pre>
+    </div>
+
+    <p>Work Tailgate or GuestList inside that interactive Claude Code session (skills already
+    mounted). <code>exit</code> the <code>claude</code> session and the container shell (two
+    <code>exit</code>s) between attendees, then run
+    <code>docker exec -w /root/tailgate kali-tailgate ./reset.sh</code> from outside to restore
+    the data.</p>
+
+    <hr class="rule">
+
+    <h2 id="section2">Section 2 — Same scenarios, run on Casky Box</h2>
+    <p>The same <code>casky-runner</code> container TollBooth/OpenDoor uses — all 818 skills
+    mounted read-only, classifier picks the relevant ones from evidence automatically.</p>
+
+    <h3>Prerequisites</h3>
+    <p><code>casky-runner-phase1</code> running, using its own <code>.env</code>:</p>
+<pre><code>cd /path/to/casky-runner-phase1
+docker compose up -d</code></pre>
+    <p>If already up from earlier, this is a no-op — confirm with <code>docker compose ps</code>.</p>
+
+    <h3>Steps</h3>
+<pre><code># Run every command below from THIS folder (casky-workshops/tailgate/).
+cd /path/to/casky-workshops/tailgate
+test -f phishing-email.eml && echo "[+] correct folder" || echo "[!] cd to casky-workshops/tailgate first"
+
+# 1-3. Evidence is already text (no tshark pre-processing needed, unlike TollBooth's pcap) —
+#    concatenate each act's files into one bundle per scenario.
+{
+  echo "=== Act 1 - Phishing email (initial access) ==="; cat phishing-email.eml
+  echo; echo "=== Act 1 - Mail gateway delivery/detonation log ==="; cat mail-gateway.log
+  echo; echo "=== Act 1 - Endpoint + auth telemetry ==="; cat endpoint-alert.log
+  echo; echo "=== Act 2 - Internal netflow baseline vs. incident window ==="; cat network/netflow.txt
+  echo; echo "=== Act 2 - SMB/RDP Windows Security event excerpts ==="; cat network/smb-rdp-events.txt
+  echo; echo "=== Act 3 - Kerberos event excerpts ==="; cat ad/kerberos-events.txt
+  echo; echo "=== Act 3 - Service account / SPN audit export ==="; cat ad/spn-listing.txt
+} > tailgate-full.txt
+
+for f in guestlist/*.json; do echo "--- $(basename "$f") ---"; cat "$f"; echo; done > guestlist-full.txt
+
+# 4. Copy both into casky-runner-phase1's evidence bind mount (live mount, no restart needed).
+cp tailgate-full.txt guestlist-full.txt /path/to/casky-runner-phase1/evidence/
+docker exec casky-runner ls /var/casky/evidence/   # confirm they're already there
+
+# 5. Investigate — Tailgate (reactive).
+docker exec -it casky-runner casky harness --auto -i /var/casky/evidence/tailgate-full.txt
+
+# 6. Investigate — GuestList (proactive)
+docker exec -it casky-runner casky harness --auto -i /var/casky/evidence/guestlist-full.txt</code></pre>
+
+    <div class="callout callout-teal">
+      <span class="callout-label">Verified just now</span>
+      <p>Against the real Tailgate evidence, the classifier independently found and validated
+      <strong>11 MITRE techniques at 87.0% confidence</strong> from the combined phishing/network/AD
+      text alone — no hints, no pre-picked skill list:</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>#</th><th>Technique</th><th>Skill</th><th>Category</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Phishing: Spearphishing Attachment (T1566.001)</td><td>analyzing-email-headers-for-phishing-investigation</td><td>forensics</td></tr>
+            <tr><td>2</td><td>Phishing: Spearphishing Attachment (T1566.001)</td><td>analyzing-macro-malware-in-office-documents</td><td>malware</td></tr>
+            <tr><td>3</td><td>User Execution: Malicious File (T1204.002)</td><td>analyzing-lnk-file-and-jump-list-artifacts</td><td>forensics</td></tr>
+            <tr><td>4</td><td>Command and Scripting Interpreter: PowerShell (T1059.001)</td><td>analyzing-powershell-script-block-logging</td><td>incident-response</td></tr>
+            <tr><td>5</td><td>Command and Scripting Interpreter: PowerShell (T1059.001)</td><td>detecting-suspicious-powershell-execution</td><td>threat-hunting</td></tr>
+            <tr><td>6</td><td>Ingress Tool Transfer (T1105)</td><td>analyzing-indicators-of-compromise</td><td>threat-intel</td></tr>
+            <tr><td>7</td><td>Valid Accounts: Default Accounts (T1078.001)</td><td>analyzing-security-logs-with-splunk</td><td>incident-response</td></tr>
+            <tr><td>8</td><td>Valid Accounts: Default Accounts (T1078.001)</td><td>analyzing-windows-event-logs-in-splunk</td><td>incident-response</td></tr>
+            <tr><td>9</td><td>Remote Services: RDP (T1021.001)</td><td>detecting-rdp-brute-force-attacks</td><td>threat-hunting</td></tr>
+            <tr><td>10</td><td>Remote Services: SMB/Windows Admin Shares (T1021.002)</td><td>moving-laterally-with-netexec</td><td>exploitation</td></tr>
+            <tr><td>11</td><td>Remote Services: SMB/Windows Admin Shares (T1021.002)</td><td>analyzing-windows-event-logs-in-splunk</td><td>incident-response</td></tr>
+            <tr><td>12</td><td>Steal or Forge Kerberos Tickets: AS-REP Roasting (T1558.004)</td><td>deploying-active-directory-honeytokens</td><td>recon</td></tr>
+            <tr><td>13</td><td>Steal or Forge Kerberos Tickets: Kerberoasting (T1558.003)</td><td>analyzing-windows-event-logs-in-splunk</td><td>incident-response</td></tr>
+            <tr><td>14</td><td>Account Discovery: Domain Account (T1087.002)</td><td>conducting-internal-reconnaissance-with-bloodhound-ce</td><td>exploitation</td></tr>
+            <tr><td>15</td><td>Phishing: Spearphishing Attachment (T1566.001)</td><td>building-incident-timeline-with-timesketch</td><td>incident-response</td></tr>
+            <tr><td>16</td><td>Ingress Tool Transfer (T1105)</td><td>collecting-indicators-of-compromise</td><td>incident-response</td></tr>
+            <tr><td>17</td><td>Valid Accounts: Default Accounts (T1078.001)</td><td>containing-active-breach</td><td>incident-response</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Row 12 is the built-in "catch the agent" check this scenario is built around: the
+      classifier validated AS-REP Roasting purely from <code>svc-legacyapp</code>'s exposed
+      preauth-disabled flag — even though the Kerberos event log shows no matching request was
+      ever made. <strong>Validated ≠ confirmed exploited.</strong></p>
+      <p>GuestList's evidence produced an even richer result — <strong>15 MITRE techniques at
+      70.5% confidence</strong>, 22 selected skills, correctly picking up Lateral Tool Transfer and
+      both phishing sub-techniques purely from the correlation notes embedded in the audit JSON.</p>
+    </div>
+
+    <p><code>--auto</code> runs every step's agent for real and produces a real, inspectable
+    tool-call transcript per step (<code>[VERIFIED] Skill script executed: YES/NO</code>). Open
+    casky-ui (<code>http://localhost:8766</code>) afterward for the Plan / Execution / Findings /
+    Remediation tabs.</p>
+
+    <p>See the <a href="index.html#which">comparison table on the home page</a> for what's
+    different between Section 1 and Section 2.</p>
+
+    <hr class="rule">
+    <p>Done for the day, or resetting for the next attendee? See
+    <a href="tailgate-help.html#cleanup">Cleanup</a> on the Troubleshooting page.</p>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>Tailgate / GuestList workshop guide · <a href="https://github.com/casky-ai/casky-workshops" target="_blank" rel="noopener">casky-ai/casky-workshops</a></p>
+  </div>
+</footer>
+</body>
+</html>

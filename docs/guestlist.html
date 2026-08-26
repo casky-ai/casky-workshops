@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GuestList — Scenario 2</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2718%27 fill=%27%230f6e6e%27/%3E%3Crect x=%2724%27 y=%2724%27 width=%2752%27 height=%2752%27 rx=%278%27 fill=%27none%27 stroke=%27%23fbfaf6%27 stroke-width=%278%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site">
+  <div class="bar">
+    <a class="brand" href="index.html"><span class="mark">▣</span> Tailgate / GuestList</a>
+    <nav class="top">
+      <a href="index.html">Home</a>
+      <a href="tailgate-setup.html">Setup</a>
+      <a href="tailgate.html">Scenario 1 · Tailgate</a>
+      <a href="guestlist.html" aria-current="page">Scenario 2 · GuestList</a>
+      <a href="tailgate-help.html">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <p class="eyebrow">Scenario 2 of 2 · Proactive audit</p>
+    <h1>GuestList — find it before the breach</h1>
+    <p class="lede">Same company, same incident — but this time you're auditing the configuration
+    <em>before</em> anything happened, to find the misconfigurations that made Tailgate possible.</p>
+
+    <div class="callout callout-teal">
+      <span class="callout-label">Setup (if you closed the terminal)</span>
+      <p>Open a terminal. <code>cd ~/tailgate</code>. <code>claude</code>. Paste only the prompt
+      text below.</p>
+      <p>~20 min. <span class="pill pill-core">CORE</span> phases (1, 3, 5) tell the full story.
+      <span class="pill pill-deep">DEEP</span> phases (2, 4) are for a quiet queue or to run later.
+      No agent? Terminal fallback commands are at the bottom.</p>
+    </div>
+
+    <!-- Phase 1 -->
+    <div class="phase" id="phase-1">
+      <div class="phase-head">
+        <span class="phase-num">Phase 1</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>Full configuration audit</h3>
+      <p>Paste this, then Enter:</p>
+      <div class="prompt">Using your email-security, network, and AD-audit skills, audit every config file in guestlist/: the email security policy, network segmentation rules, and AD service-account audit. Map each finding to its NIST CSF 2.0 category. List the skills you used.</div>
+      <p class="will-see">You will see: three findings — a weak email-authentication policy, a flat
+      internal network, and stale AD service-account hygiene — each tagged with a CSF category.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>Email: DMARC <code>p=none</code> + SPF <code>~all</code> + no attachment sandboxing
+        (PR.AA / PR.DS). Network: no VLAN/ACL boundary + unrestricted SMB + no lateral-movement
+        detection (PR.PS / DE.CM). AD: three stale-password SPN accounts plus one preauth-disabled
+        account (PR.AA).</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p><strong>Email:</strong> DMARC monitor-only, SPF soft-fail, no macro detonation — CSF
+          PR.AA / PR.DS. <strong>Network:</strong> user and server subnets share one VLAN, SMB
+          unrestricted between them, no first-time-peer alerting — CSF PR.PS / DE.CM.
+          <strong>AD:</strong> <code>svc-sql01</code>/<code>svc-web01</code>/<code>svc-backup</code>
+          have SPNs and 900+ day-old passwords; <code>svc-legacyapp</code> additionally has Kerberos
+          pre-auth disabled — CSF PR.AA.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="phase" id="phase-2">
+      <div class="phase-head">
+        <span class="phase-num">Phase 2</span>
+        <span class="pill pill-deep">Deep</span>
+      </div>
+      <h3>Rank by blast radius</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Of those findings, which single one is most dangerous, and why? Rank all three by how much damage each enables on its own.</div>
+      <p class="will-see">You will see: reasoning about which matters most — the entry point vs.
+      the spread vs. the ceiling of potential damage.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>A defended ordering. Reasonable top pick: email/gateway hygiene, because it's the actual
+        entry point. The point is the reasoning, not one "right" order.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p>Defensible top pick = email/gateway hygiene: it's the <em>live</em> entry point (the
+          breach actually started here). Network segmentation = enabled the spread once inside
+          (high impact, secondary). AD hygiene = highest <em>potential</em> damage (domain-wide) but
+          only partially used — Kerberoasting yes, AS-REP no.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase" id="phase-3">
+      <div class="phase-head">
+        <span class="phase-num">Phase 3</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>Correlate with the breach</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Now look at ../mail-gateway.log, ../network/, and ../ad/: for each guestlist finding, did the attacker EXPLOIT it, only PROBE/expose it, or bypass it entirely? Show me the evidence for each.</div>
+      <p class="will-see">You will see: email and network segmentation both exploited, but the AD
+      finding splits into two — and they are <strong>not</strong> all the same.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>Each finding labelled exploited / probed / bypassed with log evidence — and the two AD
+        sub-findings (stale SPN passwords vs. disabled preauth) land differently.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p><strong>Email</strong> = exploited (mail-gateway.log's ALLOWED verdict).
+          <strong>Network segmentation</strong> = exploited (netflow + SMB/RDP events).
+          <strong>AD — stale SPN passwords</strong> = exploited (the 14-request Kerberoasting
+          burst). <strong>AD — preauth disabled on <code>svc-legacyapp</code></strong> = probed/
+          exposed only — no matching event confirms it was used.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 4 -->
+    <div class="phase" id="phase-4">
+      <div class="phase-head">
+        <span class="phase-num">Phase 4</span>
+        <span class="pill pill-deep">Deep</span>
+      </div>
+      <h3>Check the agent's call</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Double-check the AD finding: was svc-legacyapp's AS-REP exposure actually used, or does the evidence only show it COULD have been? Show the specific search you'd run to confirm either way.</div>
+      <p class="will-see">You will see: the exposure is real, but nothing in the log window
+      confirms it was used. Correct the agent if it said "exploited."</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>A targeted search of event 4768 (AS-REQ) for <code>svc-legacyapp</code> with no
+        pre-authentication, across the full incident window, returns nothing. Exposure ≠
+        exploitation — the same nuance Tailgate's Phase 4 tests, from the audit side this time.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p>No matching 4768-without-preauth event exists for <code>svc-legacyapp</code> in the
+          incident window. The account is genuinely AS-REP-roastable and should still be fixed —
+          but this finding is a latent exposure, not a confirmed breach path. Agents (and analysts)
+          often collapse "vulnerable" into "exploited" — this is the deliberate catch in this phase.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 5 -->
+    <div class="phase" id="phase-5">
+      <div class="phase-head">
+        <span class="phase-num">Phase 5</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>Prioritized remediation</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Give me a prioritized fix list: what to change FIRST to break the actual attack chain, versus what to fix because it's a latent risk even though it wasn't the confirmed path. For each fix, name the NIST CSF 2.0 category it addresses.</div>
+      <p class="will-see">You will see: DMARC enforcement first (breaks the chain at step one), then
+      network segmentation, then AD password rotation — with the preauth fix flagged as latent, not
+      urgent-because-confirmed.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>Ordered by real risk: DMARC enforcement first (breaks the chain), then segmentation
+        (stops the actual spread path), then SPN password rotation (closes the confirmed
+        Kerberoasting path), then preauth re-enablement (closes a latent, not-yet-used risk).</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p><strong>1)</strong> Enforce DMARC <code>p=reject</code> + SPF <code>-all</code> —
+          breaks the chain at step one. CSF: PR.DS / PR.AA.</p>
+          <p><strong>2)</strong> Segment the network — VLAN/ACL boundary between the user and
+          server subnets, restrict SMB to a named admin-workstation allowlist. CSF: PR.PS.</p>
+          <p><strong>3)</strong> Rotate SPN service-account passwords (or migrate to gMSA) for
+          <code>svc-sql01</code>/<code>svc-web01</code>/<code>svc-backup</code> — closes the
+          confirmed Kerberoasting path. CSF: PR.AA.</p>
+          <p><strong>4)</strong> Re-enable Kerberos pre-authentication on <code>svc-legacyapp</code>
+          — closes a latent risk, not the confirmed path, but equally real. CSF: PR.AA.</p>
+        </div>
+      </details>
+    </div>
+
+    <h2>Explore without spoiling it</h2>
+<pre><code>jq '.dns_records' guestlist/email-security-policy.json
+jq '.findings[].correlation_label' guestlist/ad-service-accounts.json</code></pre>
+
+    <h2>Terminal fallbacks (no agent)</h2>
+<pre><code>jq -r '.findings[]|select(.correlation_label=="exploited")|.id' guestlist/network-segmentation.json
+grep -B1 "NOT FOUND" ../ad/kerberos-events.txt   # same AS-REP catch, from the audit side</code></pre>
+
+    <hr class="rule">
+    <p style="color:var(--ink-dim); font-size:0.9rem;">
+      Authorized &amp; lawful use only. All data is synthetic and self-contained; no live systems
+      are touched. Promotes the open-source Anthropic Cybersecurity Skills library (Apache-2.0);
+      not affiliated with Anthropic PBC.
+    </p>
+    <p><a href="tailgate.html">← Back to Scenario 1: Tailgate</a></p>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>Tailgate / GuestList workshop guide · <a href="https://github.com/casky-ai/casky-workshops" target="_blank" rel="noopener">casky-ai/casky-workshops</a></p>
+  </div>
+</footer>
+</body>
+</html>

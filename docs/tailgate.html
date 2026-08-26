@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tailgate — Scenario 1</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2718%27 fill=%27%230f6e6e%27/%3E%3Crect x=%2724%27 y=%2724%27 width=%2752%27 height=%2752%27 rx=%278%27 fill=%27none%27 stroke=%27%23fbfaf6%27 stroke-width=%278%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="site">
+  <div class="bar">
+    <a class="brand" href="index.html"><span class="mark">▣</span> Tailgate / GuestList</a>
+    <nav class="top">
+      <a href="index.html">Home</a>
+      <a href="tailgate-setup.html">Setup</a>
+      <a href="tailgate.html" aria-current="page">Scenario 1 · Tailgate</a>
+      <a href="guestlist.html">Scenario 2 · GuestList</a>
+      <a href="tailgate-help.html">Troubleshooting</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <p class="eyebrow">Scenario 1 of 2 · Reactive DFIR</p>
+    <h1>Tailgate — investigate the breach</h1>
+    <p class="lede">A phishing email got someone in. Find how far the attacker got before anyone
+    noticed, and write the incident report.</p>
+
+    <div class="callout callout-teal">
+      <span class="callout-label">Setup (do this once)</span>
+      <p>1. Open a terminal. 2. <code>cd ~/tailgate</code>. 3. Start the agent: <code>claude</code>.
+      4. Paste each prompt below, in order, in the <strong>same chat</strong>, so it remembers.
+      Type only the prompt text — no quotes.</p>
+      <p>~25 min per visit. Do the <span class="pill pill-core">CORE</span> phases (1, 2, 5) for
+      the full story. <span class="pill pill-deep">DEEP</span> phases (3, 4) are for a quiet moment
+      or to run later — this page is yours to keep. No agent? Terminal fallback commands are at
+      the bottom.</p>
+    </div>
+
+    <!-- Phase 1 -->
+    <div class="phase" id="phase-1">
+      <div class="phase-head">
+        <span class="phase-num">Phase 1</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>Act 1 — initial access</h3>
+      <p>Paste this, then Enter:</p>
+      <div class="prompt">Using your cybersecurity skills, investigate phishing-email.eml, mail-gateway.log, and endpoint-alert.log: find how the initial foothold was gained, extract the malicious attachment's SHA-256 hash, and tell me which external IP the attacker used to access Bellwood's systems afterward. List the skills you used.</div>
+      <p class="will-see">You will see: a lookalike sending domain, a macro-enabled attachment, a
+      PowerShell download cradle, and a sign-in from an unfamiliar external IP with no MFA.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>Attachment hash <code>a1e4c9d2f6b8034e7c1a29d5f3b6e8901c4d7f2a5b8e1c4f7a0d3b6e9c2f5a81</code>,
+        attacker IP <code>203.0.113.77</code>, and a VPN session landing at internal address
+        <code>10.20.14.230</code>.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p>Phishing from <code>bellwood-support.com</code> (lookalike domain) got through because
+          DMARC is <code>p=none</code> and SPF is <code>~all</code> (soft-fail, not hard-fail).
+          Sandra Kim opened <code>Invoice_BW88291.xlsm</code>; <code>EXCEL.EXE</code> spawned
+          <code>POWERSHELL.EXE</code> with an encoded download cradle. ~40 minutes later her account
+          signed in from <code>203.0.113.77</code> (Amsterdam-area hosting ASN, her first-ever
+          non-Chicago sign-in) with no MFA challenge, then used that session against the external
+          VPN gateway, landing internal address <code>10.20.14.230</code>. Techniques: T1566.001,
+          T1204.002, T1078, T1133.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="phase" id="phase-2">
+      <div class="phase-head">
+        <span class="phase-num">Phase 2</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>Act 2 — lateral movement</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Now use your network-security skills on network/netflow.txt and network/smb-rdp-events.txt: trace where the VPN-assigned address 10.20.14.230 went next inside the network, and tell me which two internal hosts it reached and how.</div>
+      <p class="will-see">You will see: two internal hosts it had never talked to before, reached
+      by RDP and SMB, both off-hours.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>RDP to <code>JMP-ADMIN01</code> (event 4624 type 10) and SMB/ADMIN$ to
+        <code>FILESVR01</code> (event 4624 type 3) — both first-time-seen host pairs in the 30-day
+        netflow baseline, both at ~02:1x UTC (outside 13:00–01:00 UTC business hours).</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p><code>10.20.14.230</code> pivoted to <code>JMP-ADMIN01</code> (10.20.1.50) via RDP and
+          to <code>FILESVR01</code> (10.20.1.15) via SMB/ADMIN$ — neither host pair appears anywhere
+          in the prior 30 days of netflow. A high-volume SMB flow to JMP-ADMIN01 immediately
+          preceded the RDP logon, consistent with staging a tool ahead of the Kerberos activity in
+          Act 3. Techniques: T1570, T1021.002, T1021.001.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase" id="phase-3">
+      <div class="phase-head">
+        <span class="phase-num">Phase 3</span>
+        <span class="pill pill-deep">Deep</span>
+      </div>
+      <h3>Baseline vs. anomaly</h3>
+      <p>Same chat:</p>
+      <div class="prompt">What does normal Kerberos ticket-request activity look like on this domain, and what makes the activity from JMP-ADMIN01 stand out? Could this have been caught WITHOUT already knowing which account was compromised?</div>
+      <p class="will-see">You will see: a baseline of 1-2 requests/hour vs. a 14-request burst in 86
+      seconds, every one downgraded to a weaker ticket-encryption type.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>Baseline = AES256 (etype 0x12) by domain policy, 1-2 requests/hour. The burst = RC4
+        (etype 0x17), 14 requests in 86 seconds. Rate + encryption downgrade is the tell, not the
+        specific account.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p>Detectable by volume and encryption type alone, independent of which account is
+          requesting: a burst of RC4-downgraded TGS requests against multiple SPN accounts in under
+          two minutes is the classic Kerberoasting signature, regardless of whose credentials are
+          doing the requesting.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 4 -->
+    <div class="phase" id="phase-4">
+      <div class="phase-head">
+        <span class="phase-num">Phase 4</span>
+        <span class="pill pill-deep">Deep</span>
+      </div>
+      <h3>Map it — and check the agent</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Map the full attack to MITRE ATT&amp;CK technique IDs. Then tell me: was AS-REP Roasting (T1558.004) actually carried out against svc-legacyapp, or only exposed as a possibility? Show the evidence either way.</div>
+      <p class="will-see">You will see: a clean chain from phishing through to Kerberoasting — and
+      watch whether the agent correctly separates "exposed" from "exploited" for the AS-REP
+      finding, or over-claims it.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>The chain: T1566.001 → T1204.002 → T1078 → T1133 → T1570 → T1021.002/T1021.001 →
+        T1558.003. For T1558.004: the agent should say <strong>not confirmed</strong> — this is the
+        deliberate catch built into this scenario.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p><code>svc-legacyapp</code>'s AS-REP exposure was <strong>not</strong> used. A targeted
+          search of the incident window for a 4768 event without pre-authentication against
+          <code>svc-legacyapp</code> returns <strong>no matching events</strong> — the account is
+          equally vulnerable but this attacker never touched it. Exposed ≠ exploited. If the agent
+          claimed AS-REP Roasting "was carried out," that's the over-claim to correct.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 5 -->
+    <div class="phase" id="phase-5">
+      <div class="phase-head">
+        <span class="phase-num">Phase 5</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>Incident report</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Write a short incident report: the full attack chain, the VERIFIED ATT&amp;CK IDs, and the single change that would have stopped it at the earliest point.</div>
+      <p class="will-see">You will see: phishing → foothold → lateral movement → Kerberoasting, and
+      "enforce DMARC p=reject" as the one fix that breaks the whole chain at step one.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>One chain, an ID per step, and a single earliest-point fix — DMARC enforcement, not a
+        downstream control.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p>Enforce DMARC to <code>p=reject</code> with SPF <code>-all</code> — blocks
+          <code>bellwood-support.com</code>'s spoofed mail before delivery, breaking the entire
+          chain at step one, the earliest possible point.</p>
+        </div>
+      </details>
+    </div>
+
+    <h2>Explore without spoiling it</h2>
+    <p>Want to poke at the raw data yourself, agent aside?</p>
+<pre><code>grep -c "ALLOWED" mail-gateway.log
+grep "0x17" ad/kerberos-events.txt | wc -l   # the RC4-downgrade burst</code></pre>
+
+    <h2>Terminal fallbacks (no agent)</h2>
+<pre><code>grep -A2 "SIGNIN_SUCCESS" endpoint-alert.log
+grep "NEW PEER" network/netflow.txt
+grep -B1 "NOT FOUND" ad/kerberos-events.txt   # the AS-REP catch</code></pre>
+
+    <hr class="rule">
+    <p style="color:var(--ink-dim); font-size:0.9rem;">
+      Authorized &amp; lawful use only. All data is synthetic and self-contained; no live systems
+      are touched. Promotes the open-source Anthropic Cybersecurity Skills library (Apache-2.0);
+      not affiliated with Anthropic PBC.
+    </p>
+    <p><a href="guestlist.html">Next → Scenario 2: GuestList</a></p>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>Tailgate / GuestList workshop guide · <a href="https://github.com/casky-ai/casky-workshops" target="_blank" rel="noopener">casky-ai/casky-workshops</a></p>
+  </div>
+</footer>
+</body>
+</html>

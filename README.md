@@ -7,9 +7,10 @@ Hands-on materials for live workshop sessions.
 | Folder | Exercise | Wiki | Companion blog |
 |---|---|---|---|
 | [`tollbooth/`](tollbooth/SETUP.md) | TollBooth / OpenDoor — SSRF → IMDS credential leak → S3 exfil, plus the proactive cloud-config audit that would've prevented it. Trimmed from [BHUSA-Anthropic-CyberSecurity-Skills](https://github.com/mukul975/BHUSA-Anthropic-CyberSecurity-Skills). | [casky-ai.github.io/casky-workshops](https://casky-ai.github.io/casky-workshops/) | [casky.ai/blog/blackhat-workshop-lab02](https://casky.ai/blog/blackhat-workshop-lab02) |
+| [`tailgate/`](tailgate/SETUP.md) | Tailgate / GuestList — a phishing email → lateral movement → AD domain compromise (Kerberoasting/AS-REP), a 3-act kill chain, plus the proactive email/network/AD audit that would've prevented it. | [tailgate.html](https://casky-ai.github.io/casky-workshops/tailgate.html) | — |
 
 Each exercise's own `SETUP.md` has the full walkthrough — the source of truth, kept in sync with
-the hosted wiki. `tollbooth/SETUP.md` covers two ways to run the same scenario: the original
+the hosted wiki. Each `SETUP.md` covers two ways to run the same scenario: the original
 Kali/Claude Code setup (Section 1), and the same data driven through Casky Box (Section 2).
 
 ## Readiness check
@@ -29,8 +30,8 @@ if `casky-runner-phase1` isn't a sibling of this repo.
 ## Wiki
 
 `docs/` is a static, dependency-free site (no build step) published via GitHub Pages from this
-repo's `main` branch — the same TollBooth/OpenDoor setup and scenario content as
-`tollbooth/SETUP.md` and `tollbooth/Arsenal-CheatSheet-Book.pdf`, reorganized for attendees to
-follow along on a phone or second screen during the workshop, with the cheat sheet's answer pages
-collapsed by default so attendees can attempt each phase first. To update it, edit both — `docs/`
-is derived from `tollbooth/SETUP.md`'s content, not auto-generated from it.
+repo's `main` branch — the same setup and scenario content as each exercise's own `SETUP.md`
+(and, for TollBooth/OpenDoor, `tollbooth/Arsenal-CheatSheet-Book.pdf`), reorganized for attendees
+to follow along on a phone or second screen during the workshop, with answer pages collapsed by
+default so attendees can attempt each phase first. To update it, edit both — `docs/` is derived
+from each exercise's `SETUP.md`, not auto-generated from it.

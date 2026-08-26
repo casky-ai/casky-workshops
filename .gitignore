@@ -1,9 +1,13 @@
-# Cloned fresh by setup-skills.sh — not committed
+# Cloned fresh by setup-skills.sh — not committed (one clone per exercise folder)
 tollbooth/Anthropic-Cybersecurity-Skills/
+tailgate/Anthropic-Cybersecurity-Skills/
 
-# Scratch evidence generated while working the exercise
+# Scratch evidence bundles generated while working an exercise (top-level only —
+# doesn't touch committed evidence living in subfolders like network/, ad/, guestlist/)
 tollbooth/*.txt
+tailgate/*.txt
 !tollbooth/SETUP.md
+!tailgate/SETUP.md
 .env*
 .DS_Store
 
