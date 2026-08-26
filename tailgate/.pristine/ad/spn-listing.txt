@@ -1,0 +1,17 @@
+# Bellwood Logistics — service account / SPN audit export, bellwood.local (synthetic).
+# Columns: sAMAccountName | SPN registered | pwdLastSet | "Do not require Kerberos preauth" flag
+# | memberOf (privileged groups only, "-" if none)
+
+svc-sql01     | MSSQLSvc/sqlsrv01.bellwood.local:1433 | 2023-11-02 (900+ days old) | FALSE | -
+svc-web01     | HTTP/websrv01.bellwood.local          | 2023-09-14 (900+ days old) | FALSE | -
+svc-backup    | BackupExec/backupsrv.bellwood.local   | 2024-01-05 (900+ days old) | FALSE | Backup Operators
+svc-legacyapp | HTTP/legacyapp01.bellwood.local       | 2022-06-30 (1000+ days old) | TRUE  | -
+
+# svc-sql01, svc-web01, svc-backup: SPN-registered, password never rotated since creation —
+# Kerberoastable by any authenticated domain user (request a TGS, crack offline). All three
+# appear in the TGS burst in ad/kerberos-events.txt.
+#
+# svc-legacyapp: SPN-registered AND "Do not require Kerberos preauthentication" is set —
+# AS-REP-roastable without even needing a valid ticket request first. Equally exposed, but see
+# ad/kerberos-events.txt's note: no matching 4768-without-preauth event was found in the
+# incident window. This account was exposed, not confirmed as actually used by the attacker.

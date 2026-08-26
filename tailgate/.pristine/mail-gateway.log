@@ -1,0 +1,8 @@
+# Bellwood Logistics — mail gateway delivery/detonation log (synthetic training data)
+# Format: timestamp | direction | from | to | src_ip | verdict | detail
+2026-08-10T09:08:11Z | inbound | AP-Automation@bellwood-support.com | sandra.kim@bellwoodlogistics.com | 203.0.113.45 | SPF_SOFTFAIL | spf=softfail dkim=none dmarc=none-action(policy=p=none) — bellwoodlogistics.com DMARC record published as "v=DMARC1; p=none; rua=mailto:dmarc-reports@bellwoodlogistics.com"
+2026-08-10T09:08:12Z | inbound | AP-Automation@bellwood-support.com | sandra.kim@bellwoodlogistics.com | 203.0.113.45 | ATTACHMENT_SCAN | file=Invoice_BW88291.xlsm sha256=a1e4c9d2f6b8034e7c1a29d5f3b6e8901c4d7f2a5b8e1c4f7a0d3b6e9c2f5a81 macro_detected=true macro_verdict=SUSPICIOUS engine=legacy-av-sig no-match-known-family
+2026-08-10T09:08:13Z | inbound | AP-Automation@bellwood-support.com | sandra.kim@bellwoodlogistics.com | 203.0.113.45 | POLICY_DECISION | action=ALLOWED reason="SPF softfail and unknown macro verdict do not meet BLOCK threshold under current gateway policy (quarantine threshold requires DMARC p=quarantine/reject or a known-bad signature match; neither present)"
+2026-08-10T09:08:14Z | inbound | AP-Automation@bellwood-support.com | sandra.kim@bellwoodlogistics.com | 203.0.113.45 | DELIVERED | mailbox=sandra.kim@bellwoodlogistics.com folder=Inbox
+2026-08-10T09:19:47Z | telemetry | - | sandra.kim@bellwoodlogistics.com | - | MESSAGE_OPENED | client=Outlook/365 host=SANDRA-KIM-PC
+2026-08-10T09:19:55Z | telemetry | - | sandra.kim@bellwoodlogistics.com | - | ATTACHMENT_OPENED | file=Invoice_BW88291.xlsm host=SANDRA-KIM-PC user=bellwood\sandra.kim

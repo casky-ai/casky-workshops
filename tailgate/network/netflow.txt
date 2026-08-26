@@ -1,0 +1,18 @@
+# Bellwood Logistics — internal netflow baseline vs. incident-window flows (synthetic).
+# Pre-summarized text (per casky-runner-phase1/evidence/README.md: no raw pcap accepted by
+# `casky harness -i` — this is the tshark/netflow-tool text-output equivalent, hand-authored
+# for this training lab). Times UTC. Baseline = prior 30 days of flows for the same host pair.
+
+## Baseline (30-day norm) — REMOTE-SANDRA (10.20.14.230) internal peers
+# REMOTE-SANDRA is a VPN-assigned address; under normal use it only ever reaches the
+# email/file-share front-end (10.20.1.5) during business hours (13:00-01:00 UTC), low volume.
+2026-07-01..2026-08-09 | 10.20.14.230 -> 10.20.1.5   | port 443 | avg 12 flows/day | avg 4MB/day | business hours only
+
+## Incident-window flows (2026-08-10) — first time this host pair has ever been seen
+2026-08-10T02:07:11Z | 10.20.14.230 -> 10.20.1.50  | port 3389/tcp (RDP)     | 1 flow  | 640KB   | NEW PEER — never seen in 30-day baseline
+2026-08-10T02:08:03Z | 10.20.14.230 -> 10.20.1.50  | port 445/tcp (SMB)     | 6 flows | 118MB   | NEW PEER, high volume, off-hours — consistent with tool staging ahead of RDP session
+2026-08-10T02:11:47Z | 10.20.14.230 -> 10.20.1.15  | port 445/tcp (SMB)     | 9 flows | 4.2MB   | NEW PEER — never seen in 30-day baseline, off-hours (02:xx UTC vs. 13:00-01:00 UTC norm)
+2026-08-10T02:22:05Z | 10.20.1.50   -> 10.20.1.5    | port 88/tcp (Kerberos) | 14 flows | 210KB  | burst from JMP-ADMIN01 to the domain controller — see ad/kerberos-events.txt
+
+# Host reference: 10.20.1.5 = domain controller (DC01), 10.20.1.15 = FILESVR01,
+# 10.20.1.50 = JMP-ADMIN01 (jump/admin host)

@@ -1,0 +1,38 @@
+# Bellwood Logistics — Windows Security event log excerpts, FILESVR01 + JMP-ADMIN01 (synthetic).
+# Event 4624 = successful logon. LogonType 3 = network (SMB), LogonType 10 = RemoteInteractive (RDP).
+# Times UTC.
+
+--- FILESVR01 (10.20.1.15) Security event log ---
+Log Name:      Security
+Event ID:      4624
+Time:          2026-08-10T02:11:49Z
+Account Name:  sandra.kim
+Account Domain: BELLWOOD
+Logon Type:    3
+Source Network Address: 10.20.14.230
+Share Accessed: \\FILESVR01\ADMIN$
+Detail:        Session established, ADMIN$ share accessed shortly after logon — consistent with
+               remote service installation / lateral-movement tooling, not a normal file-share
+               browse (Sandra Kim's role has no documented business need for ADMIN$ on FILESVR01)
+Mitre:         T1021.002
+
+--- JMP-ADMIN01 (10.20.1.50) Security event log ---
+Log Name:      Security
+Event ID:      4624
+Time:          2026-08-10T02:08:05Z
+Account Name:  sandra.kim
+Account Domain: BELLWOOD
+Logon Type:    10
+Source Network Address: 10.20.14.230
+Detail:        Interactive RDP logon, off-hours (02:08 UTC; Bellwood's documented business
+               hours are 13:00-01:00 UTC) — no prior RDP logon from this account to this host
+               in the preceding 30 days
+Mitre:         T1021.001
+
+Log Name:      Security
+Event ID:      4634
+Time:          2026-08-10T02:41:12Z
+Account Name:  sandra.kim
+Account Domain: BELLWOOD
+Detail:        Logoff, JMP-ADMIN01 — session duration 33 minutes, during which the Kerberos TGS
+               burst in ad/kerberos-events.txt occurs

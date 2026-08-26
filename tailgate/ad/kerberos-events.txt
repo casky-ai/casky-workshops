@@ -1,0 +1,28 @@
+# Bellwood Logistics — Domain Controller (DC01, 10.20.1.5) Kerberos event excerpts (synthetic).
+# Event 4769 = Kerberos service ticket (TGS) requested. Event 4768 = Kerberos authentication
+# ticket (AS-REQ) requested. Etype 0x17 = RC4-HMAC (a downgrade from the domain's default AES).
+# Times UTC. All requests below originate from JMP-ADMIN01 (10.20.1.50), the host RDP'd into
+# per network/smb-rdp-events.txt.
+
+--- TGS requests (Event 4769) — 2026-08-10, 02:22:05Z to 02:23:31Z (86-second window) ---
+Account Requesting Ticket: sandra.kim@BELLWOOD.LOCAL   Client Address: 10.20.1.50
+Service Name: svc-sql01   Ticket Encryption Type: 0x17 (RC4-HMAC)   Time: 02:22:05Z
+Service Name: svc-web01   Ticket Encryption Type: 0x17 (RC4-HMAC)   Time: 02:22:19Z
+Service Name: svc-backup  Ticket Encryption Type: 0x17 (RC4-HMAC)   Time: 02:22:33Z
+Service Name: svc-sql01   Ticket Encryption Type: 0x17 (RC4-HMAC)   Time: 02:22:41Z
+Service Name: svc-web01   Ticket Encryption Type: 0x17 (RC4-HMAC)   Time: 02:22:52Z
+Service Name: svc-backup  Ticket Encryption Type: 0x17 (RC4-HMAC)   Time: 02:23:01Z
+[... 8 additional requests omitted for length, same three service names, same client, same
+     etype 0x17, 02:23:04Z-02:23:31Z — 14 total requests in the 86-second window]
+
+Baseline note: normal TGS request volume for this domain is 1-2 requests/hour per account,
+default ticket encryption is AES256 (etype 0x12) per the domain's Kerberos policy — every
+request in this burst downgrades to RC4 (0x17), which is the classic Kerberoasting signature
+(request the ticket in the weakest crackable format).
+
+--- AS-REQ without pre-authentication (Event 4768) — search result: NOT FOUND ---
+# A targeted search for 4768 events with "Pre-Authentication Type: 0" (no pre-auth) against
+# svc-legacyapp for the full incident window (2026-08-09T00:00Z - 2026-08-11T00:00Z) returns
+# NO MATCHING EVENTS. svc-legacyapp's account flag has preauth disabled (see ad/spn-listing.txt)
+# and would be immediately AS-REP-roastable by anyone — but nothing in this log shows it was
+# actually requested. Exposed, not confirmed exploited.

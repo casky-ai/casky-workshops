@@ -1,0 +1,32 @@
+{
+  "domain": "bellwoodlogistics.com",
+  "audit_area": "email/gateway hygiene",
+  "correlates_to_tailgate_act": 1,
+  "correlation_label": "exploited",
+  "correlation_note": "This is the precondition that let the Act 1 phishing message through — see .pristine/mail-gateway.log's SPF_SOFTFAIL/POLICY_DECISION lines.",
+  "dns_records": {
+    "SPF": "v=spf1 include:_spf.bellwoodlogistics.com ~all",
+    "DMARC": "v=DMARC1; p=none; rua=mailto:dmarc-reports@bellwoodlogistics.com",
+    "DKIM": "selector1._domainkey.bellwoodlogistics.com present, valid"
+  },
+  "findings": [
+    {
+      "id": "EMAIL-1",
+      "title": "DMARC policy is p=none (monitor-only)",
+      "detail": "DMARC is published but set to take no enforcement action on failing mail — spoofed/lookalike-domain mail is reported, never quarantined or rejected.",
+      "recommended_fix": "Move to p=quarantine, then p=reject, after confirming legitimate senders pass alignment."
+    },
+    {
+      "id": "EMAIL-2",
+      "title": "SPF uses ~all (soft-fail) instead of -all (hard-fail)",
+      "detail": "A soft-fail result is informational only for most mail gateways' default policy thresholds — it does not, by itself, block delivery.",
+      "recommended_fix": "Move to -all once all legitimate sending sources are enumerated in the SPF record."
+    },
+    {
+      "id": "EMAIL-3",
+      "title": "No attachment sandboxing/detonation for macro-enabled Office files",
+      "detail": "The gateway's macro scan is signature-based only (see mail-gateway.log's ATTACHMENT_SCAN line: 'engine=legacy-av-sig no-match-known-family') — no dynamic detonation is performed on suspicious-but-unmatched macros before delivery.",
+      "recommended_fix": "Add a sandboxing/detonation stage for macro-enabled attachments ahead of the signature engine."
+    }
+  ]
+}

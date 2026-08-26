@@ -1,0 +1,40 @@
+Return-Path: <AP-Automation@bellwood-support.com>
+Received: from mx1.bellwood-support.com (mx1.bellwood-support.com [203.0.113.45])
+	by mailgw.bellwoodlogistics.com (Postfix) with ESMTPS id 7F3A21C2E01
+	for <sandra.kim@bellwoodlogistics.com>; Mon, 10 Aug 2026 09:08:14 +0000 (UTC)
+Authentication-Results: mailgw.bellwoodlogistics.com;
+	spf=softfail (sender IP is 203.0.113.45) smtp.mailfrom=bellwood-support.com;
+	dkim=none (no signature);
+	dmarc=none action=none header.from=bellwood-support.com
+From: "Bellwood AP Automation" <AP-Automation@bellwood-support.com>
+To: Sandra Kim <sandra.kim@bellwoodlogistics.com>
+Subject: Invoice #BW-88291 Payment Confirmation Required
+Date: Mon, 10 Aug 2026 09:08:09 +0000
+Message-ID: <8f3c1a2e-88291-bellwood@bellwood-support.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="000000000000a1e4c9d2f6b8"
+
+--000000000000a1e4c9d2f6b8
+Content-Type: text/plain; charset="UTF-8"
+
+Hi Sandra,
+
+Our records show invoice #BW-88291 is past due for payment confirmation. Please review the
+attached statement and confirm the remittance details on file before end of day to avoid a
+processing hold on this week's carrier settlements.
+
+Regards,
+AP Automation Team
+Bellwood Logistics Vendor Portal
+
+--000000000000a1e4c9d2f6b8
+Content-Type: application/vnd.ms-excel.sheet.macroEnabled.12; name="Invoice_BW88291.xlsm"
+Content-Disposition: attachment; filename="Invoice_BW88291.xlsm"
+Content-Transfer-Encoding: base64
+X-Attachment-SHA256: a1e4c9d2f6b8034e7c1a29d5f3b6e8901c4d7f2a5b8e1c4f7a0d3b6e9c2f5a81
+
+[attachment body intentionally elided for this training lab — no working macro payload is
+distributed here; the SHA-256 above is the synthetic indicator carried through
+mail-gateway.log and endpoint-alert.log for correlation]
+
+--000000000000a1e4c9d2f6b8--

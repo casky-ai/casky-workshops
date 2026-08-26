@@ -1,0 +1,31 @@
+{
+  "environment": "bellwood.local internal network",
+  "audit_area": "network segmentation",
+  "correlates_to_tailgate_act": 2,
+  "correlation_label": "exploited",
+  "correlation_note": "This is the precondition that let Act 2's lateral movement reach FILESVR01 and JMP-ADMIN01 from a VPN-assigned user address — see .pristine/network/netflow.txt and smb-rdp-events.txt.",
+  "subnets": [
+    { "cidr": "10.20.14.0/24", "role": "user/VPN-assigned", "vlan": "VLAN-USER" },
+    { "cidr": "10.20.1.0/24", "role": "internal servers (file, admin/jump, domain controller)", "vlan": "VLAN-USER" }
+  ],
+  "findings": [
+    {
+      "id": "NET-1",
+      "title": "No VLAN/ACL boundary between the user subnet and the server subnet",
+      "detail": "Both 10.20.14.0/24 and 10.20.1.0/24 are on the same VLAN (VLAN-USER) — a VPN-assigned user address can reach server-subnet hosts with no intervening firewall/ACL decision point.",
+      "recommended_fix": "Place internal servers (FILESVR01, JMP-ADMIN01, DC01) on a separate VLAN with an ACL that denies inbound SMB/RDP from the user subnet by default, allowing only named jump paths."
+    },
+    {
+      "id": "NET-2",
+      "title": "SMB (445/tcp) unrestricted between the user and server subnets",
+      "detail": "No firewall rule restricts SMB access from user-subnet hosts to server-subnet hosts — any authenticated session can reach ADMIN$/C$ shares on any server-subnet host.",
+      "recommended_fix": "Restrict inbound SMB on server-subnet hosts to a named admin-workstation allowlist."
+    },
+    {
+      "id": "NET-3",
+      "title": "No lateral-movement detection/alerting configured",
+      "detail": "New host-pair connections and off-hours SMB/RDP sessions (as seen in Act 2) generate no alert — they were only visible after the fact via manual netflow review.",
+      "recommended_fix": "Alert on first-time-seen internal host pairs and off-hours admin-share/RDP sessions."
+    }
+  ]
+}
