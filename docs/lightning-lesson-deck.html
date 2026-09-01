@@ -247,7 +247,18 @@
   }
   .cta-primary { background: linear-gradient(90deg, #00C0A3, #009E88); color: #030308; }
   .cta-secondary { background: var(--surface1); border: 1px solid var(--border); color: var(--text); }
-  .cta-note { font-family: var(--font-mono); font-size: 11.5px; color: var(--dimmed); margin-top: 14px; }
+  .cta-note { font-family: var(--font-mono); font-size: 12.5px; color: rgba(255,255,255,0.55); margin-top: 14px; }
+
+  .resource-row {
+    display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+    margin-top: 22px; font-family: var(--font-body); font-size: 14px;
+  }
+  .resource-label {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .resource-row a { color: var(--brand); text-decoration: none; font-weight: 600; }
+  .resource-row a:hover { text-decoration: underline; }
 
   /* Maven workshop signup banner */
   .workshop-banner {
@@ -559,8 +570,11 @@
   <h1 class="title">Thanks for showing up.<br/><span class="accent">Now go check your own app.</span></h1>
   <p class="dek" style="margin-bottom:8px;">The recording, the exact commands we ran, and the full sourced Top 10 land in your inbox within the hour.</p>
   <div class="cta-row">
-    <a class="cta cta-primary" target="_blank" rel="noopener noreferrer" href="https://casky-ai.github.io/casky-workshops/fastlane.html?utm_source=lightning_lesson&utm_medium=live_session&utm_campaign=fastlane_launch&utm_content=end_slide_workshop">Run it yourself, free →</a>
-    <a class="cta cta-secondary" target="_blank" rel="noopener noreferrer" href="https://maven.com/casky/top-10-cyber-security-gotchas-for-vibe-coded-apps?utm_source=lightning_lesson&utm_medium=live_session&utm_campaign=fastlane_launch&utm_content=end_slide_maven">Go deeper on Maven →</a>
+    <a class="cta cta-primary" target="_blank" rel="noopener noreferrer" href="https://www.casky.ai/?utm_source=lightning_lesson&utm_medium=live_session&utm_campaign=fastlane_launch&utm_content=end_slide_playground">Run it on Casky.AI Playground →</a>
+  </div>
+  <div class="resource-row">
+    <span class="resource-label">Read the full sourcing</span>
+    <a href="https://casky.ai/blog/vibe-coding-security-top-10-gotchas?utm_source=lightning_lesson&utm_medium=live_session&utm_campaign=fastlane_launch&utm_content=end_slide_blog" target="_blank" rel="noopener noreferrer">casky.ai/blog/vibe-coding-security-top-10-gotchas</a>
   </div>
   <div class="cta-note">Know someone who should've been here? Share: maven.com/p/b6f561/your-vibe-coded-app-is-already-compromised-did-you-find-it</div>
   <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY</span></div><span>casky.ai</span></div>
@@ -600,32 +614,37 @@
   var deck = document.getElementById('deck');
   var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
   var dots = Array.prototype.slice.call(document.querySelectorAll('.navdots button'));
+  var activeIndex = 0;
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function setActive(i) {
+    activeIndex = i;
     dots.forEach(function (d, idx) { d.classList.toggle('active', idx === i); });
+  }
+
+  // Scroll the deck container directly (deck.scrollTo), rather than
+  // slide.scrollIntoView(), which depends on the browser correctly
+  // resolving the nearest scrollable ancestor and can silently no-op or
+  // fight scroll-snap in some browsers/embeds.
+  function goToSlide(i) {
+    i = Math.max(0, Math.min(i, slides.length - 1));
+    deck.scrollTo({ top: slides[i].offsetTop, behavior: reduceMotion ? 'auto' : 'smooth' });
+    setActive(i);
   }
 
   dots.forEach(function (d) {
     d.addEventListener('click', function () {
-      var i = Number(d.getAttribute('data-i'));
-      slides[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      goToSlide(Number(d.getAttribute('data-i')));
     });
   });
 
   document.addEventListener('keydown', function (e) {
-    var current = slides.findIndex(function (s) {
-      var r = s.getBoundingClientRect();
-      return r.top > -50 && r.top < 50;
-    });
-    if (current === -1) current = 0;
     if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
       e.preventDefault();
-      var next = Math.min(current + 1, slides.length - 1);
-      slides[next].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      goToSlide(activeIndex + 1);
     } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
       e.preventDefault();
-      var prev = Math.max(current - 1, 0);
-      slides[prev].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      goToSlide(activeIndex - 1);
     }
   });
 
