@@ -1,0 +1,8 @@
+# Loopline demo server: a synthetic vibe-coded SaaS for the FastLane Lightning
+# Lesson live demo. No external dependencies, stdlib http.server only.
+FROM python:3.12-slim
+WORKDIR /app
+COPY demo-server.py .
+ENV PORT=8787
+EXPOSE 8787
+CMD ["python3", "demo-server.py"]

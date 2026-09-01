@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Your Vibe-Coded App Is Already Compromised</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  /*
+   * Casky Lightning Lesson deck, "Your Vibe-Coded App Is Already Compromised. Did You Find It?"
+   * Tokens sourced verbatim from marketing/Casky_Brand.md (CyberForge system, verified against
+   * production apps/web/app/globals.css, 2026-07-14). Deliberate single dark theme, per the
+   * brand's own rule ("it's a dark-mode brand"), background/colors are painted explicitly.
+   */
+  :root {
+    --brand:        #00C0A3;
+    --brand-dark:   #009E88;
+    --brand-dim:    rgba(0, 192, 163, 0.12);
+    --brand-border: rgba(0, 192, 163, 0.28);
+
+    --bg:           #030308;
+    --surface1:     #0D0D18;
+    --surface2:     #13131F;
+    --surface3:     #1A1A28;
+    --border:       rgba(255, 255, 255, 0.08);
+
+    --text:         #EAF2FF;
+    --muted:        rgba(255, 255, 255, 0.50);
+    --dimmed:       rgba(255, 255, 255, 0.28);
+
+    --critical:     #FF3D57;
+    --high:         #FF8C00;
+    --medium:       #FBBF24;
+    --purple:       #818CF8;
+
+    --font-display: "Sora", system-ui, -apple-system, sans-serif;
+    --font-body:    "Inter", system-ui, -apple-system, sans-serif;
+    --font-mono:    "JetBrains Mono", "Fira Code", monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: var(--bg); color: var(--text);
+    font-family: var(--font-body);
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto !important; } }
+
+  .deck {
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+  }
+  .slide {
+    position: relative;
+    min-height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8vh 7vw 9vh;
+    overflow: hidden;
+  }
+  .glow {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(circle at 82% 12%, rgba(0,192,163,0.14), transparent 55%);
+  }
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--brand); font-weight: 600;
+    display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--critical); flex-shrink: 0; }
+  h1.title {
+    font-family: var(--font-display); font-weight: 800; letter-spacing: -0.02em;
+    font-size: clamp(30px, 4.4vw, 54px); line-height: 1.08; margin: 0 0 18px;
+    text-wrap: balance; max-width: 15in;
+  }
+  .title .accent { color: var(--brand); }
+  p.dek {
+    font-family: var(--font-body); font-size: clamp(15px, 1.4vw, 20px);
+    color: var(--muted); line-height: 1.6; max-width: 720px; margin: 0 0 8px;
+  }
+  .foot {
+    position: absolute; left: 7vw; right: 7vw; bottom: 4vh;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em;
+    color: var(--dimmed); z-index: 1;
+  }
+  .mark { display: flex; align-items: center; gap: 10px; }
+  .logo-mark {
+    width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+    background: linear-gradient(135deg, #00C0A3 0%, #009E88 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-weight: 900; color: #030308; font-size: 10px;
+  }
+
+  /* nav dots */
+  .navdots {
+    position: fixed; right: 22px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 10px; z-index: 20;
+  }
+  .navdots button {
+    width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--border);
+    background: transparent; padding: 0; cursor: pointer; transition: background 0.15s, border-color 0.15s;
+  }
+  .navdots button:hover { border-color: var(--brand); }
+  .navdots button.active { background: var(--brand); border-color: var(--brand); }
+  .navdots button:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+
+  /* cover */
+  .cover-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--critical); background: rgba(255,61,87,0.1); border: 1px solid rgba(255,61,87,0.3);
+    border-radius: 999px; padding: 6px 14px; margin-bottom: 26px; width: fit-content;
+  }
+  .cover-badge .pulse {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--critical);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  @media (prefers-reduced-motion: reduce) { .cover-badge .pulse { animation: none; } }
+  .cover-title {
+    font-family: var(--font-display); font-weight: 800; letter-spacing: -0.025em;
+    font-size: clamp(34px, 5.6vw, 68px); line-height: 1.05; max-width: 15in; margin: 0 0 22px;
+    text-wrap: balance;
+  }
+  .cover-sub {
+    font-family: var(--font-body); font-weight: 400; font-size: clamp(16px, 1.6vw, 22px);
+    color: var(--muted); max-width: 640px; line-height: 1.55; margin: 0 0 40px;
+  }
+  .facts-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 44px; }
+  .fact-chip {
+    font-family: var(--font-mono); font-size: 13px; color: var(--text);
+    background: var(--surface1); border: 1px solid var(--border); border-radius: 8px;
+    padding: 9px 14px; display: flex; align-items: center; gap: 8px;
+  }
+  .fact-chip b { color: var(--brand); font-weight: 700; }
+  .speakers { display: flex; gap: 34px; flex-wrap: wrap; }
+  .speaker { display: flex; align-items: center; gap: 12px; }
+  .avatar {
+    width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--surface3), var(--surface2));
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-weight: 700; color: var(--brand); font-size: 15px;
+  }
+  .speaker-name { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--text); }
+  .speaker-role { font-family: var(--font-body); font-size: 13px; color: var(--muted); }
+
+  /* stat grid */
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 12px; }
+  .stat-card {
+    background: var(--surface1); border: 1px solid var(--border); border-radius: 14px;
+    padding: 26px 22px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .stat-num { font-family: var(--font-display); font-weight: 800; font-size: 40px; color: var(--brand); letter-spacing: -0.01em; }
+  .stat-label { font-family: var(--font-body); font-size: 14px; color: var(--text); line-height: 1.45; }
+  .stat-src { font-family: var(--font-mono); font-size: 13px; color: rgba(255,255,255,0.68); letter-spacing: 0.02em; }
+
+  /* breach cards */
+  .breach-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 12px; }
+  .breach-card {
+    background: var(--surface1); border: 1px solid var(--border); border-radius: 14px;
+    padding: 22px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .breach-badge {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--brand);
+    background: var(--brand-dim); border: 1px solid var(--brand-border); border-radius: 999px;
+    padding: 4px 10px; width: fit-content; letter-spacing: 0.03em;
+  }
+  .breach-title { font-family: var(--font-display); font-weight: 700; font-size: 17px; color: var(--text); }
+  .breach-body { font-family: var(--font-body); font-size: 13.5px; color: var(--muted); line-height: 1.55; }
+
+  /* top 10 rows */
+  .top10 { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+  .top10-row {
+    display: flex; align-items: flex-start; gap: 18px;
+    background: var(--surface1); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 18px;
+  }
+  .top10-num {
+    font-family: var(--font-mono); font-weight: 700; font-size: 14px; color: var(--brand-dark);
+    background: var(--brand-dim); border: 1px solid var(--brand-border);
+    border-radius: 8px; width: 34px; height: 34px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .top10-body { flex: 1; }
+  .top10-title { font-family: var(--font-display); font-weight: 700; font-size: 15.5px; color: var(--text); margin-bottom: 3px; }
+  .top10-src { font-family: var(--font-body); font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+  .top10-src b { color: var(--text); font-weight: 600; }
+
+  /* demo terminal */
+  .demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 10px; }
+  .term {
+    background: #05050A; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+  }
+  .term-head {
+    display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+    border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 11px; color: var(--muted);
+  }
+  .term-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .term-body { padding: 16px 18px; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.75; }
+  .term-cmd { color: var(--text); }
+  .term-cmd .prompt { color: var(--brand); }
+  .term-comment { color: var(--dimmed); }
+  .term-result { color: var(--critical); margin-top: 8px; }
+  .term-tag {
+    display: inline-block; margin-top: 10px; font-family: var(--font-mono); font-size: 10.5px;
+    color: var(--purple); background: rgba(129,140,248,0.1); border: 1px solid rgba(129,140,248,0.25);
+    border-radius: 6px; padding: 3px 8px;
+  }
+
+  /* CTA */
+  .cta-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 30px; }
+  .cta {
+    font-family: var(--font-display); font-weight: 700; font-size: 15px;
+    padding: 15px 24px; border-radius: 10px; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .cta-primary { background: linear-gradient(90deg, #00C0A3, #009E88); color: #030308; }
+  .cta-secondary { background: var(--surface1); border: 1px solid var(--border); color: var(--text); }
+  .cta-note { font-family: var(--font-mono); font-size: 11.5px; color: var(--dimmed); margin-top: 14px; }
+
+  /* Q&A */
+  .qa-big { font-family: var(--font-display); font-weight: 800; font-size: clamp(48px, 8vw, 96px); letter-spacing: -0.02em; color: var(--text); line-height: 1; margin-bottom: 26px; }
+  .qa-list { display: flex; flex-direction: column; gap: 10px; }
+  .qa-item { display: flex; gap: 12px; align-items: baseline; font-family: var(--font-body); font-size: 16px; color: var(--muted); }
+  .qa-item .arrow { color: var(--brand); font-family: var(--font-mono); }
+
+  .kicker-num { position: absolute; top: 8vh; right: 7vw; font-family: var(--font-mono); font-size: 12px; color: var(--dimmed); letter-spacing: 0.08em; z-index: 1; }
+
+  @media (max-width: 900px) {
+    .stat-grid, .breach-grid, .demo-grid { grid-template-columns: 1fr; }
+    .navdots { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="navdots" aria-label="Slide navigation">
+  <button data-i="0" class="active" aria-label="Slide 1"></button>
+  <button data-i="1" aria-label="Slide 2"></button>
+  <button data-i="2" aria-label="Slide 3"></button>
+  <button data-i="3" aria-label="Slide 4"></button>
+  <button data-i="4" aria-label="Slide 5"></button>
+  <button data-i="5" aria-label="Slide 6"></button>
+  <button data-i="6" aria-label="Slide 7"></button>
+  <button data-i="7" aria-label="Slide 8"></button>
+  <button data-i="8" aria-label="Slide 9"></button>
+  <button data-i="9" aria-label="Slide 10"></button>
+</nav>
+
+<main class="deck" id="deck">
+
+<!-- 1, COVER / WAITING ROOM -->
+<section class="slide" id="s0">
+  <div class="glow"></div>
+  <span class="kicker-num">01 / 10 · COVER</span>
+  <div class="cover-badge"><span class="pulse"></span>WE START AT 12:00 PM ET</div>
+  <h1 class="cover-title">Your Vibe-Coded App Is<br/>Already Compromised.<br/><span style="color:var(--brand);">Did You Find It?</span></h1>
+  <p class="cover-sub">A free 30-minute Casky Lightning Lesson. Real breaches, real CVEs, and a
+    live 5-minute check you can run on your own app today.</p>
+  <div class="facts-row">
+    <div class="fact-chip"><b>12:00 PM ET</b> / 9:00 AM PT</div>
+    <div class="fact-chip"><b>30 min</b> · free · live on Maven</div>
+    <div class="fact-chip"><b>Recording</b> sent to every registrant</div>
+  </div>
+  <div class="speakers">
+    <div class="speaker">
+      <div class="avatar">RJ</div>
+      <div><div class="speaker-name">Rajesh Jain</div><div class="speaker-role">Founder &amp; CEO, Casky</div></div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div>
+    <span>casky.ai</span>
+  </div>
+</section>
+
+<!-- 2, THE PROBLEM -->
+<section class="slide" id="s1">
+  <div class="glow"></div>
+  <span class="kicker-num">02 / 10 · THE PROBLEM</span>
+  <div class="eyebrow"><span class="dot"></span>WHAT ACTUALLY BROKE</div>
+  <h1 class="title">Vibe coding takes minutes to build an app.<br/>But is it <span class="accent">secure?</span></h1>
+  <p class="dek">With Cursor, Lovable, Claude, Copilot, or Codex, you describe what you want, and
+    an AI agent generates the whole app, backend included, and hosts it live in an afternoon.</p>
+  <p class="dek">A generated app renders. It logs users in. It talks to a database. Whether it's
+    also readable and writable by a stranger with <code style="font-family:var(--font-mono); color:var(--text);">curl</code>,
+    and whether that stranger can steal all your data in five minutes, is a separate question.</p>
+  <p class="dek">A lot of real 2025–26 incidents shipped exactly that way.</p>
+  <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
+</section>
+
+<!-- 3, WHY IT MATTERS NOW -->
+<section class="slide" id="s2">
+  <div class="glow"></div>
+  <span class="kicker-num">03 / 10 · WHY IT MATTERS NOW</span>
+  <div class="eyebrow"><span class="dot"></span>THE NUMBERS ARE REAL, NOT ROUNDED UP</div>
+  <h1 class="title">Real numbers. Real <span class="accent">CVEs &amp; security issues.</span></h1>
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-num">81%</div>
+      <div class="stat-label">YoY rise in AI-service-related secret leaks</div>
+      <div class="stat-src">GitGuardian, State of Secrets Sprawl 2026</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">322%</div>
+      <div class="stat-label">more privilege-escalation paths in AI-generated code</div>
+      <div class="stat-src">Apiiro, Fortune 50 engineering orgs</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">45%</div>
+      <div class="stat-label">of AI-generated code samples contain a detectable OWASP flaw</div>
+      <div class="stat-src">Veracode, 100+ LLMs, 80 coding tasks</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">1 in 5</div>
+      <div class="stat-label">AI code samples recommend a package that doesn't exist</div>
+      <div class="stat-src">USENIX 2025 slopsquatting study</div>
+    </div>
+  </div>
+  <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
+</section>
+
+<!-- 4, WHAT YOU NEED TO KNOW -->
+<section class="slide" id="s3">
+  <div class="glow"></div>
+  <span class="kicker-num">04 / 10 · WHAT YOU NEED TO KNOW</span>
+  <div class="eyebrow"><span class="dot"></span>DOCUMENTED. NAMED. CVE-NUMBERED.</div>
+  <h1 class="title">Three real breaches. Same <span class="accent">root cause.</span></h1>
+  <p class="dek" style="margin-bottom:26px;">None of these were sophisticated attacks. Someone opened the network tab and asked the database for everything.</p>
+  <div class="breach-grid">
+    <div class="breach-card">
+      <div class="breach-badge">CVE-2025-48757</div>
+      <div class="breach-title">170 / 1,645 scanned apps</div>
+      <div class="breach-body">Lovable-built apps shipping with Supabase Row-Level Security disabled or misconfigured, the public anon key alone was enough to read or write every row.</div>
+    </div>
+    <div class="breach-card">
+      <div class="breach-badge">MOLTBOOK BREACH</div>
+      <div class="breach-title">1.5M tokens, 35K emails</div>
+      <div class="breach-body">A vibe-coded AI social network, creator says he "didn't write a single line of code", shipped without RLS. Disclosed by Wiz researchers.</div>
+    </div>
+    <div class="breach-card">
+      <div class="breach-badge">BASE44 / WIZ</div>
+      <div class="breach-title">Auth bypass via public app_id</div>
+      <div class="breach-body">Anyone could create a verified account on someone else's private enterprise app, no password, no SSO, because the platform's own registration trusted a public value.</div>
+    </div>
+  </div>
+  <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
+</section>
+
+<!-- 5, TOP 10 (1-5) -->
+<section class="slide" id="s4">
+  <div class="glow"></div>
+  <span class="kicker-num">05 / 10 · THE TOP 10, PART 1</span>
+  <div class="eyebrow"><span class="dot"></span>THE VIBE CODING SECURITY TOP 10 GOTCHAS</div>
+  <h1 class="title">What actually broke, <span class="accent">ranked.</span></h1>
+  <div class="top10">
+    <div class="top10-row"><div class="top10-num">1</div><div class="top10-body"><div class="top10-title">Row-Level Security, left off</div><div class="top10-src">The most-corroborated finding on this list. <b>CVE-2025-48757</b> · Moltbook.</div></div></div>
+    <div class="top10-row"><div class="top10-num">2</div><div class="top10-body"><div class="top10-title">Secrets, shipped in the bundle</div><div class="top10-src">5,600 apps scanned, 400+ exposed secrets. <b>Escape.tech</b> · <b>GitGuardian 2026</b>.</div></div></div>
+    <div class="top10-row"><div class="top10-num">3</div><div class="top10-body"><div class="top10-title">Slopsquatting</div><div class="top10-src">Attackers register the package name the model hallucinates. <b>USENIX 2025</b> · Lasso Security.</div></div></div>
+    <div class="top10-row"><div class="top10-num">4</div><div class="top10-body"><div class="top10-title">Authorization that only exists in the frontend</div><div class="top10-src">322% more privilege-escalation paths. <b>Apiiro</b> · Lovable's 48-day-open BOLA report.</div></div></div>
+    <div class="top10-row"><div class="top10-num">5</div><div class="top10-body"><div class="top10-title">Insecure defaults, shipped by the platform itself</div><div class="top10-src"><b>Base44's</b> Wiz-disclosed bypass · Lovable's old "RLS off by default."</div></div></div>
+  </div>
+  <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
+</section>
+
+<!-- 6, TOP 10 (6-10) -->
+<section class="slide" id="s5">
+  <div class="glow"></div>
+  <span class="kicker-num">06 / 10 · THE TOP 10, PART 2</span>
+  <div class="eyebrow"><span class="dot"></span>THE VIBE CODING SECURITY TOP 10 GOTCHAS</div>
+  <h1 class="title">The rest of the <span class="accent">list.</span></h1>
+  <div class="top10">
+    <div class="top10-row"><div class="top10-num">6</div><div class="top10-body"><div class="top10-title">The coding tools trust the folder you opened</div><div class="top10-src"><b>TrustFall</b> (Claude Code, Cursor, Gemini CLI, Copilot) · <b>CVE-2026-12537</b>, CVSS 10.0.</div></div></div>
+    <div class="top10-row"><div class="top10-num">7–9</div><div class="top10-body"><div class="top10-title">CORS wildcards, leaked env vars, forgotten debug routes</div><div class="top10-src">Real, common patterns, and we're not rounding these up past the evidence we actually have.</div></div></div>
+    <div class="top10-row"><div class="top10-num">10</div><div class="top10-body"><div class="top10-title">The baseline is already bad</div><div class="top10-src">45% of AI-generated code has a detectable OWASP flaw, across 100+ LLMs. <b>Veracode</b>.</div></div></div>
+  </div>
+  <p class="dek" style="margin-top:22px; font-size:14px;">Full sourcing, every citation linked: the companion blog post, link lands in your inbox after this session.</p>
+  <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
+</section>
+
+<!-- 7, DEMO -->
+<section class="slide" id="s6">
+  <div class="glow"></div>
+  <span class="kicker-num">07 / 10 · LIVE DEMO</span>
+  <div class="eyebrow"><span class="dot"></span>THE FIVE-MINUTE CHECK</div>
+  <h1 class="title">Two commands. <span class="accent">No special access.</span></h1>
+  <p class="dek" style="margin-bottom:18px;">Run against <b style="color:var(--text);">Loopline</b>, a synthetic vibe-coded app built for
+    this workshop, modeled exactly on the RLS pattern behind CVE-2025-48757 and Moltbook.</p>
+  <div class="demo-grid">
+    <div class="term">
+      <div class="term-head"><span class="term-dot" style="background:var(--critical);"></span><span class="term-dot" style="background:var(--medium);"></span><span class="term-dot" style="background:#22C55E;"></span>&nbsp;check_1_rls.sh</div>
+      <div class="term-body">
+        <div class="term-comment"># Does the public anon key read tables it shouldn't?</div>
+        <div class="term-cmd"><span class="prompt">$</span> curl -s "loopline.../rest/v1/customers?select=*" \<br/>&nbsp;&nbsp;-H "apikey: &lt;key shipped in the JS bundle&gt;"</div>
+        <div class="term-result">→ every customer row, no login required.</div>
+        <div class="term-tag">rowsecurity: false</div>
+      </div>
+    </div>
+    <div class="term">
+      <div class="term-head"><span class="term-dot" style="background:var(--critical);"></span><span class="term-dot" style="background:var(--medium);"></span><span class="term-dot" style="background:#22C55E;"></span>&nbsp;check_2_secrets.sh</div>
+      <div class="term-body">
+        <div class="term-comment"># Is a secret sitting in plain sight in the shipped bundle?</div>
+        <div class="term-cmd"><span class="prompt">$</span> curl -s loopline.io/_next/static/chunks/*.js \<br/>&nbsp;&nbsp;| grep -oE '(service_role|sk-|AKIA)[A-Za-z0-9_-]{10,}'</div>
+        <div class="term-result">→ NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY, in the client bundle.</div>
+        <div class="term-tag">Supabase's admin key. Bypasses RLS entirely, by design.</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
+</section>
+
+<!-- 8, RECAP + CTA -->
+<section class="slide" id="s7">
+  <div class="glow"></div>
+  <span class="kicker-num">08 / 10 · RECAP</span>
+  <div class="eyebrow"><span class="dot"></span>WHAT WE JUST PROVED</div>
+  <h1 class="title">Same bug class that hit Lovable,<br/>Moltbook, and <span class="accent">Base44.</span></h1>
+  <p class="dek">Before an attacker finds it. The checks aren't exotic, they just have to actually happen.</p>
+  <div class="cta-row">
+    <a class="cta cta-primary" target="_blank" rel="noopener noreferrer" href="https://casky-ai.github.io/casky-workshops/fastlane.html?utm_source=lightning_lesson&utm_medium=live_session&utm_campaign=fastlane_launch&utm_content=cta_workshop">Run it yourself, free →</a>
+    <a class="cta cta-secondary" target="_blank" rel="noopener noreferrer" href="https://maven.com/casky/top-10-cyber-security-gotchas-for-vibe-coded-apps?utm_source=lightning_lesson&utm_medium=live_session&utm_campaign=fastlane_launch&utm_content=cta_maven">Go deeper, paid live workshop →</a>
+  </div>
+  <div class="cta-note">Full workshop: both scenarios, real evidence, zero paywall, casky-ai.github.io/casky-workshops/fastlane.html</div>
+  <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
+</section>
+
+<!-- 9, Q&A -->
+<section class="slide" id="s8">
+  <div class="glow"></div>
+  <span class="kicker-num">09 / 10 · Q&amp;A</span>
+  <div class="qa-big">Questions?</div>
+  <div class="qa-list">
+    <div class="qa-item"><span class="arrow">→</span> Drop it in the Maven chat, we're reading live.</div>
+    <div class="qa-item"><span class="arrow">→</span> Didn't get to yours? Reply to the follow-up email, we answer every one.</div>
+    <div class="qa-item"><span class="arrow">→</span> Want your own app checked? Ask about the Cyber Readiness Assessment.</div>
+  </div>
+  <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
+</section>
+
+<!-- 10, END / THANK YOU -->
+<section class="slide" id="s9">
+  <div class="glow"></div>
+  <span class="kicker-num">10 / 10 · THANK YOU</span>
+  <div class="eyebrow"><span class="dot"></span>THAT'S 30 MINUTES</div>
+  <h1 class="title">Thanks for showing up.<br/><span class="accent">Now go check your own app.</span></h1>
+  <p class="dek" style="margin-bottom:8px;">The recording, the exact commands we ran, and the full sourced Top 10 land in your inbox within the hour.</p>
+  <div class="cta-row">
+    <a class="cta cta-primary" target="_blank" rel="noopener noreferrer" href="https://casky-ai.github.io/casky-workshops/fastlane.html?utm_source=lightning_lesson&utm_medium=live_session&utm_campaign=fastlane_launch&utm_content=end_slide_workshop">Run it yourself, free →</a>
+    <a class="cta cta-secondary" target="_blank" rel="noopener noreferrer" href="https://maven.com/casky/top-10-cyber-security-gotchas-for-vibe-coded-apps?utm_source=lightning_lesson&utm_medium=live_session&utm_campaign=fastlane_launch&utm_content=end_slide_maven">Go deeper on Maven →</a>
+  </div>
+  <div class="cta-note">Know someone who should've been here? Share: maven.com/p/b6f561/your-vibe-coded-app-is-already-compromised-did-you-find-it</div>
+  <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY</span></div><span>casky.ai</span></div>
+</section>
+
+</main>
+
+<script>
+(function () {
+  var deck = document.getElementById('deck');
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var dots = Array.prototype.slice.call(document.querySelectorAll('.navdots button'));
+
+  function setActive(i) {
+    dots.forEach(function (d, idx) { d.classList.toggle('active', idx === i); });
+  }
+
+  dots.forEach(function (d) {
+    d.addEventListener('click', function () {
+      var i = Number(d.getAttribute('data-i'));
+      slides[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    var current = slides.findIndex(function (s) {
+      var r = s.getBoundingClientRect();
+      return r.top > -50 && r.top < 50;
+    });
+    if (current === -1) current = 0;
+    if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+      e.preventDefault();
+      var next = Math.min(current + 1, slides.length - 1);
+      slides[next].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+      e.preventDefault();
+      var prev = Math.max(current - 1, 0);
+      slides[prev].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          var i = slides.indexOf(entry.target);
+          if (i !== -1) setActive(i);
+        }
+      });
+    }, { root: deck, threshold: 0.6 });
+    slides.forEach(function (s) { io.observe(s); });
+  }
+})();
+</script>
+
+</body>
+</html>
