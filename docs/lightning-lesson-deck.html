@@ -215,6 +215,29 @@
     border-radius: 6px; padding: 3px 8px;
   }
 
+  /* check-slide explanation */
+  .explain { display: flex; flex-direction: column; gap: 12px; margin-top: 22px; max-width: 760px; }
+  .explain-row {
+    font-family: var(--font-body); font-size: 14.5px; color: var(--muted); line-height: 1.6;
+    padding-left: 16px; border-left: 2px solid var(--brand-border);
+  }
+  .explain-row b { color: var(--text); font-weight: 600; }
+
+  /* evidence-to-report pipeline */
+  .pipeline-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: 12px; }
+  .pipeline-card {
+    background: var(--surface1); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 14px; display: flex; flex-direction: column; gap: 6px;
+  }
+  .pipeline-num {
+    font-family: var(--font-mono); font-weight: 700; font-size: 12px; color: var(--brand-dark);
+    background: var(--brand-dim); border: 1px solid var(--brand-border);
+    border-radius: 6px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 4px;
+  }
+  .pipeline-title { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--text); }
+  .pipeline-body { font-family: var(--font-body); font-size: 11.5px; color: var(--muted); line-height: 1.45; }
+
   /* CTA */
   .cta-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 30px; }
   .cta {
@@ -235,7 +258,7 @@
   .kicker-num { position: absolute; top: 8vh; right: 7vw; font-family: var(--font-mono); font-size: 12px; color: var(--dimmed); letter-spacing: 0.08em; z-index: 1; }
 
   @media (max-width: 900px) {
-    .stat-grid, .breach-grid, .demo-grid { grid-template-columns: 1fr; }
+    .stat-grid, .breach-grid, .demo-grid, .pipeline-grid { grid-template-columns: 1fr; }
     .navdots { display: none; }
   }
 </style>
@@ -253,6 +276,9 @@
   <button data-i="7" aria-label="Slide 8"></button>
   <button data-i="8" aria-label="Slide 9"></button>
   <button data-i="9" aria-label="Slide 10"></button>
+  <button data-i="10" aria-label="Slide 11"></button>
+  <button data-i="11" aria-label="Slide 12"></button>
+  <button data-i="12" aria-label="Slide 13"></button>
 </nav>
 
 <main class="deck" id="deck">
@@ -260,7 +286,7 @@
 <!-- 1, COVER / WAITING ROOM -->
 <section class="slide" id="s0">
   <div class="glow"></div>
-  <span class="kicker-num">01 / 10 · COVER</span>
+  <span class="kicker-num">01 / 13 · COVER</span>
   <div class="cover-badge"><span class="pulse"></span>WE START AT 12:00 PM ET</div>
   <h1 class="cover-title">Your Vibe-Coded App Is<br/>Already Compromised.<br/><span style="color:var(--brand);">Did You Find It?</span></h1>
   <p class="cover-sub">A free 30-minute Casky Lightning Lesson. Real breaches, real CVEs, and a
@@ -285,7 +311,7 @@
 <!-- 2, THE PROBLEM -->
 <section class="slide" id="s1">
   <div class="glow"></div>
-  <span class="kicker-num">02 / 10 · THE PROBLEM</span>
+  <span class="kicker-num">02 / 13 · THE PROBLEM</span>
   <div class="eyebrow"><span class="dot"></span>WHAT ACTUALLY BROKE</div>
   <h1 class="title">Vibe coding takes minutes to build an app.<br/>But is it <span class="accent">secure?</span></h1>
   <p class="dek">With Cursor, Lovable, Claude, Copilot, or Codex, you describe what you want, and
@@ -300,7 +326,7 @@
 <!-- 3, WHY IT MATTERS NOW -->
 <section class="slide" id="s2">
   <div class="glow"></div>
-  <span class="kicker-num">03 / 10 · WHY IT MATTERS NOW</span>
+  <span class="kicker-num">03 / 13 · WHY IT MATTERS NOW</span>
   <div class="eyebrow"><span class="dot"></span>THE NUMBERS ARE REAL, NOT ROUNDED UP</div>
   <h1 class="title">Real numbers. Real <span class="accent">CVEs &amp; security issues.</span></h1>
   <div class="stat-grid">
@@ -331,7 +357,7 @@
 <!-- 4, WHAT YOU NEED TO KNOW -->
 <section class="slide" id="s3">
   <div class="glow"></div>
-  <span class="kicker-num">04 / 10 · WHAT YOU NEED TO KNOW</span>
+  <span class="kicker-num">04 / 13 · WHAT YOU NEED TO KNOW</span>
   <div class="eyebrow"><span class="dot"></span>DOCUMENTED. NAMED. CVE-NUMBERED.</div>
   <h1 class="title">Three real breaches. Same <span class="accent">root cause.</span></h1>
   <p class="dek" style="margin-bottom:26px;">None of these were sophisticated attacks. Someone opened the network tab and asked the database for everything.</p>
@@ -358,7 +384,7 @@
 <!-- 5, TOP 10 (1-5) -->
 <section class="slide" id="s4">
   <div class="glow"></div>
-  <span class="kicker-num">05 / 10 · THE TOP 10, PART 1</span>
+  <span class="kicker-num">05 / 13 · THE TOP 10, PART 1</span>
   <div class="eyebrow"><span class="dot"></span>THE VIBE CODING SECURITY TOP 10 GOTCHAS</div>
   <h1 class="title">What actually broke, <span class="accent">ranked.</span></h1>
   <div class="top10">
@@ -374,7 +400,7 @@
 <!-- 6, TOP 10 (6-10) -->
 <section class="slide" id="s5">
   <div class="glow"></div>
-  <span class="kicker-num">06 / 10 · THE TOP 10, PART 2</span>
+  <span class="kicker-num">06 / 13 · THE TOP 10, PART 2</span>
   <div class="eyebrow"><span class="dot"></span>THE VIBE CODING SECURITY TOP 10 GOTCHAS</div>
   <h1 class="title">The rest of the <span class="accent">list.</span></h1>
   <div class="top10">
@@ -386,41 +412,96 @@
   <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
 </section>
 
-<!-- 7, DEMO -->
+<!-- 7, HOW LOOPLINE BROKE IT -->
 <section class="slide" id="s6">
   <div class="glow"></div>
-  <span class="kicker-num">07 / 10 · LIVE DEMO</span>
+  <span class="kicker-num">07 / 13 · THE LOOPLINE STORY</span>
+  <div class="eyebrow"><span class="dot"></span>WHAT VIBE CODING DID, AND DIDN'T FIX</div>
+  <h1 class="title">Same story. This time,<br/>we're the ones who <span class="accent">broke it.</span></h1>
+  <p class="dek">Lovable scaffolded Loopline's database. It never turned Row-Level Security on
+    for the <code style="font-family:var(--font-mono); color:var(--text);">customers</code> table.
+    Not disabled by a developer, never enabled at all.</p>
+  <p class="dek">Weeks later, a security blog post scared the founder into fixing one table.
+    <code style="font-family:var(--font-mono); color:var(--text);">tickets</code> got a policy,
+    but it was <code style="font-family:var(--font-mono); color:var(--text);">USING (true)</code>,
+    which matches every row for every requester. Looks fixed in a schema diff. Isn't.
+    <code style="font-family:var(--font-mono); color:var(--text);">customers</code> was never
+    revisited.</p>
+  <p class="dek">Meanwhile, an env var named <code style="font-family:var(--font-mono); color:var(--text);">NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY</code>
+    shipped Supabase's admin key straight into the browser bundle, because the coding assistant
+    didn't flag what <code style="font-family:var(--font-mono); color:var(--text);">NEXT_PUBLIC_</code>
+    does in Next.js. Nobody caught it before it shipped.</p>
+  <p class="dek" style="color:var(--text); font-weight:600;">Two checks. Five minutes. Let's run them.</p>
+  <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
+</section>
+
+<!-- 8, CHECK 1: RLS -->
+<section class="slide" id="s7">
+  <div class="glow"></div>
+  <span class="kicker-num">08 / 13 · LIVE CHECK 1 OF 2</span>
   <div class="eyebrow"><span class="dot"></span>THE FIVE-MINUTE CHECK</div>
-  <h1 class="title">Two commands. <span class="accent">No special access.</span></h1>
-  <p class="dek" style="margin-bottom:18px;">Run against <b style="color:var(--text);">Loopline</b>, a synthetic vibe-coded app built for
-    this workshop, modeled exactly on the RLS pattern behind CVE-2025-48757 and Moltbook.</p>
-  <div class="demo-grid">
-    <div class="term">
-      <div class="term-head"><span class="term-dot" style="background:var(--critical);"></span><span class="term-dot" style="background:var(--medium);"></span><span class="term-dot" style="background:#22C55E;"></span>&nbsp;check_1_rls.sh</div>
-      <div class="term-body">
-        <div class="term-comment"># Does the public anon key read tables it shouldn't?</div>
-        <div class="term-cmd"><span class="prompt">$</span> curl -s "loopline.../rest/v1/customers?select=*" \<br/>&nbsp;&nbsp;-H "apikey: &lt;key shipped in the JS bundle&gt;"</div>
-        <div class="term-result">→ every customer row, no login required.</div>
-        <div class="term-tag">rowsecurity: false</div>
-      </div>
+  <h1 class="title">rowsecurity: false.<br/><span class="accent">That's the whole bug.</span></h1>
+  <div class="term" style="max-width:760px;">
+    <div class="term-head"><span class="term-dot" style="background:var(--critical);"></span><span class="term-dot" style="background:var(--medium);"></span><span class="term-dot" style="background:#22C55E;"></span>&nbsp;check_1_rls.sh</div>
+    <div class="term-body">
+      <div class="term-comment"># Does the public anon key read tables it shouldn't?</div>
+      <div class="term-cmd"><span class="prompt">$</span> curl -s "loopline.../rest/v1/customers?select=*" \<br/>&nbsp;&nbsp;-H "apikey: &lt;key shipped in the JS bundle&gt;"</div>
+      <div class="term-result">→ every customer row, no login required.</div>
+      <div class="term-tag">rowsecurity: false</div>
     </div>
-    <div class="term">
-      <div class="term-head"><span class="term-dot" style="background:var(--critical);"></span><span class="term-dot" style="background:var(--medium);"></span><span class="term-dot" style="background:#22C55E;"></span>&nbsp;check_2_secrets.sh</div>
-      <div class="term-body">
-        <div class="term-comment"># Is a secret sitting in plain sight in the shipped bundle?</div>
-        <div class="term-cmd"><span class="prompt">$</span> curl -s loopline.io/_next/static/chunks/*.js \<br/>&nbsp;&nbsp;| grep -oE '(service_role|sk-|AKIA)[A-Za-z0-9_-]{10,}'</div>
-        <div class="term-result">→ NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY, in the client bundle.</div>
-        <div class="term-tag">Supabase's admin key. Bypasses RLS entirely, by design.</div>
-      </div>
-    </div>
+  </div>
+  <div class="explain">
+    <div class="explain-row"><b>The apikey</b> is the public "anon" key. It's meant to ship to every browser, that's how Supabase apps normally talk to the database from the client.</div>
+    <div class="explain-row"><b>rowsecurity: false</b> is Postgres's own flag: Row-Level Security was never turned on for this table. No policy exists to check who's asking.</div>
+    <div class="explain-row"><b>The result:</b> the same public key every visitor already has is, by itself, enough to read every row. No password, no session, no exploit.</div>
   </div>
   <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
 </section>
 
-<!-- 8, RECAP + CTA -->
-<section class="slide" id="s7">
+<!-- 9, CHECK 2: SECRETS -->
+<section class="slide" id="s8">
   <div class="glow"></div>
-  <span class="kicker-num">08 / 10 · RECAP</span>
+  <span class="kicker-num">09 / 13 · LIVE CHECK 2 OF 2</span>
+  <div class="eyebrow"><span class="dot"></span>THE FIVE-MINUTE CHECK</div>
+  <h1 class="title">The admin key. In the browser.<br/><span class="accent">On purpose, sort of.</span></h1>
+  <div class="term" style="max-width:760px;">
+    <div class="term-head"><span class="term-dot" style="background:var(--critical);"></span><span class="term-dot" style="background:var(--medium);"></span><span class="term-dot" style="background:#22C55E;"></span>&nbsp;check_2_secrets.sh</div>
+    <div class="term-body">
+      <div class="term-comment"># Is a secret sitting in plain sight in the shipped bundle?</div>
+      <div class="term-cmd"><span class="prompt">$</span> curl -s loopline.io/_next/static/chunks/*.js \<br/>&nbsp;&nbsp;| grep -oiE '(service_role|sk-live-|AKIA)[A-Za-z0-9_.":-]&#123;5,&#125;'</div>
+      <div class="term-result">→ NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY, in the client bundle.</div>
+      <div class="term-tag">Supabase's admin key. Bypasses RLS entirely, by design.</div>
+    </div>
+  </div>
+  <div class="explain">
+    <div class="explain-row"><b>The anon key</b> (check 1) respects Row-Level Security, when RLS is configured correctly, it's the safe key to expose.</div>
+    <div class="explain-row"><b>The service_role key</b> is Supabase's admin key. By design it bypasses RLS entirely, correctly configured or not. It's meant only for trusted, server-side code.</div>
+    <div class="explain-row"><b>How it got here:</b> an env var named <code style="font-family:var(--font-mono);">NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY</code>. The <code style="font-family:var(--font-mono);">NEXT_PUBLIC_</code> prefix ships anything to the browser, by Next.js design, not a bug in Next.js.</div>
+  </div>
+  <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
+</section>
+
+<!-- 10, EVIDENCE TO CISO REPORT -->
+<section class="slide" id="s9">
+  <div class="glow"></div>
+  <span class="kicker-num">10 / 13 · FROM CURL TO CISO REPORT</span>
+  <div class="eyebrow"><span class="dot"></span>SAME FLOW AS EVERY CASKY WORKSHOP</div>
+  <h1 class="title">Two curl commands are evidence.<br/>Here's what Casky does <span class="accent">with it.</span></h1>
+  <div class="pipeline-grid">
+    <div class="pipeline-card"><div class="pipeline-num">1</div><div class="pipeline-title">Evidence</div><div class="pipeline-body">The curl output, the leaked key. No scoping, no cleanup, just what a real attacker would have.</div></div>
+    <div class="pipeline-card"><div class="pipeline-num">2</div><div class="pipeline-title">Skill matching</div><div class="pipeline-body">Casky's classifier reads the evidence and selects the right skills from 818, no manual picking.</div></div>
+    <div class="pipeline-card"><div class="pipeline-num">3</div><div class="pipeline-title">Actions</div><div class="pipeline-body">Each skill actually runs. Every tool call is logged and independently verified.</div></div>
+    <div class="pipeline-card"><div class="pipeline-num">4</div><div class="pipeline-title">Remediation</div><div class="pipeline-body">Specific, prioritized fixes: enable RLS on customers, rotate the service-role key, move it server-side.</div></div>
+    <div class="pipeline-card"><div class="pipeline-num">5</div><div class="pipeline-title">CISO report</div><div class="pipeline-body">An executive summary, MITRE ATT&amp;CK and NIST CSF mapped, the exact format a board asks for.</div></div>
+  </div>
+  <p class="dek" style="margin-top:26px;">Run against this exact evidence: <b style="color:var(--text);">7 MITRE techniques at 84.5% confidence</b>, and the classifier named <b style="color:var(--text);">CVE-2025-48757 unprompted</b>. Full transcript and setup: <span style="font-family:var(--font-mono); color:var(--brand);">workshops.casky.ai/fastlane-lightning-lesson.html</span></p>
+  <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
+</section>
+
+<!-- 11, RECAP + CTA -->
+<section class="slide" id="s10">
+  <div class="glow"></div>
+  <span class="kicker-num">11 / 13 · RECAP</span>
   <div class="eyebrow"><span class="dot"></span>WHAT WE JUST PROVED</div>
   <h1 class="title">Same bug class that hit Lovable,<br/>Moltbook, and <span class="accent">Base44.</span></h1>
   <p class="dek">Before an attacker finds it. The checks aren't exotic, they just have to actually happen.</p>
@@ -432,10 +513,10 @@
   <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
 </section>
 
-<!-- 9, Q&A -->
-<section class="slide" id="s8">
+<!-- 12, Q&A -->
+<section class="slide" id="s11">
   <div class="glow"></div>
-  <span class="kicker-num">09 / 10 · Q&amp;A</span>
+  <span class="kicker-num">12 / 13 · Q&amp;A</span>
   <div class="qa-big">Questions?</div>
   <div class="qa-list">
     <div class="qa-item"><span class="arrow">→</span> Drop it in the Maven chat, we're reading live.</div>
@@ -445,10 +526,10 @@
   <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
 </section>
 
-<!-- 10, END / THANK YOU -->
-<section class="slide" id="s9">
+<!-- 13, END / THANK YOU -->
+<section class="slide" id="s12">
   <div class="glow"></div>
-  <span class="kicker-num">10 / 10 · THANK YOU</span>
+  <span class="kicker-num">13 / 13 · THANK YOU</span>
   <div class="eyebrow"><span class="dot"></span>THAT'S 30 MINUTES</div>
   <h1 class="title">Thanks for showing up.<br/><span class="accent">Now go check your own app.</span></h1>
   <p class="dek" style="margin-bottom:8px;">The recording, the exact commands we ran, and the full sourced Top 10 land in your inbox within the hour.</p>

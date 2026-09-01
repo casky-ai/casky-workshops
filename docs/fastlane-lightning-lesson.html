@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lightning Lesson — FastLane / SpeedBump Workshop</title>
+<title>Lightning Lesson: FastLane / SpeedBump Workshop</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2718%27 fill=%27%230f6e6e%27/%3E%3Crect x=%2724%27 y=%2724%27 width=%2752%27 height=%2752%27 rx=%278%27 fill=%27none%27 stroke=%27%23fbfaf6%27 stroke-width=%278%27/%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/style.css">
 
@@ -53,17 +53,18 @@
     <p class="eyebrow">Lightning Lesson</p>
     <h1>Run the live demo yourself</h1>
     <p class="lede">This is the exact live demo from Casky's free Lightning Lesson, "Your
-    Vibe-Coded App Is Already Compromised. Did You Find It?" — a synthetic vibe-coded SaaS
-    running in a container, two real <code>curl</code> checks that find its RLS gap and its
-    leaked secret, then a real Casky investigation of the same evidence. Nothing here touches
-    a real company; everything runs on your own machine.</p>
+    Vibe-Coded App Is Already Compromised. Did You Find It?": a synthetic vibe-coded SaaS
+    running in a container, two scripted checks that find its RLS gap and its leaked secret,
+    then a real Casky investigation of the same evidence, evidence through to a CISO-ready
+    report. Nothing here touches a real company; everything runs on your own machine.</p>
 
     <div class="toc">
       <span class="eyebrow">On this page</span>
       <ul>
         <li><a href="#homepage">The Loopline homepage</a></li>
+        <li><a href="#story">How Loopline broke it</a></li>
         <li><a href="#checks">The five-minute check</a></li>
-        <li><a href="#investigate">Investigate with Casky</a></li>
+        <li><a href="#investigate">Evidence to CISO report</a></li>
         <li><a href="#cleanup">Cleanup</a></li>
       </ul>
     </div>
@@ -78,41 +79,55 @@
     <h3>Prerequisites</h3>
     <ul>
       <li>Docker Desktop (or any Docker runtime), running.</li>
-      <li>This repo, checked out — every command below runs from <code>fastlane/</code>.</li>
+      <li>This repo, checked out; every command below runs from <code>fastlane/</code>.</li>
     </ul>
 
     <h3>Build and run it</h3>
     <pre><code>cd casky-workshops/fastlane
 docker build -f Dockerfile.demo -t loopline-demo:latest .
 docker run -d --name loopline-demo -p 8787:8787 loopline-demo:latest</code></pre>
-    <p>Open <a href="http://localhost:8787" target="_blank" rel="noopener">http://localhost:8787</a>
-    — Loopline's own landing page, dark CyberForge theme, checkered-flag stripe, and a
+    <p>Open <a href="http://localhost:8787" target="_blank" rel="noopener">http://localhost:8787</a>,
+    Loopline's own landing page: dark CyberForge theme, checkered-flag stripe, and a
     plainly-labeled synthetic-demo notice at the bottom.</p>
 
     <div class="callout callout-teal">
       <span class="callout-label">Verified end-to-end</span>
-      <p>Built, run, and curled just before publishing this page — homepage returns 200, both
-      checks below return the expected finding, no manual fixups needed.</p>
+      <p>Built, run, and checked just before publishing this page. Homepage returns 200, both
+      scripts below return the expected finding, no manual fixups needed.</p>
     </div>
 
+    <h2 id="story">How Loopline broke it</h2>
+    <p>Lovable scaffolded Loopline's database. It never turned Row-Level Security on for the
+    <code>customers</code> table, not disabled by a developer, never enabled at all. Weeks
+    later, a security blog post scared the founder into fixing one table: <code>tickets</code>
+    got a policy, but it was <code>USING (true)</code>, which matches every row for every
+    requester. Looks fixed in a schema diff. Isn't. <code>customers</code> was never revisited.</p>
+    <p>Separately, an env var named <code>NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY</code> shipped
+    Supabase's admin key straight into the browser bundle, because the coding assistant didn't
+    flag what <code>NEXT_PUBLIC_</code> does in Next.js. Nobody caught it before it shipped.
+    Full story: <a href="https://github.com/casky-ai/casky-workshops/blob/main/fastlane/NARRATIVE.md" target="_blank" rel="noopener">NARRATIVE.md</a>.</p>
+
     <h2 id="checks">The five-minute check</h2>
-    <p>Two commands, no special access — same two checks from
+    <p>Two scripts, no special access, same two checks from
     <a href="https://casky.ai/blog/vibe-coding-security-top-10-gotchas" target="_blank" rel="noopener">the Top 10 blog post</a>,
-    pointed at the local container instead of a real app.</p>
+    already in <code>fastlane/</code>, pointed at the local container instead of a real app.</p>
 
-    <h3>Check 1 — does the anon key read every row?</h3>
-    <pre><code>curl -s "http://localhost:8787/rest/v1/customers?select=*" \
-  -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIn0.SYNTHETIC_ANON_9f2a"</code></pre>
-    <p>Returns all five Loopline customer rows, no login required. Real RLS would check the
-    caller's identity against <code>org_id</code> before returning anything — Loopline's
-    <code>customers</code> table has RLS disabled entirely, so the public key alone is enough.</p>
+    <h3>Check 1: does the anon key read every row?</h3>
+    <pre><code>cd casky-workshops/fastlane
+./check_1_rls.sh</code></pre>
+    <p>Runs <code>curl -s "http://localhost:8787/rest/v1/customers?select=*" -H "apikey: &lt;anon key&gt;"</code>
+    and explains the result. Returns all five Loopline customer rows, no login required. The
+    <strong>apikey</strong> is the public "anon" key, meant to ship to every browser.
+    <strong>rowsecurity: false</strong> is Postgres's own flag: RLS was never turned on for this
+    table, so the public key alone is enough to read everything.</p>
 
-    <h3>Check 2 — is a secret sitting in the shipped bundle?</h3>
-    <pre><code>curl -s http://localhost:8787/_next/static/chunks/app-a91f3c2e.js \
-  | grep -oiE '(service_role|sk-live-|AKIA)[A-Za-z0-9_.":-]{5,}'</code></pre>
-    <p>Returns the Supabase <strong>service-role key</strong>, Supabase's admin key, meant only
-    for trusted server-side code, sitting in a variable name that ships to every visitor's
-    browser.</p>
+    <h3>Check 2: is a secret sitting in the shipped bundle?</h3>
+    <pre><code>./check_2_secrets.sh</code></pre>
+    <p>Runs <code>curl -s http://localhost:8787/_next/static/chunks/app-a91f3c2e.js | grep -oiE '(service_role|sk-live-|AKIA)[A-Za-z0-9_.":-]&#123;5,&#125;'</code>
+    and explains the result. Returns the Supabase <strong>service-role key</strong>: Supabase's
+    admin key, meant only for trusted server-side code. The anon key (check 1) respects RLS
+    when RLS is configured; the service-role key bypasses RLS entirely, by design, correctly
+    configured or not.</p>
 
     <div class="callout callout-amber">
       <span class="callout-label">This is synthetic data</span>
@@ -121,34 +136,55 @@ docker run -d --name loopline-demo -p 8787:8787 loopline-demo:latest</code></pre
       No real company, customer, or credential is involved.</p>
     </div>
 
-    <h2 id="investigate">Investigate with Casky</h2>
-    <p>Same underlying evidence, handed to Casky's FastLane skills for a full investigation.
-    Two independent paths, both already verified against this exact data — pick whichever
-    matches your setup. Full steps live on the <a href="fastlane-setup.html">Setup page</a>;
-    the short version:</p>
+    <h2 id="investigate">Evidence to CISO report</h2>
+    <p>Two curl checks are evidence. Here's what Casky does with it, the same flow as every
+    other Casky workshop:</p>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>#</th><th>Stage</th><th>What happens</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Evidence</td><td>The check output above, saved as-is. No scoping, no cleanup, just what a real attacker would have.</td></tr>
+          <tr><td>2</td><td>Skill matching</td><td>Casky's classifier reads the evidence and selects the right skills from the 818-skill library, no manual picking.</td></tr>
+          <tr><td>3</td><td>Actions</td><td>Each selected skill actually runs. Every tool call is logged and independently verified (<code>[VERIFIED] Skill script executed: YES/NO</code>).</td></tr>
+          <tr><td>4</td><td>Remediation</td><td>Specific, prioritized fixes: enable RLS on <code>customers</code>, rotate the service-role key, move it server-side.</td></tr>
+          <tr><td>5</td><td>CISO report</td><td>An executive summary, mapped to MITRE ATT&amp;CK and NIST CSF, the format a board asks for after every incident.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Two independent paths run this pipeline against this exact evidence, both already
+    verified. Pick whichever matches your setup; full steps live on the
+    <a href="fastlane-setup.html">Setup page</a>:</p>
 
     <div class="table-scroll">
       <table>
         <thead><tr><th>Path</th><th>What it needs</th><th>What you get</th></tr></thead>
         <tbody>
           <tr>
-            <td>Section 1 — Kali + Claude Code</td>
+            <td>Section 1: Kali + Claude Code</td>
             <td>Docker, <code>fastlane/.env</code></td>
             <td>Interactive Claude Code session, 10 hand-picked skills, <code>./verify.sh</code> at 12/12 PASS</td>
           </tr>
           <tr>
-            <td>Section 2 — Casky Box</td>
+            <td>Section 2: Casky Box</td>
             <td><code>casky-runner-phase1</code> running</td>
-            <td><code>casky harness --auto</code> over all 818 skills — auto-classified, MITRE-mapped findings</td>
+            <td><code>casky harness --auto</code> over all 818 skills, auto-classified, MITRE-mapped findings, a CISO-ready executive summary</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <p>Section 2, run against this exact evidence, independently found
-    <strong>7 MITRE techniques at 84.5% confidence</strong> and, unprompted, asked whether
-    Loopline's RLS default "matches the known CVE-2025-48757 pattern" — see the full transcript
-    on the <a href="fastlane-setup.html#section2">Setup page</a>.</p>
+    <div class="callout callout-teal">
+      <span class="callout-label">Verified just now</span>
+      <p>Section 2, run against this exact evidence, independently found <strong>7 MITRE
+      techniques at 84.5% confidence</strong> and, unprompted, asked whether Loopline's RLS
+      default "matches the known CVE-2025-48757 pattern": stage 2 (skill matching) converging on
+      the real incident this scenario is modeled on, from the evidence alone. Full transcript on
+      the <a href="fastlane-setup.html#section2">Setup page</a>. Open casky-ui
+      (<code>http://localhost:8766</code>) afterward for the Plan / Execution / Findings /
+      Remediation tabs, stages 3 and 4 above, and the CISO-ready executive summary, stage 5.</p>
+    </div>
 
     <hr class="rule">
     <h2 id="cleanup">Cleanup</h2>
