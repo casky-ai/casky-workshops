@@ -34,6 +34,7 @@
     --high:         #FF8C00;
     --medium:       #FBBF24;
     --purple:       #818CF8;
+    --amber:        #FB923C;
 
     --font-display: "Sora", system-ui, -apple-system, sans-serif;
     --font-body:    "Inter", system-ui, -apple-system, sans-serif;
@@ -238,6 +239,33 @@
   .pipeline-title { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--text); }
   .pipeline-body { font-family: var(--font-body); font-size: 11.5px; color: var(--muted); line-height: 1.45; }
 
+  /* skills-library slides */
+  .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 14px; max-width: 900px; }
+  .info-card {
+    background: var(--surface1); border: 1px solid var(--border); border-radius: 14px;
+    padding: 22px 24px;
+  }
+  .info-card h3 { font-family: var(--font-display); font-weight: 700; font-size: 18px; color: var(--text); margin: 0 0 10px; }
+  .info-card h3.amber { color: var(--amber); }
+  .info-card p { font-family: var(--font-body); font-size: 14px; color: var(--muted); line-height: 1.55; margin: 0; }
+
+  .twocol-info { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 18px; max-width: 980px; }
+  .twocol-info h3 { font-family: var(--font-display); font-weight: 700; font-size: 18px; margin: 0 0 14px; }
+  .twocol-info h3.teal { color: var(--brand); }
+  .twocol-info h3.amber { color: var(--amber); }
+  .twocol-info ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 10px; }
+  .twocol-info li { font-family: var(--font-body); font-size: 14px; color: var(--text); line-height: 1.5; }
+  .twocol-info li b { color: var(--brand); }
+  .note-italic { font-family: var(--font-body); font-style: italic; font-size: 13px; color: var(--muted); line-height: 1.55; margin: 14px 0 0; }
+
+  .code-bar {
+    font-family: var(--font-mono); font-size: 12.5px; color: var(--text);
+    background: var(--surface1); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 20px; margin-top: 24px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    max-width: 900px;
+  }
+  .code-bar .sep { color: var(--dimmed); }
+
   /* CTA */
   .cta-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 30px; }
   .cta {
@@ -259,6 +287,27 @@
   }
   .resource-row a { color: var(--brand); text-decoration: none; font-weight: 600; }
   .resource-row a:hover { text-decoration: underline; }
+
+  /* Maven listing screenshot */
+  .screenshot-card {
+    display: block; margin-top: 24px; max-width: 560px;
+    border-radius: 14px; overflow: hidden; border: 1px solid var(--border);
+    background: var(--surface1);
+  }
+  .screenshot-card img { display: block; width: 100%; height: auto; }
+  .screenshot-card.small { max-width: 380px; }
+  .screenshot-caption {
+    font-family: var(--font-mono); font-size: 11px; color: var(--muted);
+    margin-top: 10px; letter-spacing: 0.02em;
+  }
+
+  /* promo code reveal */
+  .promo-badge {
+    display: inline-block; font-family: var(--font-mono); font-weight: 700;
+    font-size: clamp(28px, 4vw, 40px); letter-spacing: 0.1em; color: var(--brand);
+    background: var(--brand-dim); border: 1px solid var(--brand-border);
+    border-radius: 12px; padding: 14px 30px; width: fit-content; margin-top: 8px;
+  }
 
   /* Maven workshop signup banner */
   .workshop-banner {
@@ -294,6 +343,7 @@
   @media (max-width: 900px) {
     .stat-grid, .breach-grid, .demo-grid, .pipeline-grid { grid-template-columns: 1fr; }
     .workshop-banner { flex-direction: column; }
+    .info-grid, .twocol-info { grid-template-columns: 1fr; }
     .navdots { display: none; }
   }
 </style>
@@ -315,6 +365,9 @@
   <button data-i="11" aria-label="Slide 12"></button>
   <button data-i="12" aria-label="Slide 13"></button>
   <button data-i="13" aria-label="Slide 14"></button>
+  <button data-i="14" aria-label="Slide 15"></button>
+  <button data-i="15" aria-label="Slide 16"></button>
+  <button data-i="16" aria-label="Slide 17"></button>
 </nav>
 
 <main class="deck" id="deck">
@@ -322,7 +375,7 @@
 <!-- 1, COVER / WAITING ROOM -->
 <section class="slide" id="s0">
   <div class="glow"></div>
-  <span class="kicker-num">01 / 13 · COVER</span>
+  <span class="kicker-num">01 / 17 · COVER</span>
   <div class="cover-badge"><span class="pulse"></span>WE START AT 12:00 PM ET</div>
   <h1 class="cover-title">Your Vibe-Coded App Is<br/>Already Compromised.<br/><span style="color:var(--brand);">Did You Find It?</span></h1>
   <p class="cover-sub">A free 30-minute Casky Lightning Lesson. Real breaches, real CVEs, and a
@@ -347,7 +400,7 @@
 <!-- 2, THE PROBLEM -->
 <section class="slide" id="s1">
   <div class="glow"></div>
-  <span class="kicker-num">02 / 13 · THE PROBLEM</span>
+  <span class="kicker-num">02 / 17 · THE PROBLEM</span>
   <div class="eyebrow"><span class="dot"></span>WHAT ACTUALLY BROKE</div>
   <h1 class="title">Vibe coding takes minutes to build an app.<br/>But is it <span class="accent">secure?</span></h1>
   <p class="dek">With Cursor, Lovable, Claude, Copilot, or Codex, you describe what you want, and
@@ -362,7 +415,7 @@
 <!-- 3, WHY IT MATTERS NOW -->
 <section class="slide" id="s2">
   <div class="glow"></div>
-  <span class="kicker-num">03 / 13 · WHY IT MATTERS NOW</span>
+  <span class="kicker-num">03 / 17 · WHY IT MATTERS NOW</span>
   <div class="eyebrow"><span class="dot"></span>THE NUMBERS ARE REAL, NOT ROUNDED UP</div>
   <h1 class="title">Real numbers. Real <span class="accent">CVEs &amp; security issues.</span></h1>
   <div class="stat-grid">
@@ -393,7 +446,7 @@
 <!-- 4, WHAT YOU NEED TO KNOW -->
 <section class="slide" id="s3">
   <div class="glow"></div>
-  <span class="kicker-num">04 / 13 · WHAT YOU NEED TO KNOW</span>
+  <span class="kicker-num">04 / 17 · WHAT YOU NEED TO KNOW</span>
   <div class="eyebrow"><span class="dot"></span>DOCUMENTED. NAMED. CVE-NUMBERED.</div>
   <h1 class="title">Three real breaches. Same <span class="accent">root cause.</span></h1>
   <p class="dek" style="margin-bottom:26px;">None of these were sophisticated attacks. Someone opened the network tab and asked the database for everything.</p>
@@ -420,7 +473,7 @@
 <!-- 5, TOP 10 (1-5) -->
 <section class="slide" id="s4">
   <div class="glow"></div>
-  <span class="kicker-num">05 / 13 · THE TOP 10, PART 1</span>
+  <span class="kicker-num">05 / 17 · THE TOP 10, PART 1</span>
   <div class="eyebrow"><span class="dot"></span>THE VIBE CODING SECURITY TOP 10 GOTCHAS</div>
   <h1 class="title">What actually broke, <span class="accent">ranked.</span></h1>
   <div class="top10">
@@ -436,7 +489,7 @@
 <!-- 6, TOP 10 (6-10) -->
 <section class="slide" id="s5">
   <div class="glow"></div>
-  <span class="kicker-num">06 / 13 · THE TOP 10, PART 2</span>
+  <span class="kicker-num">06 / 17 · THE TOP 10, PART 2</span>
   <div class="eyebrow"><span class="dot"></span>THE VIBE CODING SECURITY TOP 10 GOTCHAS</div>
   <h1 class="title">The rest of the <span class="accent">list.</span></h1>
   <div class="top10">
@@ -451,7 +504,7 @@
 <!-- 7, HOW LOOPLINE BROKE IT -->
 <section class="slide" id="s6">
   <div class="glow"></div>
-  <span class="kicker-num">07 / 13 · THE LOOPLINE STORY</span>
+  <span class="kicker-num">07 / 17 · THE LOOPLINE STORY</span>
   <div class="eyebrow"><span class="dot"></span>WHAT VIBE CODING DID, AND DIDN'T FIX</div>
   <h1 class="title">Same story. This time,<br/>we're the ones who <span class="accent">broke it.</span></h1>
   <p class="dek">Lovable scaffolded Loopline's database. It never turned Row-Level Security on
@@ -474,7 +527,7 @@
 <!-- 8, CHECK 1: RLS -->
 <section class="slide" id="s7">
   <div class="glow"></div>
-  <span class="kicker-num">08 / 13 · LIVE CHECK 1 OF 2</span>
+  <span class="kicker-num">08 / 17 · LIVE CHECK 1 OF 2</span>
   <div class="eyebrow"><span class="dot"></span>THE FIVE-MINUTE CHECK</div>
   <h1 class="title">rowsecurity: false.<br/><span class="accent">That's the whole bug.</span></h1>
   <div class="term" style="max-width:760px;">
@@ -497,7 +550,7 @@
 <!-- 9, CHECK 2: SECRETS -->
 <section class="slide" id="s8">
   <div class="glow"></div>
-  <span class="kicker-num">09 / 13 · LIVE CHECK 2 OF 2</span>
+  <span class="kicker-num">09 / 17 · LIVE CHECK 2 OF 2</span>
   <div class="eyebrow"><span class="dot"></span>THE FIVE-MINUTE CHECK</div>
   <h1 class="title">The admin key. In the browser.<br/><span class="accent">On purpose, sort of.</span></h1>
   <div class="term" style="max-width:760px;">
@@ -517,10 +570,74 @@
   <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
 </section>
 
-<!-- 10, EVIDENCE TO CISO REPORT -->
+<!-- 10, THE SKILLS LIBRARY -->
+<section class="slide" id="s-lib1">
+  <div class="glow"></div>
+  <span class="kicker-num">10 / 17 · WHAT POWERS THIS</span>
+  <div class="eyebrow"><span class="dot"></span>OPEN SOURCE, NOT A BLACK BOX</div>
+  <h1 class="title">817 executable skills. Apache 2.0.<br/>Built by <span class="accent">practitioners.</span></h1>
+  <div class="info-grid">
+    <div class="info-card">
+      <h3>Not prompts</h3>
+      <p>Structured skill files: rationale and methodology, one per technique.</p>
+    </div>
+    <div class="info-card">
+      <h3>817 skills · 29 domains</h3>
+      <p>MITRE ATT&amp;CK · NIST CSF 2.0 · OWASP · ATLAS · D3FEND · NIST AI RMF</p>
+    </div>
+    <div class="info-card">
+      <h3 class="amber">31,000+ GitHub stars</h3>
+      <p>Community-validated, not a vendor's internal ruleset.</p>
+    </div>
+    <div class="info-card">
+      <h3>100% open</h3>
+      <p>This exact workshop, and today's Loopline demo, run entirely on this library.</p>
+    </div>
+  </div>
+  <div class="resource-row">
+    <span class="resource-label">Open source</span>
+    <a href="https://github.com/mukul975/Anthropic-Cybersecurity-Skills" target="_blank" rel="noopener noreferrer">github.com/mukul975/Anthropic-Cybersecurity-Skills</a>
+  </div>
+  <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
+</section>
+
+<!-- 11, BRING YOUR OWN AGENT -->
+<section class="slide" id="s-lib2">
+  <div class="glow"></div>
+  <span class="kicker-num">11 / 17 · NO LOCK-IN</span>
+  <div class="eyebrow"><span class="dot"></span>ARCHITECTURE</div>
+  <h1 class="title">Bring your own agent.<br/>Bring your own <span class="accent">LLM.</span></h1>
+  <div class="twocol-info">
+    <div>
+      <h3 class="teal">Progressive disclosure architecture</h3>
+      <ul>
+        <li>Each skill costs <b>~30 tokens</b> to scan, frontmatter only</li>
+        <li><b>500–2,000 tokens</b> to fully load, complete workflow</li>
+        <li>Agents search all 817 skills in a single pass, no context-window blowout</li>
+      </ul>
+      <p class="note-italic">We don't load all 817 skills upfront. Only what the agent needs, when it needs it.</p>
+    </div>
+    <div>
+      <h3 class="amber">Skills are the foundation</h3>
+      <ul>
+        <li>Skills are the fundamental building blocks for AI-driven security investigation</li>
+        <li>On top: an open-source harness to orchestrate full investigations</li>
+        <li>Bring your own agent, bring your own LLM, no lock-in</li>
+      </ul>
+    </div>
+  </div>
+  <div class="code-bar"><span>scan: ~30 tokens</span><span class="sep">|</span><span>load: 500–2,000 tokens</span><span class="sep">|</span><span>817 skills · one pass</span></div>
+  <div class="resource-row">
+    <span class="resource-label">Open source</span>
+    <a href="https://github.com/mukul975/Anthropic-Cybersecurity-Skills" target="_blank" rel="noopener noreferrer">github.com/mukul975/Anthropic-Cybersecurity-Skills</a>
+  </div>
+  <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
+</section>
+
+<!-- 12, EVIDENCE TO CISO REPORT -->
 <section class="slide" id="s9">
   <div class="glow"></div>
-  <span class="kicker-num">10 / 13 · FROM CURL TO CISO REPORT</span>
+  <span class="kicker-num">12 / 17 · FROM CURL TO CISO REPORT</span>
   <div class="eyebrow"><span class="dot"></span>SAME FLOW AS EVERY CASKY WORKSHOP</div>
   <h1 class="title">Two curl commands are evidence.<br/>Here's what Casky does <span class="accent">with it.</span></h1>
   <div class="pipeline-grid">
@@ -537,7 +654,7 @@
 <!-- 11, RECAP + CTA -->
 <section class="slide" id="s10">
   <div class="glow"></div>
-  <span class="kicker-num">11 / 13 · RECAP</span>
+  <span class="kicker-num">13 / 17 · RECAP</span>
   <div class="eyebrow"><span class="dot"></span>WHAT WE JUST PROVED</div>
   <h1 class="title">Same bug class that hit Lovable,<br/>Moltbook, and <span class="accent">Base44.</span></h1>
   <p class="dek">Before an attacker finds it. The checks aren't exotic, they just have to actually happen.</p>
@@ -545,6 +662,9 @@
     <a class="cta cta-primary" target="_blank" rel="noopener noreferrer" href="https://casky-ai.github.io/casky-workshops/fastlane.html?utm_source=lightning_lesson&utm_medium=live_session&utm_campaign=fastlane_launch&utm_content=cta_workshop">Run it yourself, free →</a>
     <a class="cta cta-secondary" target="_blank" rel="noopener noreferrer" href="https://maven.com/casky/top-10-cyber-security-gotchas-for-vibe-coded-apps?utm_source=lightning_lesson&utm_medium=live_session&utm_campaign=fastlane_launch&utm_content=cta_maven">Go deeper, paid live workshop →</a>
   </div>
+  <a class="screenshot-card small" target="_blank" rel="noopener noreferrer" href="https://maven.com/casky/top-10-cyber-security-gotchas-for-vibe-coded-apps?utm_source=lightning_lesson&utm_medium=live_session&utm_campaign=fastlane_launch&utm_content=recap_screenshot">
+    <img src="assets/images/maven-workshop-1.jpg" alt="Top 10 Cyber Security Gotchas for Vibe-Coded Apps, the Maven workshop listing"/>
+  </a>
   <div class="cta-note">Full workshop: both scenarios, real evidence, zero paywall, casky-ai.github.io/casky-workshops/fastlane.html</div>
   <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY · LIGHTNING LESSON</span></div><span>casky.ai</span></div>
 </section>
@@ -552,7 +672,7 @@
 <!-- 12, Q&A -->
 <section class="slide" id="s11">
   <div class="glow"></div>
-  <span class="kicker-num">12 / 13 · Q&amp;A</span>
+  <span class="kicker-num">14 / 17 · Q&amp;A</span>
   <div class="qa-big">Questions?</div>
   <div class="qa-list">
     <div class="qa-item"><span class="arrow">→</span> Drop it in the Maven chat, we're reading live.</div>
@@ -565,7 +685,7 @@
 <!-- 13, END / THANK YOU -->
 <section class="slide" id="s12">
   <div class="glow"></div>
-  <span class="kicker-num">13 / 14 · THANK YOU</span>
+  <span class="kicker-num">15 / 17 · THANK YOU</span>
   <div class="eyebrow"><span class="dot"></span>THAT'S 30 MINUTES</div>
   <h1 class="title">Thanks for showing up.<br/><span class="accent">Now go check your own app.</span></h1>
   <p class="dek" style="margin-bottom:8px;">The recording, the exact commands we ran, and the full sourced Top 10 land in your inbox within the hour.</p>
@@ -576,6 +696,9 @@
     <span class="resource-label">Read the full sourcing</span>
     <a href="https://casky.ai/blog/vibe-coding-security-top-10-gotchas?utm_source=lightning_lesson&utm_medium=live_session&utm_campaign=fastlane_launch&utm_content=end_slide_blog" target="_blank" rel="noopener noreferrer">casky.ai/blog/vibe-coding-security-top-10-gotchas</a>
   </div>
+  <a class="screenshot-card small" target="_blank" rel="noopener noreferrer" href="https://maven.com/casky/top-10-cyber-security-gotchas-for-vibe-coded-apps?utm_source=lightning_lesson&utm_medium=live_session&utm_campaign=fastlane_launch&utm_content=thankyou_screenshot">
+    <img src="assets/images/maven-workshop-1.jpg" alt="Top 10 Cyber Security Gotchas for Vibe-Coded Apps, the Maven workshop listing"/>
+  </a>
   <div class="cta-note">Know someone who should've been here? Share: maven.com/p/b6f561/your-vibe-coded-app-is-already-compromised-did-you-find-it</div>
   <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY</span></div><span>casky.ai</span></div>
 </section>
@@ -583,7 +706,7 @@
 <!-- 14, MAVEN WORKSHOP SIGNUP -->
 <section class="slide" id="s13">
   <div class="glow"></div>
-  <span class="kicker-num">14 / 14 · GO DEEPER, LIVE</span>
+  <span class="kicker-num">16 / 17 · GO DEEPER, LIVE</span>
   <div class="eyebrow"><span class="dot"></span>THE FULL WORKSHOP, ON MAVEN</div>
   <h1 class="title">Same investigation. Your own stack.<br/>Join us on <span class="accent">Maven.</span></h1>
   <div class="workshop-banner">
@@ -602,6 +725,27 @@
       <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAhIAAAISAQMAAACj87T8AAAABlBMVEUAAAD///+l2Z/dAAAAAnRSTlP//8i138cAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAQySURBVHic7ZpBbuUwDEMF5AA5Uq6eI+UAATzfFinJbQcYoLBnQy/cxHHe3zACRdfa74eJIYYYYojRGY9hXO3tt0f7XH3GfY7p5ZZx+/nrWzAOMcTYxDgg2euz9bOr3/ar9kGONz/Ti2+iI8eb/jP+rhhi7GFw+aXg+9S1XrbeloI//Ac/kxhibGeM5ZR00fVba7LDxRDjPzEafIJPqL/YmvChfjHE2M/gcqcNs2DGrXzgyKD93X+IIcYahk2S/scJQwwxNjGm4RYBXOoazgJlG1vKO2KIsZ4R+33q7uC2XDP0ZzeLNW+xJoYYWxgtzEI429J8sQNzA5GhF7IFMcTYxaB3RdT6Giox1WzXl9asNXRld3gHMcTYxMBKSP+mRcCtZX/2ooXLmiyGGIsZWWa90TLU5Iumwp/aFHXBSoghxkZGdQJ93Oc8jVfjrMD1L4YYexmRVJ3ssVp0W+1BcICe7XyLd7DMx8QQYz2j/C9VbKDusxLTT7hjePCGGGJsYXCkbWC2heFPvQjnmLQuhhirGU9sHWqO/xaArpkjVO8Ay8sfF0OM9YzWeFZlU032CMH132h0eX6AXqx8L2KIsZThZwBHETJ9L+KCelbAH8SHUXoxMcRYy6jK9TdHoxXZVinRUbb9jSt8shhirGYcpQh7wc2DgNA/z16h/wxixRBjD8NC1xaWl6cG9qUcP9ODqRcTQ4yljIPFdTw7kR6wK8tbK7lsncQQYyPDpyH4O7TsDwaosUQ7/AkbLIYYGxk0BtwfV54oXLQNJUyw4j/EEGMpo48QN6yErx1xKFu3/OQdxBBjA4OpAP4BwHfl2oDfZtzyRPdWtC6GGGsZOLDKZ/iXlQk05V0U/EWPK4YYyxnxOpuvlseud6YH51sF73V6+l7EEGMhg01VCn6IuYJmrV8tGLUXE0OMlYz2hqm1st9bsw4yi5Bg7Gv8MDLbEkOM1YzMWyMVKAcG4zbEnQ8sCrgYYuxg9Dk3XH6bgg+zYPUX8BGcYoixicFai6h1QHk1lF2r8zAQ0b1FtiWGGKsZrLruHXDbWjKYFBz4CFrU7lsMMXYxHliEomuvzsVAZNlG/JUuQgwxtjD6QAfGq1gDt9E7jM/hHqtn4xBDjB0Mdltd3Ljy2ynlGrs9/mo0Fd/quhhiLGQU5aaVNeofgvdfGIO2QQwxtjEyKYhUwKuuHfS4Ds8HOcQQYxMjR5xuXQN0Mjhwt5vOwm3wlwxWDDGWMh7q1s3CCRdRDMQV/VkkWnQWhxhibGIcrvSMBkrU6mv+Ujhgah2TGGLsYaR83R1cJduC6t3tfnng1lgMMXYzIGT2Z8VFIIM1nil4ARdDjP0MKJgbpmjgnkxF5l1iiLGL4ZdpZVGdGSHUhBb6p/S/+Q8xxFjEgMJ91yi4ty/AxZaXohz/kMGKIcZKxq+HGGKIIYYYrf0BG+snyJ1KyK0AAAAASUVORK5CYII=" alt="QR code linking to the Maven workshop signup page" width="150" height="150"/>
       <div class="wb-qr-caption">Scan to enroll</div>
       <div class="wb-qr-url">maven.com/casky/top-10-…</div>
+    </div>
+  </div>
+  <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY</span></div><span>casky.ai</span></div>
+</section>
+
+<!-- 15, FOR THOSE WHO STAYED: PROMO CODE -->
+<section class="slide" id="s14">
+  <div class="glow"></div>
+  <span class="kicker-num">17 / 17 · FOR THOSE WHO STAYED</span>
+  <div class="eyebrow"><span class="dot"></span>ONE MORE THING</div>
+  <h1 class="title">You stayed till the end.<br/>Here's your <span class="accent">code.</span></h1>
+  <div class="promo-badge">LIVIBE30</div>
+  <p class="dek" style="margin-top:10px; margin-bottom:0;">Enter this code at checkout on the listing below. Live-session only, not shared in the replay.</p>
+  <div style="display:flex; gap:32px; align-items:flex-start; margin-top:24px; flex-wrap:wrap;">
+    <a class="screenshot-card" style="margin-top:0;" target="_blank" rel="noopener noreferrer" href="https://maven.com/casky/top-10-cyber-security-gotchas-for-vibe-coded-apps?promoCode=LIVIBE30&utm_source=lightning_lesson&utm_medium=live_session&utm_campaign=fastlane_launch&utm_content=promo_code_reveal">
+      <img src="assets/images/maven-workshop-1.jpg" alt="Top 10 Cyber Security Gotchas for Vibe-Coded Apps, the Maven workshop listing"/>
+    </a>
+    <div class="wb-qr">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAjoAAAI6AQMAAAAUhnCDAAAABlBMVEUAAAD///+l2Z/dAAAAAnRSTlP//8i138cAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAS2SURBVHic7ZpRbtwwDEQJ+AA5kq/uI/kABti1OEPS26BFgbRhgdGHY6+kpx+NNBrF/IuKCSSQQAIJ9A9Ap6HsfpkfH+vxqjHbHBXn/fZxt3+9+XFX7O7OjptAAk0EbZjk+0K+QIH0k6DFuEcAfL3dY+1OuEACTQRFgz1oaLqU8HpYqChkc48QmojPEwISSKDJoMYoYTh/C4nc3Ju2Ggsk0H8Bcs83GpwyPcEtkP9GawIJ9P2gVSARdmoOHTZ9dVq1CfJsIpBA40DUANbzP3igCCTQRFArNfUv663Ocu1X6GT5nV4EEmga6ET79SdoffFPYkSKaFJcIAUSaBpo/XwXpCrQxEMnBl8eJp5S8jyUCiTQPFB68JaqRP7NbaA6VWx+vKXjAgk0DRRK2Djhc2Vf2jnMDLeXPLK2z4NDCyTQPBB/CSOe5pw9IQx04oAMXjbaH4EEGgcyLu9Ztz4rGN9bEw5jyT16WiOQQJNAVUdvQxPf7HyZnrzvbKZHIIGmgfzio5mZ9Cxm/N+T1EkyMNTzTCuQQENAseRzPUfprWhrShg8re5lfwQSaBroLqEEJodMWlbBb21X6KPSugsk0DhQ9ty5DVTS0mVzgkuvjtqnPxJIoDEgx6wHo1Z729LWXMwQ3XlaPTdnRC6QQBNBDLxxFF09DXJw3OxcbUPg0HRDpTWBBBoHOlMJuQ0c9DHhy2MbaIkMHE0MKJBA40Duzhilny7R1BkQhli47scOYLkhCCTQOFDGgogPIZHy5aGdHi5adzn9KCqQQINAGR8+ApV+4jTjXmCkvZ1MBRJoHsie3gZigU4SvnPABaqKh9YEEmgQaGuOhoEKdFKBCo6i7bTKHlEEEmgciPMfb/l4KuHgQt/NTIlKIIHGgbaHe+EjGO2N2nEs/iy7CyTQSBA9OOLDq3/mG3cABi+5DUBeAgk0E0TPEj/HYbNiFGs07hQU0JtEBBJoDgjrPq93loWhHJxpoqU5p7s3mJ5NIIEGgjyvK6upc93/SUDQBMTCCoEEmgdKW7O+9/Axziwlu1sZ9twB8lMggQaCsIBXe4rAkLRkp3bLCVuzUVMCCTQNdBecQp2pCjPx1n2na3/kMFCRQALNA6U/wQNNeeK03BW8cVu3cO0CCTQNREeDuc4G7mVwuCFAHY9PDCiQQONA7o985S4fqZizxJLX+TlMHGPXl0ACjQM9Q0P+YwnMTDh0ZuL2ia1xgQSaCXJ0X+0tJZJ54dtqX8Koh0ACzQOtqR93PGm/KZFoU0lLy8mbTjaBBJoIKjNzZYzChT4FFMJYZSeNinGBBBoIKtP93jQdTUmkeSAO7e1MK5BAg0DOdX/ZmkrHMxiPwrAco574GQISSKCJIGcdF3oPOfCqk9wsVvbHBBJoJIhzHUs+1/3wLKGJXPej3f2Bijd/JJBAg0CY+uVe2NPp1VMJR+0AeTLt1/QCCTQKtFq9xeGOxR8Mhot827Nip2EXSKC5oJr11AQzxPi0XtssvkAC/Qeglqocce8DRtzxIGb0SMd/JRGBBPpeEGzNuWUrLPReeeEacPdc9xnGfOaPBBJoAsisz3Ua9vVTNF0F8Dx7nkZ37wIJNBH0NUUggQQSSKC/DvoBDHHVDnOU6eYAAAAASUVORK5CYII=" alt="QR code linking to the Maven workshop signup page, pre-filled with promo code LIVIBE30" width="150" height="150"/>
+      <div class="wb-qr-caption">Scan to enroll</div>
+      <div class="wb-qr-url">Pre-filled: LIVIBE30</div>
     </div>
   </div>
   <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY</span></div><span>casky.ai</span></div>
