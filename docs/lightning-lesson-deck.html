@@ -249,6 +249,29 @@
   .cta-secondary { background: var(--surface1); border: 1px solid var(--border); color: var(--text); }
   .cta-note { font-family: var(--font-mono); font-size: 11.5px; color: var(--dimmed); margin-top: 14px; }
 
+  /* Maven workshop signup banner */
+  .workshop-banner {
+    display: flex; align-items: center; justify-content: space-between; gap: 36px;
+    margin-top: 26px; padding: 30px 34px; max-width: 980px;
+    background: linear-gradient(135deg, var(--surface1), var(--surface2));
+    border: 1px solid var(--brand-border); border-radius: 18px;
+  }
+  .wb-info { flex: 1; min-width: 0; }
+  .wb-badge {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--brand);
+    background: var(--brand-dim); border: 1px solid var(--brand-border); border-radius: 999px;
+    padding: 4px 12px; width: fit-content; letter-spacing: 0.06em; margin-bottom: 12px;
+  }
+  .wb-title { font-family: var(--font-display); font-weight: 800; font-size: 24px; color: var(--text); line-height: 1.2; margin-bottom: 8px; }
+  .wb-instructor { font-family: var(--font-body); font-size: 14px; color: var(--muted); }
+  .wb-qr {
+    flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    background: #ffffff; border-radius: 14px; padding: 16px;
+  }
+  .wb-qr img { display: block; border-radius: 4px; }
+  .wb-qr-caption { font-family: var(--font-display); font-weight: 700; font-size: 12px; color: #030308; }
+  .wb-qr-url { font-family: var(--font-mono); font-size: 10px; color: rgba(3,3,8,0.55); }
+
   /* Q&A */
   .qa-big { font-family: var(--font-display); font-weight: 800; font-size: clamp(48px, 8vw, 96px); letter-spacing: -0.02em; color: var(--text); line-height: 1; margin-bottom: 26px; }
   .qa-list { display: flex; flex-direction: column; gap: 10px; }
@@ -259,6 +282,7 @@
 
   @media (max-width: 900px) {
     .stat-grid, .breach-grid, .demo-grid, .pipeline-grid { grid-template-columns: 1fr; }
+    .workshop-banner { flex-direction: column; }
     .navdots { display: none; }
   }
 </style>
@@ -279,6 +303,7 @@
   <button data-i="10" aria-label="Slide 11"></button>
   <button data-i="11" aria-label="Slide 12"></button>
   <button data-i="12" aria-label="Slide 13"></button>
+  <button data-i="13" aria-label="Slide 14"></button>
 </nav>
 
 <main class="deck" id="deck">
@@ -529,7 +554,7 @@
 <!-- 13, END / THANK YOU -->
 <section class="slide" id="s12">
   <div class="glow"></div>
-  <span class="kicker-num">13 / 13 · THANK YOU</span>
+  <span class="kicker-num">13 / 14 · THANK YOU</span>
   <div class="eyebrow"><span class="dot"></span>THAT'S 30 MINUTES</div>
   <h1 class="title">Thanks for showing up.<br/><span class="accent">Now go check your own app.</span></h1>
   <p class="dek" style="margin-bottom:8px;">The recording, the exact commands we ran, and the full sourced Top 10 land in your inbox within the hour.</p>
@@ -538,6 +563,33 @@
     <a class="cta cta-secondary" target="_blank" rel="noopener noreferrer" href="https://maven.com/casky/top-10-cyber-security-gotchas-for-vibe-coded-apps?utm_source=lightning_lesson&utm_medium=live_session&utm_campaign=fastlane_launch&utm_content=end_slide_maven">Go deeper on Maven →</a>
   </div>
   <div class="cta-note">Know someone who should've been here? Share: maven.com/p/b6f561/your-vibe-coded-app-is-already-compromised-did-you-find-it</div>
+  <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY</span></div><span>casky.ai</span></div>
+</section>
+
+<!-- 14, MAVEN WORKSHOP SIGNUP -->
+<section class="slide" id="s13">
+  <div class="glow"></div>
+  <span class="kicker-num">14 / 14 · GO DEEPER, LIVE</span>
+  <div class="eyebrow"><span class="dot"></span>THE FULL WORKSHOP, ON MAVEN</div>
+  <h1 class="title">Same investigation. Your own stack.<br/>Join us on <span class="accent">Maven.</span></h1>
+  <div class="workshop-banner">
+    <div class="wb-info">
+      <div class="wb-badge">WORKSHOP</div>
+      <div class="wb-title">Top 10 Cyber Security Gotchas for Vibe-Coded Apps</div>
+      <div class="wb-instructor">Taught live by Rajesh Jain, Founder, Casky</div>
+      <div class="facts-row" style="margin-top:14px; margin-bottom:0;">
+        <div class="fact-chip"><b>$249 USD</b></div>
+        <div class="fact-chip">Next cohort: <b>Sep 8, 2026</b> · 1:00–2:30pm ET</div>
+        <div class="fact-chip">90 minutes, live</div>
+      </div>
+      <a class="cta cta-primary" target="_blank" rel="noopener noreferrer" style="margin-top:22px;" href="https://maven.com/casky/top-10-cyber-security-gotchas-for-vibe-coded-apps?utm_source=lightning_lesson&utm_medium=live_session&utm_campaign=fastlane_launch&utm_content=final_slide_qr">Enroll on Maven →</a>
+    </div>
+    <div class="wb-qr">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAhIAAAISAQMAAACj87T8AAAABlBMVEUAAAD///+l2Z/dAAAAAnRSTlP//8i138cAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAQySURBVHic7ZpBbuUwDEMF5AA5Uq6eI+UAATzfFinJbQcYoLBnQy/cxHHe3zACRdfa74eJIYYYYojRGY9hXO3tt0f7XH3GfY7p5ZZx+/nrWzAOMcTYxDgg2euz9bOr3/ar9kGONz/Ti2+iI8eb/jP+rhhi7GFw+aXg+9S1XrbeloI//Ac/kxhibGeM5ZR00fVba7LDxRDjPzEafIJPqL/YmvChfjHE2M/gcqcNs2DGrXzgyKD93X+IIcYahk2S/scJQwwxNjGm4RYBXOoazgJlG1vKO2KIsZ4R+33q7uC2XDP0ZzeLNW+xJoYYWxgtzEI429J8sQNzA5GhF7IFMcTYxaB3RdT6Giox1WzXl9asNXRld3gHMcTYxMBKSP+mRcCtZX/2ooXLmiyGGIsZWWa90TLU5Iumwp/aFHXBSoghxkZGdQJ93Oc8jVfjrMD1L4YYexmRVJ3ssVp0W+1BcICe7XyLd7DMx8QQYz2j/C9VbKDusxLTT7hjePCGGGJsYXCkbWC2heFPvQjnmLQuhhirGU9sHWqO/xaArpkjVO8Ay8sfF0OM9YzWeFZlU032CMH132h0eX6AXqx8L2KIsZThZwBHETJ9L+KCelbAH8SHUXoxMcRYy6jK9TdHoxXZVinRUbb9jSt8shhirGYcpQh7wc2DgNA/z16h/wxixRBjD8NC1xaWl6cG9qUcP9ODqRcTQ4yljIPFdTw7kR6wK8tbK7lsncQQYyPDpyH4O7TsDwaosUQ7/AkbLIYYGxk0BtwfV54oXLQNJUyw4j/EEGMpo48QN6yErx1xKFu3/OQdxBBjA4OpAP4BwHfl2oDfZtzyRPdWtC6GGGsZOLDKZ/iXlQk05V0U/EWPK4YYyxnxOpuvlseud6YH51sF73V6+l7EEGMhg01VCn6IuYJmrV8tGLUXE0OMlYz2hqm1st9bsw4yi5Bg7Gv8MDLbEkOM1YzMWyMVKAcG4zbEnQ8sCrgYYuxg9Dk3XH6bgg+zYPUX8BGcYoixicFai6h1QHk1lF2r8zAQ0b1FtiWGGKsZrLruHXDbWjKYFBz4CFrU7lsMMXYxHliEomuvzsVAZNlG/JUuQgwxtjD6QAfGq1gDt9E7jM/hHqtn4xBDjB0Mdltd3Ljy2ynlGrs9/mo0Fd/quhhiLGQU5aaVNeofgvdfGIO2QQwxtjEyKYhUwKuuHfS4Ds8HOcQQYxMjR5xuXQN0Mjhwt5vOwm3wlwxWDDGWMh7q1s3CCRdRDMQV/VkkWnQWhxhibGIcrvSMBkrU6mv+Ujhgah2TGGLsYaR83R1cJduC6t3tfnng1lgMMXYzIGT2Z8VFIIM1nil4ARdDjP0MKJgbpmjgnkxF5l1iiLGL4ZdpZVGdGSHUhBb6p/S/+Q8xxFjEgMJ91yi4ty/AxZaXohz/kMGKIcZKxq+HGGKIIYYYrf0BG+snyJ1KyK0AAAAASUVORK5CYII=" alt="QR code linking to the Maven workshop signup page" width="150" height="150"/>
+      <div class="wb-qr-caption">Scan to enroll</div>
+      <div class="wb-qr-url">maven.com/casky/top-10-…</div>
+    </div>
+  </div>
   <div class="foot"><div class="mark"><div class="logo-mark">Ck</div><span>CASKY</span></div><span>casky.ai</span></div>
 </section>
 
