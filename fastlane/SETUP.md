@@ -14,7 +14,7 @@ data, two different ways of driving the investigation.
 
 ### Prerequisites
 
-- Docker, with the `kalilinux/kali-rolling` image.
+- Docker (the base image, `kalilinux/kali-rolling`, is pulled automatically by `docker build`).
 - A `.env` file **in this folder** (`fastlane/.env`, copied from `casky-runner-phase1/.env`,
   quotes stripped) — same steps as TollBooth/Tailgate's Section 1.
 
@@ -23,29 +23,24 @@ data, two different ways of driving the investigation.
 ```bash
 # Run every command below from THIS folder (casky-workshops/fastlane/).
 
+# 0. Build the image once — tools, Claude Code, and the 10 skills are baked in at build
+#    time (see Dockerfile), so there's nothing left to live-install over docker exec.
+#    Rebuild only if you edit setup-skills.sh's skill list; data/ and the scenario scripts
+#    are bind-mounted below, not baked in, so editing those doesn't need a rebuild.
+docker build -t casky-fastlane .
+
 docker run -d --name kali-fastlane \
   --env-file .env \
   -v "$(pwd)":/root/fastlane \
-  kalilinux/kali-rolling sleep infinity
+  casky-fastlane
 
 docker exec kali-fastlane test -f /root/fastlane/verify.sh \
   && echo "[+] mount OK" || echo "[!] wrong directory"
 
-# 1. jq (no tshark/tcpdump needed here — no pcap in this scenario)
-docker exec kali-fastlane bash -c \
-  "apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y jq curl ca-certificates git"
-
-# 2. Install Claude Code; pre-authenticate with the shared key
-docker exec kali-fastlane bash -c "curl -fsSL https://claude.ai/install.sh -o /tmp/install.sh && bash /tmp/install.sh"
-docker exec kali-fastlane bash -c 'export PATH="$HOME/.local/bin:$PATH"; claude --version'
-
-# 3. Mount the 10 hand-picked skills into ~/.claude/skills
-docker exec -w /root/fastlane kali-fastlane bash -c "chmod +x setup-skills.sh verify.sh reset.sh start.sh && ./setup-skills.sh"
-
-# 4. Run ./verify.sh — expect 12/12 PASS.
+# 1. Run ./verify.sh — expect 12/12 PASS.
 docker exec -w /root/fastlane kali-fastlane ./verify.sh
 
-# 5. Bash into the container and start Claude Code interactively.
+# 2. Bash into the container and start Claude Code interactively.
 docker exec -it -w /root/fastlane kali-fastlane bash
 #   ...now inside the container's shell:
 export PATH="$HOME/.local/bin:$PATH"
@@ -53,13 +48,8 @@ export PATH="$HOME/.local/bin:$PATH"
 claude
 ```
 
-**Verified end-to-end just now** — all packages installed clean, Claude Code 2.1.246 on `PATH`,
-10/10 skills linked, and a real round-trip against the Anthropic API:
-
-```
-$ claude --print "Reply with exactly the single word: PONG"
-PONG
-```
+**Verified just now** — `docker build` finishes clean in ~80s (Claude Code 2.1.258, 10/10 skills
+linked), and `verify.sh` passes 12/12 against a container run from that image:
 
 ```
 == tooling ==
@@ -91,13 +81,18 @@ RESULT: 12 passed, 0 failed
 This laptop is READY.
 ```
 
-`./start.sh` confirmed too:
+The interactive round-trip below (`./start.sh` + a live `claude --print`) was verified against
+this same image contents when this flow was first built — now baked in at `docker build` time
+instead of installed live over `docker exec`:
 
 ```
 [+] lab data present: app/ (FastLane) + speedbump/ (SpeedBump)
 [+] agent skills mounted at /root/.claude/skills (10 skills)
 [+] Claude Code found.
     mode: online (shared key)
+
+$ claude --print "Reply with exactly the single word: PONG"
+PONG
 ```
 
 ---

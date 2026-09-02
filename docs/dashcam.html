@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashcam — Scenario</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2718%27 fill=%27%230f6e6e%27/%3E%3Crect x=%2724%27 y=%2724%27 width=%2752%27 height=%2752%27 rx=%278%27 fill=%27none%27 stroke=%27%23fbfaf6%27 stroke-width=%278%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+
+<!-- Google tag (gtag.js) — same property as casky.ai -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q66NJEQ437"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-Q66NJEQ437');
+</script>
+
+<!-- Microsoft Clarity — same project as casky.ai -->
+<script type="text/javascript">
+  (function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+  })(window, document, "clarity", "script", "w1ighn5dli");
+</script>
+
+<!-- PostHog — same project as casky.ai. No build step here, so this hits PostHog directly
+     (app.posthog.com) rather than through casky.ai's /ingest ad-blocker-dodging proxy. -->
+<script>
+  !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init me ws xs ys as capture je Di ks register register_once register_for_session unregister unregister_for_session Ps getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty Cs Es createPersonProfile Is opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+  posthog.init('phc_nhx7JtU2RzJkYTqcMnkDfPUFWvSbWbsu4HTsQ8sBnAeq', {api_host:'https://app.posthog.com', person_profiles: 'identified_only'})
+</script>
+</head>
+<body>
+<header class="site">
+  <div class="bar">
+    <a class="brand" href="index.html"><span class="mark">▣</span> Dashcam</a>
+    <nav class="top">
+      <a href="index.html">Home</a>
+      <a href="dashcam-setup.html">Setup</a>
+      <a href="dashcam.html" aria-current="page">Scenario · Dashcam</a>
+      <a href="dashcam-help.html">Troubleshooting</a>
+      <a href="https://casky.ai/?utm_source=workshops&utm_medium=header_logo&utm_campaign=cyber_workshop_wave2&utm_content=dashcam" target="_blank" rel="noopener" class="casky-brand-link" aria-label="Casky.AI"><span class="casky-name">Casky</span><span class="casky-ai">.AI</span></a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <p class="eyebrow">Single-skill workshop · Data protection</p>
+    <h1>Dashcam — catch PII before it leaves the building</h1>
+    <p class="lede">RoadWitness (fictional dashcam rideshare app) is about to hand four artifacts
+    to a third-party LLM vendor and a staging environment. None of it has been through a PII
+    scrub step. Find and de-identify what's in each, using the operator that matches where it's
+    going.</p>
+
+    <div class="callout callout-teal">
+      <span class="callout-label">Setup (do this once)</span>
+      <p>1. Open a terminal. 2. <code>cd ~/dashcam</code>. 3. Start the agent: <code>claude</code>.
+      4. Paste each prompt below, in order, in the <strong>same chat</strong>, so it remembers.
+      Type only the prompt text — no quotes.</p>
+      <p>~15–20 min. Do the <span class="pill pill-core">CORE</span> phases (1, 2) for the main
+      story. <span class="pill pill-deep">DEEP</span> phases (3, 4) cover the reversible-masking
+      and image-redaction cases — run them for the full skill, or save for later. No agent?
+      Terminal fallback commands are at the bottom. Full setup: <a href="dashcam-setup.html">Setup
+      page</a>.</p>
+    </div>
+
+    <!-- Phase 1 -->
+    <div class="phase" id="phase-1">
+      <div class="phase-head">
+        <span class="phase-num">Phase 1</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>Support tickets — free text and structured PII</h3>
+      <p>Paste this, then Enter:</p>
+      <div class="prompt">Using anonymizing-pii-with-microsoft-presidio, find the PII in data/support-tickets.json and de-identify it. This is going to a third-party LLM vendor for triage — one-way redaction, no need to reverse it. Show me what entity types you found and what operator you applied to each.</div>
+      <p class="will-see">You will see: a Presidio <code>AnalyzerEngine</code>/<code>BatchAnalyzerEngine</code> run finding an SSN and a credit-card number pasted into ticket bodies, then <code>redact</code>/<code>mask</code> applied.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>The SSN <code>078-05-1120</code> in ticket <code>RW-TICKET-10412</code> and the card
+        number <code>4111 1111 1111 1111</code> in <code>RW-TICKET-10413</code> both detected and
+        redacted, plus the batch run covering all 4 ticket records, not just one.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p><code>analyzer.analyze()</code> flags <code>US_SSN</code> and <code>CREDIT_CARD</code>
+          (plus <code>PERSON</code>/<code>EMAIL_ADDRESS</code> on every ticket). Since this is a
+          one-way hand-off to a vendor, the right operators are <code>redact</code> or
+          <code>mask</code>, not <code>encrypt</code> — there's no need to reverse it.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="phase" id="phase-2">
+      <div class="phase-head">
+        <span class="phase-num">Phase 2</span>
+        <span class="pill pill-core">Core</span>
+      </div>
+      <h3>The vendor-handoff chat — a custom recognizer</h3>
+      <p>Same chat:</p>
+      <div class="prompt">Now check data/vendor-handoff-chat.txt — a Slack export about to be forwarded to the same vendor. Find every piece of PII in it, including anything Presidio's built-in recognizers would miss, and de-identify it.</div>
+      <p class="will-see">You will see: an IBAN and an IP address caught by built-in recognizers,
+      plus a driver ID (<code>RW-DRV-048213</code>) that Presidio does <strong>not</strong> know
+      about out of the box.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>The agent notices <code>RW-DRV-######</code> isn't a built-in entity and writes a
+        <code>PatternRecognizer</code> for it (<code>RW-DRV-\d{6}</code>), rather than only
+        catching the IBAN and IP and calling it done.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p>Built-ins catch <code>GB29 NWBK 6016 1331 9268 19</code> (IBAN) and
+          <code>203.0.113.44</code> (IP). The driver ID needs a custom
+          <code>Pattern(name="driver_id", regex=r"RW-DRV-\d{6}", score=0.85)</code> registered as
+          a <code>PatternRecognizer</code> — the point of this phase is noticing the gap, not just
+          running the defaults.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase" id="phase-3">
+      <div class="phase-head">
+        <span class="phase-num">Phase 3</span>
+        <span class="pill pill-deep">Deep</span>
+      </div>
+      <h3>Driver records — the reversible case</h3>
+      <p>Same chat:</p>
+      <div class="prompt">data/driver-records-export.json is going to a staging environment where QA needs to join it back to real records later. De-identify the PII, but pick the right operator for THAT destination, not the same one you used for the vendor hand-offs.</div>
+      <p class="will-see">You will see: the agent choosing <code>encrypt</code>/<code>decrypt</code>
+      with a key, not a one-way hash or redact, because staging QA needs a reversible mapping.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>An explicit reason for using <code>OperatorConfig("encrypt", {"key": ...})</code> instead
+        of redact/mask/hash — tied to "QA needs to join it back," not just "this file has PII too."</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p>Every driver record's <code>email</code>, <code>phone</code>, and <code>payout_iban</code>
+          get encrypted with a shared key; a <code>DeanonymizeEngine</code> call with the same key
+          proves the round-trip. This is the one artifact in the set where a one-way operator would
+          be the wrong answer.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Phase 4 -->
+    <div class="phase" id="phase-4">
+      <div class="phase-head">
+        <span class="phase-num">Phase 4</span>
+        <span class="pill pill-deep">Deep</span>
+      </div>
+      <h3>The dashcam frame — image redaction</h3>
+      <p>Same chat:</p>
+      <div class="prompt">data/dashcam-frame-0417.png gets auto-uploaded to cloud storage after every trip. Use presidio-image-redactor to find and redact any PII burned into the image itself, then save a redacted copy.</div>
+      <p class="will-see">You will see: OCR-based detection finding the driver name, plate number,
+      phone, and driver ID printed on the trip-summary overlay burned into the frame, then a
+      redacted image written to disk.</p>
+
+      <div class="callout callout-amber">
+        <span class="callout-label">Checkpoint — on track when you see</span>
+        <p>The agent installs/uses <code>ImageRedactorEngine</code> specifically — not the text
+        <code>AnalyzerEngine</code>/<code>AnonymizerEngine</code> from the earlier phases — since
+        this is OCR-based image redaction, a different engine entirely.</p>
+      </div>
+
+      <details class="answer">
+        <summary>Reveal the answer</summary>
+        <div class="answer-body">
+          <p><code>ImageRedactorEngine().redact(image, fill)</code> finds
+          "Priya Nakamura," "7XKQ192," "212-555-0198," and "RW-DRV-048213" via OCR on the
+          overlay card and paints over them, saving
+          <code>dashcam-frame-0417_redacted.png</code>.</p>
+        </div>
+      </details>
+    </div>
+
+    <h2>Terminal fallbacks (no agent)</h2>
+    <p>Presidio installed locally (see <a href="dashcam-setup.html">Setup</a> for the pip/venv
+    steps):</p>
+<pre><code>python3 -c "
+from presidio_analyzer import AnalyzerEngine
+a = AnalyzerEngine()
+print(a.analyze(text=open('data/vendor-handoff-chat.txt').read(), language='en'))
+"</code></pre>
+
+    <hr class="rule">
+    <p style="color:var(--ink-dim); font-size:0.9rem;">
+      Authorized &amp; lawful use only. All data is synthetic and self-contained; no live systems
+      are touched. Promotes the open-source Anthropic Cybersecurity Skills library (Apache-2.0);
+      not affiliated with Anthropic PBC or Microsoft. The headline skill,
+      anonymizing-pii-with-microsoft-presidio, is from an open, unmerged PR against upstream
+      (<a href="https://github.com/mukul975/Anthropic-Cybersecurity-Skills/pull/141" target="_blank" rel="noopener">mukul975/Anthropic-Cybersecurity-Skills#141</a>),
+      vendored locally until it lands.
+    </p>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>Dashcam workshop guide · <a href="https://github.com/casky-ai/casky-workshops" target="_blank" rel="noopener">casky-ai/casky-workshops</a> · Built by <a href="https://casky.ai/?utm_source=workshops&utm_medium=footer_link&utm_campaign=cyber_workshop_wave2&utm_content=dashcam" target="_blank" rel="noopener" class="casky-brand-link" aria-label="Casky.AI"><span class="casky-name">Casky</span><span class="casky-ai">.AI</span></a></p>
+  </div>
+</footer>
+</body>
+</html>

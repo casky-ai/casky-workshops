@@ -1,0 +1,38 @@
+[
+  {
+    "ticket_id": "RW-TICKET-10412",
+    "opened_at": "2026-08-27T14:02:00Z",
+    "customer_name": "John Smith",
+    "customer_email": "john.smith@example.com",
+    "customer_phone": "212-555-0100",
+    "channel": "in-app chat",
+    "message": "Hi, my name is John Smith, my email is john.smith@example.com and my SSN is 078-05-1120. I need my last ride refunded, the driver took the wrong exit."
+  },
+  {
+    "ticket_id": "RW-TICKET-10413",
+    "opened_at": "2026-08-27T15:18:00Z",
+    "customer_name": "Maria Gonzalez",
+    "customer_email": "maria.gonzalez@example.com",
+    "customer_phone": "415-555-0134",
+    "channel": "email",
+    "message": "You charged my card twice for the same trip. Card ending in 1111 (4111 1111 1111 1111) shows two identical charges on 2026-08-26. Please refund one."
+  },
+  {
+    "ticket_id": "RW-TICKET-10414",
+    "opened_at": "2026-08-27T16:47:00Z",
+    "customer_name": "David Okafor",
+    "customer_email": "david.okafor@example.com",
+    "customer_phone": "312-555-0177",
+    "channel": "in-app chat",
+    "message": "I left my laptop bag in the car. Can you contact the driver directly? Also please update my billing address to 44 Birchwood Lane, Chicago, IL."
+  },
+  {
+    "ticket_id": "RW-TICKET-10415",
+    "opened_at": "2026-08-27T18:05:00Z",
+    "customer_name": "Aiko Tanaka",
+    "customer_email": "aiko.tanaka@example.com",
+    "customer_phone": "646-555-0122",
+    "channel": "email",
+    "message": "Requesting an export of all my trip history and receipts for a work reimbursement claim. My account email is aiko.tanaka@example.com."
+  }
+]

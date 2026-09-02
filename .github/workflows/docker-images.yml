@@ -1,0 +1,117 @@
+name: Docker images — build, scan, publish
+
+# Builds every casky-branded workshop image (see CONTRIBUTING.md for the casky- naming
+# convention), scans each with Trivy, and publishes to GHCR. Runs nightly so each image picks
+# up upstream OS/pip patches automatically (Dockerfiles run apt-get upgrade/pip install fresh
+# on every build) — that's the whole point of the schedule, not just re-publishing the same
+# bits. Also runs on any push that touches a Dockerfile or the skill lists that get baked in,
+# and can be triggered by hand.
+on:
+  schedule:
+    - cron: '0 6 * * *'   # 06:00 UTC daily
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - 'fastlane/Dockerfile*'
+      - 'fastlane/setup-skills.sh'
+      - 'fastlane/demo-server.py'
+      - 'tailgate/Dockerfile'
+      - 'tailgate/setup-skills.sh'
+      - 'tollbooth/Dockerfile'
+      - 'tollbooth/setup-skills.sh'
+      - 'dashcam/Dockerfile'
+      - 'dashcam/setup-skills.sh'
+      - 'dashcam/skills/**'
+      - '.github/workflows/docker-images.yml'
+
+env:
+  REGISTRY: ghcr.io
+  OWNER: casky-ai
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+
+jobs:
+  build-scan-publish:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: casky-fastlane
+            context: fastlane
+            dockerfile: fastlane/Dockerfile
+          - name: casky-tailgate
+            context: tailgate
+            dockerfile: tailgate/Dockerfile
+          - name: casky-tollbooth
+            context: tollbooth
+            dockerfile: tollbooth/Dockerfile
+          - name: casky-dashcam
+            context: dashcam
+            dockerfile: dashcam/Dockerfile
+          - name: casky-loopline
+            context: fastlane
+            dockerfile: fastlane/Dockerfile.demo
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build once, locally (load: true), so Trivy can scan it before anything is pushed.
+      # pull: true always fetches the newest kalilinux/kali-rolling / python:3.12-slim layer —
+      # without it, Buildx would happily reuse a stale cached base image forever, which would
+      # defeat the entire point of a nightly "pick up new patches" build.
+      - name: Build (local, for scanning)
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: false
+          load: true
+          pull: true
+          no-cache: true
+          tags: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.name }}:scan
+
+      # Report-only by design (exit-code 0): these are Kali-rolling-based tool images bundling
+      # pentest utilities (tshark, scapy, ...) that realistically always carry some unfixed
+      # upstream CVEs. Blocking the pipeline on every one of those would make it permanently
+      # red and train everyone to ignore it. Results still land in the repo's Security tab
+      # every night so drift is visible.
+      - name: Trivy scan
+        uses: aquasecurity/trivy-action@0.28.0
+        continue-on-error: true
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.name }}:scan
+          format: sarif
+          output: trivy-${{ matrix.name }}.sarif
+          severity: CRITICAL,HIGH
+          exit-code: '0'
+
+      - name: Upload Trivy results to the Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-${{ matrix.name }}.sarif
+          category: trivy-${{ matrix.name }}
+
+      # Retag + push the image already built above rather than building a second time —
+      # halves CI time for the heavier images (tshark, Presidio+spaCy) since apt/pip don't
+      # re-run.
+      - name: Tag and push to GHCR
+        if: github.event_name != 'pull_request'
+        run: |
+          SRC="${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.name }}:scan"
+          docker tag "$SRC" "${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.name }}:latest"
+          docker tag "$SRC" "${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.name }}:${{ github.run_number }}"
+          docker push "${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.name }}:latest"
+          docker push "${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.name }}:${{ github.run_number }}"

@@ -1,0 +1,30 @@
+{
+  "export_reason": "Q3 payout reconciliation — handed to the staging environment so QA can replay the payout batch job against realistic data before it touches production.",
+  "destination": "staging (lower environment, broader engineering access than prod)",
+  "records": [
+    {
+      "driver_id": "RW-DRV-048213",
+      "full_name": "Marcus Webb",
+      "email": "marcus.webb@example.com",
+      "phone": "646-555-0166",
+      "payout_iban": "GB29 NWBK 6016 1331 9268 19",
+      "last_payout_usd": 812.40
+    },
+    {
+      "driver_id": "RW-DRV-051927",
+      "full_name": "Priya Nakamura",
+      "email": "priya.nakamura@example.com",
+      "phone": "212-555-0198",
+      "payout_iban": "DE89 3704 0044 0532 0130 00",
+      "last_payout_usd": 1104.15
+    },
+    {
+      "driver_id": "RW-DRV-059310",
+      "full_name": "Luis Fernandez",
+      "email": "luis.fernandez@example.com",
+      "phone": "305-555-0142",
+      "payout_iban": "FR14 2004 1010 0505 0001 3M02 606",
+      "last_payout_usd": 967.80
+    }
+  ]
+}

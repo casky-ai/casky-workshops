@@ -21,8 +21,7 @@ Both were run end-to-end against this exact data before writing this doc — not
 
 ### Prerequisites
 
-- Docker, with the `kalilinux/kali-rolling` image (`docker pull kalilinux/kali-rolling` if you
-  don't have it yet).
+- Docker (the base image, `kalilinux/kali-rolling`, is pulled automatically by `docker build`).
 - A `.env` file **in this folder** (`tailgate/.env`, copied from `casky-runner-phase1/.env`) with
   a working `ANTHROPIC_API_KEY`. It's git-ignored and lives here, not the repo root, same reasoning
   as TollBooth's setup:
@@ -44,30 +43,24 @@ Both were run end-to-end against this exact data before writing this doc — not
 ```bash
 # Run every command below from THIS folder (casky-workshops/tailgate/).
 
-# 0. Start a persistent Kali container with this folder mounted + the shared key available
+# 0. Build the image once — tshark/tcpdump/scapy, Claude Code, and the 10 skills are baked
+#    in at build time (see Dockerfile), so there's nothing left to live-install over
+#    docker exec. Rebuild only if you edit setup-skills.sh's skill list.
+docker build -t casky-tailgate .
+
+# 1. Start a persistent container with this folder mounted + the shared key available
 docker run -d --name kali-tailgate \
   --env-file .env \
   -v "$(pwd)":/root/tailgate \
-  kalilinux/kali-rolling sleep infinity
+  casky-tailgate
 
 docker exec kali-tailgate test -f /root/tailgate/verify.sh \
   && echo "[+] mount OK" || echo "[!] wrong directory — re-run from casky-workshops/tailgate/"
 
-# 1. tshark, jq, tcpdump
-docker exec kali-tailgate bash -c \
-  "apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y tshark jq tcpdump python3-scapy git curl ca-certificates"
-
-# 2. Install Claude Code; pre-authenticate with the shared key
-docker exec kali-tailgate bash -c "curl -fsSL https://claude.ai/install.sh -o /tmp/install.sh && bash /tmp/install.sh"
-docker exec kali-tailgate bash -c 'export PATH="$HOME/.local/bin:$PATH"; claude --version'
-
-# 3. Mount the 10 hand-picked skills into ~/.claude/skills
-docker exec -w /root/tailgate kali-tailgate bash -c "chmod +x setup-skills.sh verify.sh reset.sh start.sh && ./setup-skills.sh"
-
-# 4. Run ./verify.sh — expect 14/14 PASS.
+# 2. Run ./verify.sh — expect 14/14 PASS.
 docker exec -w /root/tailgate kali-tailgate ./verify.sh
 
-# 5. Bash into the container and start Claude Code interactively.
+# 3. Bash into the container and start Claude Code interactively.
 docker exec -it -w /root/tailgate kali-tailgate bash
 #   ...now inside the container's shell:
 export PATH="$HOME/.local/bin:$PATH"
@@ -75,8 +68,8 @@ export PATH="$HOME/.local/bin:$PATH"
 claude        # drops into an interactive Claude Code session
 ```
 
-**Verified end-to-end just now** — all packages installed clean, Claude Code 2.1.246 on `PATH`,
-10/10 skills linked, and a real round-trip against the Anthropic API:
+**Verified end-to-end**, tools/Claude Code/skills baked into the image at `docker build` time:
+Claude Code on `PATH`, 10/10 skills linked, and a real round-trip against the Anthropic API:
 
 ```
 $ claude --print "Reply with exactly the single word: PONG"
