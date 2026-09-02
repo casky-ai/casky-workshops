@@ -1,0 +1,24 @@
+#support-escalations — RoadWitness internal Slack export (synthetic)
+#Channel purpose: escalate hard tickets to Clarivue, RoadWitness's third-party LLM
+#triage vendor, by pasting the relevant context directly into the #clarivue-intake bot.
+
+[2026-08-28 09:14] priya.n (support lead): picking up RW-TICKET-10414, the lost-laptop one.
+  pulling the driver's file so Clarivue can match the trip and ping the right driver.
+
+[2026-08-28 09:16] priya.n (support lead): driver on that trip was RW-DRV-048213, full name
+  Marcus Webb, plate 7XKQ192. his contact phone is 646-555-0166 and his payout IBAN on file
+  is GB29 NWBK 6016 1331 9268 19 in case we need finance to hold his next payout pending
+  the bag search.
+
+[2026-08-28 09:17] priya.n (support lead): also grabbing his last known login IP from the
+  session log for the fraud team just in case: 203.0.113.44
+
+[2026-08-28 09:18] clarivue-intake (bot): got it, forwarding this context to the triage
+  model now — thanks!
+
+[2026-08-28 09:19] devon.k (support): hang on, are we pasting his IBAN and IP into Clarivue
+  raw? that's a third party we don't have a DPA redaction clause with yet.
+
+[2026-08-28 09:20] priya.n (support lead): oh — good catch, I don't think anyone's run this
+  through the PII scrub step before it goes out. flagging for the booth to fix before we
+  send the next one.

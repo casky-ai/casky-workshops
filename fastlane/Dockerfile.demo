@@ -1,6 +1,17 @@
 # Loopline demo server: a synthetic vibe-coded SaaS for the FastLane Lightning
 # Lesson live demo. No external dependencies, stdlib http.server only.
+# Published as ghcr.io/casky-ai/casky-loopline.
 FROM python:3.12-slim
+
+LABEL org.opencontainers.image.title="casky-loopline" \
+      org.opencontainers.image.description="Loopline demo server for the FastLane Lightning Lesson — synthetic vibe-coded SaaS, stdlib http.server only" \
+      org.opencontainers.image.source="https://github.com/casky-ai/casky-workshops" \
+      org.opencontainers.image.licenses="MIT"
+
+# Patch the base image's OS packages — this is the whole point of the nightly rebuild even
+# for an image this small: pick up upstream Debian security fixes automatically.
+RUN apt-get update -y && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY demo-server.py .
 ENV PORT=8787

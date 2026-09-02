@@ -19,11 +19,12 @@ Both were run end-to-end against this exact data before writing this doc — not
 ## Section 1 — Exact Arsenal setup, in a Kali Docker container
 
 Original instructions ([`README.md`](https://github.com/mukul975/BHUSA-Anthropic-CyberSecurity-Skills#day-before-setup-build-one-kali-image-clone-to-all-laptops)):
-build one Kali image, clone to all laptops. We only need one container, not a fleet — same steps.
+build one Kali image, clone to all laptops. `Dockerfile` here does exactly that literally — tools,
+Claude Code, and the 10 skills are baked in at `docker build` time, not live-installed into a
+running container — and we only need one container run from it, not a fleet.
 
 ### Prerequisites
-- Docker, with the `kalilinux/kali-rolling` image (`docker pull kalilinux/kali-rolling` if you
-  don't have it yet).
+- Docker (the base image, `kalilinux/kali-rolling`, is pulled automatically by `docker build`).
 - A `.env` file **in this folder** (`tollbooth/.env`, copied from `casky-runner-phase1/.env`)
   with a working `ANTHROPIC_API_KEY` — that's the "shared key" the original instructions say to
   pre-authenticate with. It's git-ignored (`.env*` in `.gitignore`) and lives here, not the repo
@@ -54,40 +55,33 @@ build one Kali image, clone to all laptops. We only need one container, not a fl
 # Run every command below from THIS folder (casky-workshops/tollbooth/) — $(pwd) becomes the
 # container's /root/tollbooth, and .env/the scripts only exist here, not the repo root.
 
-# 0. Start a persistent Kali container with this folder mounted + the shared key available
+# 0. Build the image once — tshark/tcpdump/scapy, Claude Code, and the 10 skills are baked
+#    in at build time (see Dockerfile), so there's nothing left to live-install over
+#    docker exec. Rebuild only if you edit setup-skills.sh's skill list; the pcap/CloudTrail
+#    data and scenario scripts are bind-mounted below, not baked in.
+docker build -t casky-tollbooth .
+
+# 1. Start a persistent Kali container with this folder mounted + the shared key available
 docker run -d --name kali-tollbooth \
   --env-file .env \
   -v "$(pwd)":/root/tollbooth \
-  kalilinux/kali-rolling sleep infinity
+  casky-tollbooth
 
 # Sanity check — catches a wrong-directory mount immediately instead of 3 steps from now
 docker exec kali-tollbooth test -f /root/tollbooth/verify.sh \
   && echo "[+] mount OK — verify.sh found at /root/tollbooth/verify.sh" \
   || echo "[!] wrong directory — re-run from casky-workshops/tollbooth/, then: docker rm -f kali-tollbooth"
 
-# 1. apt-get install -y tshark jq (tcpdump, python3-scapy usually present on Kali)
-docker exec kali-tollbooth bash -c \
-  "apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y tshark jq tcpdump python3-scapy git curl ca-certificates"
-
-# 2. Install Claude Code; pre-authenticate with the shared key
-#    (ANTHROPIC_API_KEY is already in the container's env via --env-file above — Claude Code
-#    picks it up automatically, no login flow needed)
-docker exec kali-tollbooth bash -c "curl -fsSL https://claude.ai/install.sh -o /tmp/install.sh && bash /tmp/install.sh"
-docker exec kali-tollbooth bash -c 'export PATH="$HOME/.local/bin:$PATH"; claude --version'
-
-# 3. ./setup-skills.sh to mount skills into ~/.claude/skills
-docker exec -w /root/tollbooth kali-tollbooth bash -c "chmod +x setup-skills.sh verify.sh reset.sh start.sh && ./setup-skills.sh"
-
-# 4. This folder is already at /root/tollbooth (bind-mounted in step 0 — no copy needed).
+# 2. This folder is already at /root/tollbooth (bind-mounted in step 1 — no copy needed).
 #    Run ./verify.sh — expect 9/9 PASS.
 docker exec -w /root/tollbooth kali-tollbooth ./verify.sh
 
-# 5. Print Arsenal-CheatSheet-Book.pdf (color; answer pages are red) — one per attendee.
+# 3. Print Arsenal-CheatSheet-Book.pdf (color; answer pages are red) — one per attendee.
 open Arsenal-CheatSheet-Book.pdf   # macOS; use your OS's print/open command
 
-# 6. Bash into the container and start Claude Code interactively — this is what a
+# 4. Bash into the container and start Claude Code interactively — this is what a
 #    participant actually drives during the exercise, not one-off `docker exec` calls
-#    per command (those were only for unattended setup, steps 0-4 above).
+#    per command (those were only for unattended setup, steps 0-2 above).
 docker exec -it -w /root/tollbooth kali-tollbooth bash
 
 #   ...now inside the container's shell:
@@ -97,9 +91,9 @@ claude        # drops into an interactive Claude Code session — paste the scen
               # prompt from Arsenal-CheatSheet-Book.pdf and let it work
 ```
 
-**Verified end-to-end just now:** all packages installed clean, Claude Code 2.1.241 installed and
-on `PATH`, 10/10 skills linked, and — the part that actually matters, a real round-trip against
-the Anthropic API, not just checking the key is present:
+**Verified end-to-end**, tools/Claude Code/skills baked into the image at `docker build` time:
+Claude Code installed and on `PATH`, 10/10 skills linked, and — the part that actually
+matters, a real round-trip against the Anthropic API, not just checking the key is present:
 ```
 $ claude --print "Reply with exactly the single word: PONG"
 PONG
@@ -271,10 +265,12 @@ first for a clean container.
 
 **"Checksum verification failed" installing Claude Code?** Transient — the installer script
 downloads a native binary payload after itself and checksums that separately; an occasional
-network blip mid-download trips it. Just re-run the same install command:
+network blip mid-download trips it. This now happens at `docker build` time (baked into the
+image), so just re-run the build — Docker's layer cache means everything before that `RUN`
+step is skipped:
 
 ```bash
-docker exec kali-tollbooth bash -c "curl -fsSL https://claude.ai/install.sh -o /tmp/install.sh && bash /tmp/install.sh"
+docker build -t casky-tollbooth .
 ```
 
 ---

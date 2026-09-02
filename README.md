@@ -14,6 +14,33 @@ Each exercise's own `SETUP.md` has the full walkthrough — the source of truth,
 the hosted wiki. Each `SETUP.md` covers two ways to run the same scenario: the original
 Kali/Claude Code setup (Section 1), and the same data driven through Casky Box (Section 2).
 
+## Skill-focused workshops
+
+A separate, lighter series: each one is built around a single skill from the Anthropic
+Cybersecurity Skills library, exercised end-to-end against one scenario, no reactive/proactive
+pair and no Casky Box section.
+
+| Folder | Exercise | Wiki |
+|---|---|---|
+| [`dashcam/`](dashcam/SETUP.md) | Dashcam — catch PII before it leaves the building, using `anonymizing-pii-with-microsoft-presidio` across a support-ticket export, a Slack thread, a driver-records export, and a dashcam frame image. | [dashcam.html](https://casky-ai.github.io/casky-workshops/dashcam.html) |
+
+`dashcam/SETUP.md` covers two ways to run it: Option A (Docker, same pattern as the other
+workshops) and Option B (local Python, no Docker).
+
+## Docker images
+
+Every workshop's `Dockerfile` bakes in its tools, Claude Code, and skill set at build time (see
+[`CONTRIBUTING.md`](CONTRIBUTING.md)) — `docker build -t casky-<name> .` inside that workshop's
+folder instead of live-installing over `docker exec`. All five are published to GHCR and rebuilt
+nightly (tools/OS patches, Trivy-scanned, report-only) by
+[`.github/workflows/docker-images.yml`](.github/workflows/docker-images.yml):
+
+- `ghcr.io/casky-ai/casky-fastlane`
+- `ghcr.io/casky-ai/casky-tailgate`
+- `ghcr.io/casky-ai/casky-tollbooth`
+- `ghcr.io/casky-ai/casky-dashcam`
+- `ghcr.io/casky-ai/casky-loopline` (the FastLane Lightning Lesson's Loopline demo server)
+
 ## Readiness check
 
 Right before attendees arrive, run:

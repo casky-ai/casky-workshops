@@ -185,6 +185,54 @@ else
 fi
 
 echo
+echo "== Dashcam: Kali container =="
+if container_running kali-dashcam; then
+  ok "kali-dashcam is running"
+
+  if docker exec kali-dashcam sh -c "command -v jq" >/dev/null 2>&1; then ok "jq present in kali-dashcam"
+  else bad "jq MISSING in kali-dashcam"; fi
+
+  if docker exec kali-dashcam sh -c "python3 -c 'import presidio_analyzer, presidio_anonymizer, presidio_image_redactor'" >/dev/null 2>&1; then
+    ok "presidio-analyzer/anonymizer/image-redactor importable in kali-dashcam"
+  else
+    bad "Presidio packages MISSING/broken in kali-dashcam"
+  fi
+
+  if docker exec kali-dashcam bash -c 'export PATH="$HOME/.local/bin:$PATH"; command -v claude' >/dev/null 2>&1; then
+    ver=$(docker exec kali-dashcam bash -c 'export PATH="$HOME/.local/bin:$PATH"; claude --version' 2>/dev/null)
+    ok "claude CLI installed ($ver)"
+  else
+    soft "claude CLI not found in kali-dashcam — attendees fall back to the printed ANSWER page (dry-run mode)"
+  fi
+
+  if docker exec kali-dashcam sh -c 'case "$ANTHROPIC_API_KEY" in sk-ant-*) exit 0;; *) exit 1;; esac' >/dev/null 2>&1; then
+    ok "ANTHROPIC_API_KEY present in kali-dashcam (sk-ant- prefix)"
+  else
+    soft "ANTHROPIC_API_KEY missing/malformed in kali-dashcam — check dashcam/.env is unquoted (see SETUP.md)"
+  fi
+
+  if docker exec kali-dashcam test -e /root/dashcam/data >/dev/null 2>&1; then ok "/root/dashcam/data present"
+  else bad "/root/dashcam/data MISSING in kali-dashcam — run: docker exec -w /root/dashcam kali-dashcam ./reset.sh"; fi
+else
+  soft "kali-dashcam is not running — see dashcam/SETUP.md Option A (Option B runs without Docker)"
+fi
+
+echo
+echo "== Dashcam data integrity (verify.sh, run inside kali-dashcam) =="
+if container_running kali-dashcam && docker exec kali-dashcam test -f /root/dashcam/verify.sh >/dev/null 2>&1; then
+  out=$(docker exec -w /root/dashcam kali-dashcam ./verify.sh 2>&1)
+  echo "$out" | sed 's/^/  /'
+  fails_in_verify=$(echo "$out" | grep -o 'RESULT: [0-9]* passed, [0-9]* failed' | grep -o '[0-9]* failed' | grep -o '[0-9]*')
+  if [ -n "$fails_in_verify" ] && [ "$fails_in_verify" -eq 0 ]; then
+    ok "dashcam/verify.sh: all data checks passed"
+  else
+    bad "dashcam/verify.sh: ${fails_in_verify:-an unknown number of} check(s) failed (see above) — try: docker exec -w /root/dashcam kali-dashcam ./reset.sh"
+  fi
+else
+  soft "verify.sh not found in kali-dashcam (or container not running) — skipping data-integrity checks"
+fi
+
+echo
 echo "== Section 2: Casky Box (casky-runner-phase1) — shared by all exercises =="
 if [ -d "$CASKY_RUNNER_DIR" ]; then
   ok "casky-runner-phase1 found at $CASKY_RUNNER_DIR"
