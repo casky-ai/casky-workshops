@@ -22,15 +22,15 @@ Both were run end-to-end against this exact data before writing this doc — not
 ### Prerequisites
 
 - Docker (no local build needed — `docker pull` fetches the pre-built image from GHCR).
-- A `.env` file **in this folder** (`tailgate/.env`, copied from `casky-runner-phase1/.env`) with
+- A `.env` file **in this folder** (`tailgate/.env`, copied from `casky-box/.env`) with
   a working `ANTHROPIC_API_KEY`. It's git-ignored and lives here, not the repo root, same reasoning
   as TollBooth's setup:
   ```bash
-  cp /path/to/casky-runner-phase1/.env tailgate/.env
+  cp ../casky-box/.env tailgate/.env
   ```
 
 <!-- markdownlint-disable -->
-> **Strip the quotes — this will break auth otherwise.** `casky-runner-phase1/.env` writes values
+> **Strip the quotes — this will break auth otherwise.** `casky-box/.env` writes values
 > as `ANTHROPIC_API_KEY="sk-ant-..."` (quoted). `docker run --env-file` does **not** strip quotes —
 > Claude Code fails with `Invalid API key`, which looks like a bad/revoked key but isn't. Fix once:
 > ```bash
@@ -130,14 +130,18 @@ Work Tailgate or GuestList inside that interactive Claude Code session (skills a
 
 ### Prerequisites
 
-`casky-runner-phase1` running, using its own `.env` — nothing to copy in here:
+Casky Box running — pulled from GHCR, no separate repo to clone:
 
 ```bash
-cd /path/to/casky-runner-phase1
+cd ../casky-box    # casky-workshops/casky-box, shared by every workshop
+cp .env.example .env   # first time only — then set ANTHROPIC_API_KEY
+docker compose pull
 docker compose up -d
 ```
 
-If `casky-runner`/`casky-db` are already up, this is a no-op — confirm with `docker compose ps`.
+If `casky-runner`/`casky-db` are already up (e.g. from another workshop earlier today), this is a
+no-op — confirm with `docker compose ps`. See [`casky-box/README.md`](../casky-box/README.md) for
+what's in it.
 
 ### Steps
 
@@ -160,8 +164,8 @@ test -f phishing-email.eml && echo "[+] correct folder" || echo "[!] cd to casky
 
 for f in guestlist/*.json; do echo "--- $(basename "$f") ---"; cat "$f"; echo; done > guestlist-full.txt
 
-# 4. Copy both into casky-runner-phase1's evidence bind mount (live mount, no restart needed).
-cp tailgate-full.txt guestlist-full.txt /path/to/casky-runner-phase1/evidence/
+# 4. Copy both into Casky Box's evidence bind mount (live mount, no restart needed).
+cp tailgate-full.txt guestlist-full.txt ../casky-box/evidence/
 docker exec casky-runner ls /var/casky/evidence/   # confirm they're already there
 
 # 5. Investigate — Tailgate (reactive). --auto runs every step's agent for real;
@@ -229,16 +233,16 @@ afterward for the Plan / Execution / Findings / Remediation tabs.
 
 `./cleanup.sh` removes everything a run of this exercise creates outside this folder: the
 `kali-tailgate` container (Section 1) and any evidence files Section 2 copied into
-`casky-runner-phase1/evidence/`. Safe to re-run.
+`casky-box/evidence/`. Safe to re-run.
 
 ```bash
 ./cleanup.sh                                                  # container + copied evidence
-./cleanup.sh --casky-runner-path ../../casky-runner-phase1    # if that repo isn't a sibling
+./cleanup.sh --casky-box-path ../casky-box                    # if casky-box/ was moved elsewhere
 ./cleanup.sh --with-image                                      # also remove kalilinux/kali-rolling
 ```
 
-It does **not** touch `casky-runner-phase1`'s own containers, and doesn't delete Postgres
-investigation records — those are history, not litter.
+It does **not** touch Casky Box's own containers (`casky-runner`, `casky-db`, `casky-ui`), and
+doesn't delete Postgres investigation records — those are history, not litter.
 
 ---
 

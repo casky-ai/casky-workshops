@@ -26,18 +26,18 @@ the same pre-built image instead of building it (or a fleet of them) locally.
 
 ### Prerequisites
 - Docker (no local build needed — `docker pull` fetches the pre-built image from GHCR).
-- A `.env` file **in this folder** (`tollbooth/.env`, copied from `casky-runner-phase1/.env`)
+- A `.env` file **in this folder** (`tollbooth/.env`, copied from `casky-box/.env`)
   with a working `ANTHROPIC_API_KEY` — that's the "shared key" the original instructions say to
   pre-authenticate with. It's git-ignored (`.env*` in `.gitignore`) and lives here, not the repo
   root, specifically so every command below — `.env`, the scripts, the docker run — is
   self-contained in one folder with nothing to mix up:
   ```bash
-  cp /path/to/casky-runner-phase1/.env tollbooth/.env
+  cp ../casky-box/.env tollbooth/.env
   ```
 
-  **Strip the quotes after copying — this WILL break auth otherwise.** `casky-runner-phase1/.env`
+  **Strip the quotes after copying — this WILL break auth otherwise.** `casky-box/.env`
   writes values as `ANTHROPIC_API_KEY="sk-ant-..."` (quoted), which `python-dotenv`/`docker-compose`
-  interpolation (how `casky-runner-phase1` itself reads it) handles fine. `docker run --env-file`
+  interpolation (how Casky Box itself reads it) handles fine. `docker run --env-file`
   does **not** strip quotes — it passes the literal string, quote marks included, straight into
   the container. The result is a key that starts with `"` instead of `sk-ant-`, and Claude Code
   fails with `Invalid API key` — live-caught mid-session, looked like a bad/revoked key, wasn't.
@@ -154,25 +154,27 @@ is pre-built synthetic evidence, so this is a pure **Path A (evidence-driven)** 
 a lab-target exercise.
 
 ### Prerequisites
-- `casky-runner-phase1` running, using **its own `.env`** — nothing to copy in here, unlike
-  Section 1. `docker compose up -d` automatically reads `.env` from the same directory as
-  `docker-compose.yml` for `${ANTHROPIC_API_KEY}` substitution (`docker-compose.yml:38`), no
-  `--env-file` flag needed. Unlike `docker run --env-file` (the Section 1 bug), Compose's own
-  `.env` parser strips quotes correctly, so the file works as-is with no editing:
+- Casky Box running — pulled from GHCR, no separate repo to clone. `docker compose up -d`
+  automatically reads `.env` from the same directory as `docker-compose.yml` for
+  `${ANTHROPIC_API_KEY}` substitution, no `--env-file` flag needed. Unlike `docker run --env-file`
+  (the Section 1 bug), Compose's own `.env` parser strips quotes correctly, so the file works as-is
+  with no editing:
   ```bash
-  cd /path/to/casky-runner-phase1
+  cd ../casky-box    # casky-workshops/casky-box, shared by every workshop
+  cp .env.example .env   # first time only — then set ANTHROPIC_API_KEY
+  docker compose pull
   docker compose up -d
   ```
   If `casky-runner`/`casky-db` are already up from earlier, this is a no-op — just confirm with
-  `docker compose ps`.
+  `docker compose ps`. See [`casky-box/README.md`](../casky-box/README.md) for what's in it.
 
 ### Steps
 
 ```bash
 # Run every command below from THIS folder (casky-workshops/tollbooth/) — cloudtrail/*.json,
 # opendoor/*.json below are relative paths. Live-caught twice now (Section 1's container mount,
-# then here): running from casky-runner-phase1/ instead silently writes tollbooth-pcap.txt into
-# the wrong repo and 'cloudtrail/*.json' matches nothing ("zsh: no matches found").
+# then here): running from casky-box/ instead silently writes tollbooth-pcap.txt into
+# the wrong folder and 'cloudtrail/*.json' matches nothing ("zsh: no matches found").
 cd /path/to/casky-workshops/tollbooth
 test -f lab-tollbooth.pcap && echo "[+] correct folder" || echo "[!] wrong folder — cd to casky-workshops/tollbooth first"
 
@@ -192,12 +194,12 @@ docker exec kali-tollbooth tshark -r /root/tollbooth/lab-tollbooth.pcap -Y http 
 # 3. OpenDoor's evidence is already text — just concatenate the configs
 for f in opendoor/*.json; do echo "--- $(basename "$f") ---"; cat "$f"; echo; done > opendoor-full.txt
 
-# 4. Copy both into casky-runner-phase1's evidence bind mount. That's the whole step —
-#    ./evidence:/var/casky/evidence:ro (docker-compose.yml:81) is a LIVE bind mount, not a
+# 4. Copy both into Casky Box's evidence bind mount. That's the whole step —
+#    ./evidence:/var/casky/evidence:ro (casky-box/docker-compose.yml) is a LIVE bind mount, not a
 #    copy-once: anything you drop here shows up inside the running container immediately,
 #    no restart, no remount, no `docker cp` (confirmed: wrote+removed a test file on the
 #    host, appeared/disappeared in the container instantly both ways).
-cp tollbooth-full.txt opendoor-full.txt /path/to/casky-runner-phase1/evidence/
+cp tollbooth-full.txt opendoor-full.txt ../casky-box/evidence/
 docker exec casky-runner ls /var/casky/evidence/   # confirm they're already there
 
 # 5. Investigate — TollBooth (reactive). --auto runs every step's agent for real;
@@ -250,20 +252,20 @@ described in `blogs/blog-first-live-fire.md` back in `claude-skills-security`. O
 
 `./cleanup.sh` removes everything a run of this exercise creates outside this folder: the
 `kali-tollbooth` container (Section 1) and any evidence files Section 2 copied into
-`casky-runner-phase1/evidence/`. Safe to re-run — reports what it found and skips what's already
+`casky-box/evidence/`. Safe to re-run — reports what it found and skips what's already
 gone.
 
 ```bash
 ./cleanup.sh                                          # container + copied evidence
-./cleanup.sh --casky-runner-path ../../casky-runner-phase1   # if that repo isn't a sibling of this one
+./cleanup.sh --casky-box-path ../casky-box             # if casky-box/ was moved elsewhere
 ./cleanup.sh --with-image                              # also remove the kalilinux/kali-rolling image
 ```
 
-It does **not** touch `casky-runner-phase1`'s own containers (`casky-runner`, `casky-db`,
-`skill-lab`, …) — those are your persistent dev environment, not workshop-run output — and it
-doesn't delete Postgres investigation records from `casky harness` runs, since those are history,
-not litter. If `lab-tollbooth.pcap`/`cloudtrail/`/`opendoor/` get modified mid-exercise, restore
-them with `./reset.sh` (copies back from `.pristine/`), separately from cleanup.
+It does **not** touch Casky Box's own containers (`casky-runner`, `casky-db`, `casky-ui`) — those
+are shared across workshops/attendees, not workshop-run output — and it doesn't delete Postgres
+investigation records from `casky harness` runs, since those are history, not litter. If
+`lab-tollbooth.pcap`/`cloudtrail/`/`opendoor/` get modified mid-exercise, restore them with
+`./reset.sh` (copies back from `.pristine/`), separately from cleanup.
 
 **Re-running Section 1 setup?** `docker run --name kali-tollbooth ...` fails with "name already in
 use" if the container from a previous setup is still around — that's not broken, it just means

@@ -2,12 +2,13 @@
 # Casky Workshops — readiness check, all exercises.
 # Run this right before attendees show up. Checks, per exercise:
 #   Section 1 (Kali)      -> kali-<exercise> container + tooling + lab data
-#   Section 2 (Casky Box) -> casky-runner-phase1's docker compose stack (shared across exercises)
+#   Section 2 (Casky Box) -> casky-box's docker compose stack (shared across exercises,
+#                            pulled from GHCR — no separate repo to clone)
 # Safe to re-run any number of times; makes no changes.
 #
 # Usage:
 #   ./scripts/workshop-check.sh
-#   CASKY_RUNNER_DIR=/path/to/casky-runner-phase1 ./scripts/workshop-check.sh
+#   CASKY_BOX_DIR=/path/to/casky-box ./scripts/workshop-check.sh
 #   ./scripts/workshop-check.sh --skip-network   # skip the wiki/blog reachability checks (e.g. flaky venue wifi)
 
 set -u
@@ -18,8 +19,8 @@ for a in "$@"; do
   [ "$a" = "--skip-network" ] && SKIP_NETWORK=1
 done
 
-# Sibling repo by default (../casky-runner-phase1) — override if yours lives elsewhere.
-CASKY_RUNNER_DIR="${CASKY_RUNNER_DIR:-$(cd .. 2>/dev/null && pwd)/casky-runner-phase1}"
+# Lives in this repo by default (casky-workshops/casky-box) — override if yours lives elsewhere.
+CASKY_BOX_DIR="${CASKY_BOX_DIR:-$(pwd)/casky-box}"
 
 pass=0; fail=0; warn=0
 ok()   { echo "  PASS  $1"; pass=$((pass+1)); }
@@ -233,11 +234,11 @@ else
 fi
 
 echo
-echo "== Section 2: Casky Box (casky-runner-phase1) — shared by all exercises =="
-if [ -d "$CASKY_RUNNER_DIR" ]; then
-  ok "casky-runner-phase1 found at $CASKY_RUNNER_DIR"
+echo "== Section 2: Casky Box (casky-box/, pulled from GHCR) — shared by all exercises =="
+if [ -d "$CASKY_BOX_DIR" ]; then
+  ok "casky-box found at $CASKY_BOX_DIR"
 else
-  bad "casky-runner-phase1 not found at $CASKY_RUNNER_DIR — set CASKY_RUNNER_DIR=/path/to/it"
+  bad "casky-box not found at $CASKY_BOX_DIR — set CASKY_BOX_DIR=/path/to/it"
 fi
 
 for c in casky-db casky-runner casky-ui; do
@@ -245,7 +246,7 @@ for c in casky-db casky-runner casky-ui; do
     if container_healthy_or_running "$c"; then ok "$c is up and healthy"
     else soft "$c is running but not yet healthy — give it a few seconds and re-run"; fi
   else
-    bad "$c is not running — run: (cd $CASKY_RUNNER_DIR && docker compose up -d)"
+    bad "$c is not running — run: (cd $CASKY_BOX_DIR && docker compose pull && docker compose up -d)"
   fi
 done
 
@@ -259,7 +260,7 @@ if container_running casky-runner; then
   if docker exec casky-runner sh -c 'case "$ANTHROPIC_API_KEY" in sk-ant-*) exit 0;; *) exit 1;; esac' >/dev/null 2>&1; then
     ok "ANTHROPIC_API_KEY present in casky-runner (sk-ant- prefix)"
   else
-    soft "ANTHROPIC_API_KEY missing/malformed in casky-runner — check $CASKY_RUNNER_DIR/.env"
+    soft "ANTHROPIC_API_KEY missing/malformed in casky-runner — check $CASKY_BOX_DIR/.env"
   fi
 fi
 

@@ -15,7 +15,7 @@ data, two different ways of driving the investigation.
 ### Prerequisites
 
 - Docker (no local build needed — `docker pull` fetches the pre-built image from GHCR).
-- A `.env` file **in this folder** (`fastlane/.env`, copied from `casky-runner-phase1/.env`,
+- A `.env` file **in this folder** (`fastlane/.env`, copied from `casky-box/.env`,
   quotes stripped) — same steps as TollBooth/Tailgate's Section 1.
 
 ### Steps
@@ -106,7 +106,16 @@ PONG
 
 ### Prerequisites
 
-`casky-runner-phase1` running (`docker compose up -d`), same as every other exercise in this repo.
+Casky Box running — pulled from GHCR, no separate repo to clone:
+
+```bash
+cd ../casky-box    # casky-workshops/casky-box, shared by every workshop
+cp .env.example .env   # first time only — then set ANTHROPIC_API_KEY
+docker compose pull
+docker compose up -d
+```
+
+See [`casky-box/README.md`](../casky-box/README.md) for what's in it and how to confirm it's up.
 
 ### Steps
 
@@ -129,7 +138,7 @@ test -f app/rls-policies.json && echo "[+] correct folder" || echo "[!] cd to ca
 
 for f in speedbump/*.json; do echo "--- $(basename "$f") ---"; cat "$f"; echo; done > speedbump-full.txt
 
-cp fastlane-full.txt speedbump-full.txt /path/to/casky-runner-phase1/evidence/
+cp fastlane-full.txt speedbump-full.txt ../casky-box/evidence/
 docker exec casky-runner ls /var/casky/evidence/
 
 # Investigate — FastLane (reactive)
@@ -177,7 +186,7 @@ afterward for the Plan / Execution / Findings / Remediation tabs.
 
 ```bash
 ./cleanup.sh                                                  # container + copied evidence
-./cleanup.sh --casky-runner-path ../../casky-runner-phase1
+./cleanup.sh --casky-box-path ../casky-box                    # if casky-box/ was moved elsewhere
 ./cleanup.sh --with-image
 ```
 
