@@ -1,15 +1,20 @@
-# Cloned fresh by setup-skills.sh — not committed (one clone per exercise folder)
+# Legacy/defensive only — setup-skills.sh now clones to $HOME, not here (a clone in the
+# workshop's own folder gets shadowed by `docker run`'s bind mount over that same folder,
+# leaving every skill symlink dangling). Kept in case an old checkout or cached image still
+# writes one of these.
 tollbooth/Anthropic-Cybersecurity-Skills/
 tailgate/Anthropic-Cybersecurity-Skills/
 fastlane/Anthropic-Cybersecurity-Skills/
 dashcam/Anthropic-Cybersecurity-Skills/
 
-# Scratch evidence bundles generated while working an exercise (top-level only —
-# doesn't touch committed evidence living in subfolders like network/, ad/, guestlist/, app/, speedbump/)
-tollbooth/*.txt
+# Scratch evidence bundles generated while working an exercise (doesn't touch committed
+# evidence living in subfolders like network/, ad/, guestlist/, app/, speedbump/).
+# TollBooth's own Section 2 output lives in tollbooth/evidence/ (see its README); the
+# other exercises still drop theirs at their own top level.
+tollbooth/evidence/*
+!tollbooth/evidence/README.md
 tailgate/*.txt
 fastlane/*.txt
-!tollbooth/SETUP.md
 !tailgate/SETUP.md
 !fastlane/SETUP.md
 .env*

@@ -10,10 +10,18 @@ echo "=============================================="
 ls app/*.json >/dev/null 2>&1       || { echo "[!] missing app/ evidence — run ./reset.sh"; exit 1; }
 ls speedbump/*.json >/dev/null 2>&1 || { echo "[!] missing speedbump/ configs — run ./reset.sh"; exit 1; }
 echo "[+] lab data present: app/ (FastLane) + speedbump/ (SpeedBump)"
-# 2. skills available to the agent?
+# 2. skills available to the agent? `ls` alone only proves the symlinks exist, not that
+#    they resolve — [ -e "$f" ] on each one follows the link and catches a broken target
+#    (e.g. cloned to the wrong place and shadowed by this folder's own bind mount).
 SK="$HOME/.claude/skills"
-if [ -d "$SK" ] && ls "$SK" >/dev/null 2>&1; then
-  echo "[+] agent skills mounted at $SK ($(ls "$SK" | wc -l) skills)"
+if [ -d "$SK" ] && [ -n "$(ls "$SK" 2>/dev/null)" ]; then
+  total=0; broken=0
+  for f in "$SK"/*; do total=$((total+1)); [ -e "$f" ] || broken=$((broken+1)); done
+  if [ "$broken" -eq 0 ]; then
+    echo "[+] agent skills mounted at $SK ($total skills)"
+  else
+    echo "[!] $broken of $total skill symlink(s) in $SK are BROKEN — instructor: re-run ./setup-skills.sh"
+  fi
 else
   echo "[i] skills not in $SK. Instructor: run  ./setup-skills.sh"
 fi

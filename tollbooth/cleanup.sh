@@ -60,9 +60,9 @@ else
 fi
 
 echo
-echo "== This folder: scratch evidence files =="
+echo "== This folder: scratch evidence files (evidence/) =="
 shopt -s nullglob 2>/dev/null || true
-scratch=(tollbooth-pcap.txt tollbooth-full.txt opendoor-full.txt tollbooth-cloudtrail.jsonl)
+scratch=(evidence/tollbooth-pcap.txt evidence/tollbooth-full.txt evidence/opendoor-full.txt evidence/tollbooth-cloudtrail.jsonl)
 found=0
 for f in "${scratch[@]}"; do
   if [ -f "$f" ]; then rm -f "$f" && echo "  removed: $f" && found=1; fi

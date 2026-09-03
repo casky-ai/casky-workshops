@@ -209,26 +209,27 @@ docker compose up -d</code></pre>
 # 'cloudtrail/*.json' matches nothing ("zsh: no matches found").
 cd /path/to/casky-workshops/tollbooth
 test -f lab-tollbooth.pcap && echo "[+] correct folder" || echo "[!] wrong folder — cd to casky-workshops/tollbooth first"
+mkdir -p evidence   # this folder's own scratch output, gitignored — see evidence/README.md
 
 # 1. Turn the pcap into readable evidence text (tshark isn't needed inside casky-runner —
 #    reuse the Kali container from Section 1, or run tshark locally if you have it)
 docker exec kali-tollbooth tshark -r /root/tollbooth/lab-tollbooth.pcap -Y http \
   -T fields -e frame.time -e ip.src -e ip.dst -e http.request.method -e http.request.full_uri -e http.response.code \
-  > tollbooth-pcap.txt
+  > evidence/tollbooth-pcap.txt
 
 # 2. Combine with the CloudTrail evidence (same incident, later stage of the same attack)
 {
-  echo "=== HTTP/pcap traffic (SSRF -> IMDS credential leak) ==="; cat tollbooth-pcap.txt
+  echo "=== HTTP/pcap traffic (SSRF -> IMDS credential leak) ==="; cat evidence/tollbooth-pcap.txt
   echo; echo "=== CloudTrail events (same account, following hours) ==="
   jq -c '.Records[]' cloudtrail/*.json
-} > tollbooth-full.txt
+} > evidence/tollbooth-full.txt
 
 # 3. OpenDoor's evidence is already text — just concatenate the configs
-for f in opendoor/*.json; do echo "--- $(basename "$f") ---"; cat "$f"; echo; done > opendoor-full.txt
+for f in opendoor/*.json; do echo "--- $(basename "$f") ---"; cat "$f"; echo; done > evidence/opendoor-full.txt
 
 # 4. Copy both into Casky Box's evidence bind mount — a LIVE bind mount, not a
 #    copy-once. Anything dropped here shows up inside the running container immediately.
-cp tollbooth-full.txt opendoor-full.txt ../casky-box/evidence/
+cp evidence/tollbooth-full.txt evidence/opendoor-full.txt ../casky-box/evidence/
 docker exec casky-runner ls /var/casky/evidence/   # confirm they're already there
 
 # 5. Investigate — TollBooth (reactive). --auto runs every step's agent for real;
