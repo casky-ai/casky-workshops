@@ -2,8 +2,11 @@
 # check_1_rls.sh: Loopline demo, Top 10 Gotcha #1: Row-Level Security left off.
 #
 # Requires the Loopline demo container running:
-#   cd fastlane && docker build -f Dockerfile.demo -t loopline-demo:latest .
-#   docker run -d --name loopline-demo -p 8787:8787 loopline-demo:latest
+#   cd fastlane
+#   docker pull ghcr.io/casky-ai/casky-loopline:latest
+#   docker tag ghcr.io/casky-ai/casky-loopline:latest casky-loopline
+#   docker run -d --name casky-loopline -p 8787:8787 casky-loopline
+#   # Fallback: docker build -f Dockerfile.demo -t casky-loopline .
 set -euo pipefail
 
 HOST="${LOOPLINE_HOST:-http://localhost:8787}"
@@ -14,8 +17,9 @@ echo "\$ curl -s \"$HOST/rest/v1/customers?select=*\" -H \"apikey: <key shipped 
 echo
 
 if ! RESULT=$(curl -sf "$HOST/rest/v1/customers?select=*" -H "apikey: $ANON_KEY"); then
-  echo "Couldn't reach $HOST, is the loopline-demo container running?"
-  echo "  docker run -d --name loopline-demo -p 8787:8787 loopline-demo:latest"
+  echo "Couldn't reach $HOST, is the casky-loopline container running?"
+  echo "  docker pull ghcr.io/casky-ai/casky-loopline:latest && docker tag ghcr.io/casky-ai/casky-loopline:latest casky-loopline"
+  echo "  docker run -d --name casky-loopline -p 8787:8787 casky-loopline"
   exit 1
 fi
 
