@@ -66,9 +66,11 @@
     <div class="callout callout-amber">
       <span class="callout-label">"Checksum verification failed" installing Claude Code</span>
       <p>Transient — the installer downloads a native binary payload after itself and checksums it
-      separately; an occasional network blip mid-download trips it. Re-run the same install
-      command:</p>
-<pre><code>docker exec kali-tailgate bash -c "curl -fsSL https://claude.ai/install.sh -o /tmp/install.sh && bash /tmp/install.sh"</code></pre>
+      separately; an occasional network blip mid-download trips it. This happens at
+      <code>docker build</code> time (baked into the image) — only relevant if you're rebuilding
+      rather than pulling from GHCR. Just re-run the build, Docker's layer cache means everything
+      before that <code>RUN</code> step is skipped:</p>
+<pre><code>docker build -t casky-tailgate .</code></pre>
     </div>
 
     <div class="callout callout-amber">

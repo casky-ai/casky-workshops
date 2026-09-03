@@ -35,7 +35,22 @@ pentest tooling), and publishes to `ghcr.io/casky-ai/casky-<name>:latest`. It ru
 (06:00 UTC), on any push touching a Dockerfile/skill list, and on demand
 (`workflow_dispatch`).
 
-**One-time manual step per new image:** GHCR packages are created **private** on first publish
-regardless of the repo's own visibility, and `GITHUB_TOKEN` can't flip that — a maintainer with
-admin on the `casky-ai` org needs to open the new package's settings on GitHub
-(Package settings → Change visibility → Public) once, after its first successful publish.
+Confirmed by pulling every image with no `docker login` at all: on the `casky-ai` org, a package
+published from a public repo comes up publicly pullable immediately, no manual visibility flip
+needed. If a future org/repo doesn't behave this way, a maintainer with admin access would need to
+open the new package's settings on GitHub (Package settings → Change visibility → Public) once,
+after its first publish — but don't assume that step is required without checking first.
+
+## Live sessions: pull, don't build
+
+At a live session, **pull the pre-built image instead of running `docker build`** — building
+takes 30 to 90+ seconds per image (longer on slow venue wifi), and every workshop's `SETUP.md`
+leads with the pull for exactly that reason:
+
+```bash
+docker pull ghcr.io/casky-ai/casky-<name>:latest
+docker tag ghcr.io/casky-ai/casky-<name>:latest casky-<name>
+```
+
+`docker build -t casky-<name> .` is still there as the fallback — use it when iterating on a
+`Dockerfile` itself, or if GHCR is unreachable (offline/air-gapped venue).

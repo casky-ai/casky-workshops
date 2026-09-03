@@ -21,7 +21,7 @@ Both were run end-to-end against this exact data before writing this doc — not
 
 ### Prerequisites
 
-- Docker (the base image, `kalilinux/kali-rolling`, is pulled automatically by `docker build`).
+- Docker (no local build needed — `docker pull` fetches the pre-built image from GHCR).
 - A `.env` file **in this folder** (`tailgate/.env`, copied from `casky-runner-phase1/.env`) with
   a working `ANTHROPIC_API_KEY`. It's git-ignored and lives here, not the repo root, same reasoning
   as TollBooth's setup:
@@ -43,10 +43,15 @@ Both were run end-to-end against this exact data before writing this doc — not
 ```bash
 # Run every command below from THIS folder (casky-workshops/tailgate/).
 
-# 0. Build the image once — tshark/tcpdump/scapy, Claude Code, and the 10 skills are baked
-#    in at build time (see Dockerfile), so there's nothing left to live-install over
-#    docker exec. Rebuild only if you edit setup-skills.sh's skill list.
-docker build -t casky-tailgate .
+# 0. Pull the pre-built image from GHCR (rebuilt nightly with the latest patches) instead
+#    of building locally — much faster at a live session.
+docker pull ghcr.io/casky-ai/casky-tailgate:latest
+docker tag ghcr.io/casky-ai/casky-tailgate:latest casky-tailgate
+
+# Fallback, kept for reference — tshark/tcpdump/scapy, Claude Code, and the 10 skills are
+# still baked into the image at build time (see Dockerfile); rebuild locally if you're
+# iterating on the Dockerfile/skill list itself, or if GHCR is unreachable:
+#   docker build -t casky-tailgate .
 
 # 1. Start a persistent container with this folder mounted + the shared key available
 docker run -d --name kali-tailgate \
@@ -68,8 +73,10 @@ export PATH="$HOME/.local/bin:$PATH"
 claude        # drops into an interactive Claude Code session
 ```
 
-**Verified end-to-end**, tools/Claude Code/skills baked into the image at `docker build` time:
-Claude Code on `PATH`, 10/10 skills linked, and a real round-trip against the Anthropic API:
+**Verified end-to-end**, tools/Claude Code/skills baked into the image at `docker build` time
+(`docker pull ghcr.io/casky-ai/casky-tailgate:latest` confirmed working too — no `docker login`
+needed, publicly pullable): Claude Code on `PATH`, 10/10 skills linked, and a real round-trip
+against the Anthropic API:
 
 ```
 $ claude --print "Reply with exactly the single word: PONG"

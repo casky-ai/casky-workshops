@@ -64,13 +64,15 @@
     </div>
 
     <h2 id="section1">Section 1 — Kali container, hand-picked skills</h2>
-    <p>Same pattern as every other exercise in this repo — one Kali container, 10 hand-picked
-    skills symlinked in, driven interactively with Claude Code. No pcap tooling needed here — this
+    <p>One Docker image with tools, Claude Code, and the 10 hand-picked skills baked in at
+    <code>docker build</code> time — see <a href="https://github.com/casky-ai/casky-workshops/blob/main/fastlane/Dockerfile" target="_blank" rel="noopener">fastlane/Dockerfile</a>
+    — instead of live-installing over <code>docker exec</code>. No pcap tooling needed here — this
     scenario's evidence is code, config, and logs, not network captures.</p>
 
     <h3>Prerequisites</h3>
     <ul>
-      <li>Docker, with the <code>kalilinux/kali-rolling</code> image.</li>
+      <li>Docker (the base image, <code>kalilinux/kali-rolling</code>, is pulled automatically by
+        <code>docker build</code>).</li>
       <li>A <code>.env</code> file <strong>in the <code>fastlane/</code> folder</strong> (copied
         from <code>casky-runner-phase1/.env</code>, quotes stripped — same fix as every other
         exercise, see <a href="tailgate-setup.html#section1">Tailgate's Setup page</a> for the
@@ -83,29 +85,28 @@ sed -i.bak -E 's/^([A-Z_][A-Z0-9_]*)="(.*)"$/\1=\2/' fastlane/.env && rm fastlan
     <h3>Steps</h3>
 <pre><code># Run every command below from THIS folder (casky-workshops/fastlane/).
 
+# 0. Pull the pre-built image from GHCR (rebuilt nightly with the latest patches) instead
+#    of building locally — much faster at a live session.
+docker pull ghcr.io/casky-ai/casky-fastlane:latest
+docker tag ghcr.io/casky-ai/casky-fastlane:latest casky-fastlane
+
+# Fallback, kept for reference — tools, Claude Code, and the 10 skills are still baked
+# into the image at build time (see Dockerfile); rebuild locally if you're iterating on
+# the Dockerfile/skill list itself, or if GHCR is unreachable (offline/air-gapped venue):
+#   docker build -t casky-fastlane .
+
 docker run -d --name kali-fastlane \
   --env-file .env \
   -v "$(pwd)":/root/fastlane \
-  kalilinux/kali-rolling sleep infinity
+  casky-fastlane
 
 docker exec kali-fastlane test -f /root/fastlane/verify.sh \
   && echo "[+] mount OK" || echo "[!] wrong directory — re-run from casky-workshops/fastlane/"
 
-# 1. jq (no tshark/tcpdump needed — no pcap in this scenario)
-docker exec kali-fastlane bash -c \
-  "apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y jq curl ca-certificates git"
-
-# 2. Install Claude Code; pre-authenticate with the shared key
-docker exec kali-fastlane bash -c "curl -fsSL https://claude.ai/install.sh -o /tmp/install.sh && bash /tmp/install.sh"
-docker exec kali-fastlane bash -c 'export PATH="$HOME/.local/bin:$PATH"; claude --version'
-
-# 3. Mount the 10 hand-picked skills into ~/.claude/skills
-docker exec -w /root/fastlane kali-fastlane bash -c "chmod +x setup-skills.sh verify.sh reset.sh start.sh && ./setup-skills.sh"
-
-# 4. Run ./verify.sh — expect 12/12 PASS.
+# 1. Run ./verify.sh — expect 12/12 PASS.
 docker exec -w /root/fastlane kali-fastlane ./verify.sh
 
-# 5. Bash into the container and start Claude Code interactively.
+# 2. Bash into the container and start Claude Code interactively.
 docker exec -it -w /root/fastlane kali-fastlane bash
 #   ...now inside the container's shell:
 export PATH="$HOME/.local/bin:$PATH"
@@ -114,8 +115,9 @@ claude</code></pre>
 
     <div class="callout callout-teal">
       <span class="callout-label">Verified end-to-end</span>
-      <p>All packages installed clean, Claude Code 2.1.246 on <code>PATH</code>, 10/10 skills
-      linked, and a real round-trip against the Anthropic API:</p>
+      <p><code>docker pull ghcr.io/casky-ai/casky-fastlane:latest</code> confirmed working (no
+      <code>docker login</code> needed, publicly pullable): Claude Code on <code>PATH</code>,
+      10/10 skills linked, and a real round-trip against the Anthropic API:</p>
 <pre><code>$ claude --print "Reply with exactly the single word: PONG"
 PONG</code></pre>
 <pre><code>== tooling ==
@@ -145,7 +147,7 @@ PONG</code></pre>
 ----
 RESULT: 12 passed, 0 failed
 This laptop is READY.</code></pre>
-      <p><code>./start.sh</code> (step 5) confirmed too:</p>
+      <p><code>./start.sh</code> (step 2) confirmed too:</p>
 <pre><code>[+] lab data present: app/ (FastLane) + speedbump/ (SpeedBump)
 [+] agent skills mounted at /root/.claude/skills (10 skills)
 [+] Claude Code found.

@@ -30,10 +30,12 @@ workshops) and Option B (local Python, no Docker).
 ## Docker images
 
 Every workshop's `Dockerfile` bakes in its tools, Claude Code, and skill set at build time (see
-[`CONTRIBUTING.md`](CONTRIBUTING.md)) — `docker build -t casky-<name> .` inside that workshop's
-folder instead of live-installing over `docker exec`. All five are published to GHCR and rebuilt
-nightly (tools/OS patches, Trivy-scanned, report-only) by
-[`.github/workflows/docker-images.yml`](.github/workflows/docker-images.yml):
+[`CONTRIBUTING.md`](CONTRIBUTING.md)) instead of live-installing over `docker exec`. All five are
+published to GHCR and rebuilt nightly (tools/OS patches, Trivy-scanned, report-only) by
+[`.github/workflows/docker-images.yml`](.github/workflows/docker-images.yml) — **at a live
+session, `docker pull` the pre-built image** (each workshop's `SETUP.md` leads with this);
+`docker build -t casky-<name> .` inside that workshop's folder is the fallback for iterating on a
+Dockerfile or when GHCR is unreachable:
 
 - `ghcr.io/casky-ai/casky-fastlane`
 - `ghcr.io/casky-ai/casky-tailgate`

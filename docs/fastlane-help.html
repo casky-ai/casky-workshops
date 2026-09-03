@@ -66,8 +66,10 @@
 
     <div class="callout callout-amber">
       <span class="callout-label">"Checksum verification failed" installing Claude Code</span>
-      <p>Transient — re-run the same install command:</p>
-<pre><code>docker exec kali-fastlane bash -c "curl -fsSL https://claude.ai/install.sh -o /tmp/install.sh && bash /tmp/install.sh"</code></pre>
+      <p>This happens at <code>docker build</code> time (baked into the image) — only
+      relevant if you're rebuilding rather than pulling from GHCR. Just re-run the build,
+      Docker's layer cache means everything before that <code>RUN</code> step is skipped:</p>
+<pre><code>docker build -t casky-fastlane .</code></pre>
     </div>
 
     <div class="callout callout-amber">

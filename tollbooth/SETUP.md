@@ -21,10 +21,11 @@ Both were run end-to-end against this exact data before writing this doc — not
 Original instructions ([`README.md`](https://github.com/mukul975/BHUSA-Anthropic-CyberSecurity-Skills#day-before-setup-build-one-kali-image-clone-to-all-laptops)):
 build one Kali image, clone to all laptops. `Dockerfile` here does exactly that literally — tools,
 Claude Code, and the 10 skills are baked in at `docker build` time, not live-installed into a
-running container — and we only need one container run from it, not a fleet.
+running container — and it's rebuilt nightly and published to GHCR, so every laptop just pulls
+the same pre-built image instead of building it (or a fleet of them) locally.
 
 ### Prerequisites
-- Docker (the base image, `kalilinux/kali-rolling`, is pulled automatically by `docker build`).
+- Docker (no local build needed — `docker pull` fetches the pre-built image from GHCR).
 - A `.env` file **in this folder** (`tollbooth/.env`, copied from `casky-runner-phase1/.env`)
   with a working `ANTHROPIC_API_KEY` — that's the "shared key" the original instructions say to
   pre-authenticate with. It's git-ignored (`.env*` in `.gitignore`) and lives here, not the repo
@@ -55,11 +56,15 @@ running container — and we only need one container run from it, not a fleet.
 # Run every command below from THIS folder (casky-workshops/tollbooth/) — $(pwd) becomes the
 # container's /root/tollbooth, and .env/the scripts only exist here, not the repo root.
 
-# 0. Build the image once — tshark/tcpdump/scapy, Claude Code, and the 10 skills are baked
-#    in at build time (see Dockerfile), so there's nothing left to live-install over
-#    docker exec. Rebuild only if you edit setup-skills.sh's skill list; the pcap/CloudTrail
-#    data and scenario scripts are bind-mounted below, not baked in.
-docker build -t casky-tollbooth .
+# 0. Pull the pre-built image from GHCR (rebuilt nightly with the latest patches) instead
+#    of building locally — much faster at a live session.
+docker pull ghcr.io/casky-ai/casky-tollbooth:latest
+docker tag ghcr.io/casky-ai/casky-tollbooth:latest casky-tollbooth
+
+# Fallback, kept for reference — tshark/tcpdump/scapy, Claude Code, and the 10 skills are
+# still baked into the image at build time (see Dockerfile); rebuild locally if you're
+# iterating on the Dockerfile/skill list itself, or if GHCR is unreachable:
+#   docker build -t casky-tollbooth .
 
 # 1. Start a persistent Kali container with this folder mounted + the shared key available
 docker run -d --name kali-tollbooth \
@@ -91,9 +96,11 @@ claude        # drops into an interactive Claude Code session — paste the scen
               # prompt from Arsenal-CheatSheet-Book.pdf and let it work
 ```
 
-**Verified end-to-end**, tools/Claude Code/skills baked into the image at `docker build` time:
-Claude Code installed and on `PATH`, 10/10 skills linked, and — the part that actually
-matters, a real round-trip against the Anthropic API, not just checking the key is present:
+**Verified end-to-end**, tools/Claude Code/skills baked into the image at `docker build` time
+(`docker pull ghcr.io/casky-ai/casky-tollbooth:latest` confirmed working too — no `docker login`
+needed, publicly pullable): Claude Code installed and on `PATH`, 10/10 skills linked, and — the
+part that actually matters, a real round-trip against the Anthropic API, not just checking the
+key is present:
 ```
 $ claude --print "Reply with exactly the single word: PONG"
 PONG
@@ -265,9 +272,9 @@ first for a clean container.
 
 **"Checksum verification failed" installing Claude Code?** Transient — the installer script
 downloads a native binary payload after itself and checksums that separately; an occasional
-network blip mid-download trips it. This now happens at `docker build` time (baked into the
-image), so just re-run the build — Docker's layer cache means everything before that `RUN`
-step is skipped:
+network blip mid-download trips it. This happens at `docker build` time (baked into the image) —
+only relevant if you're rebuilding rather than pulling from GHCR. Just re-run the build — Docker's
+layer cache means everything before that `RUN` step is skipped:
 
 ```bash
 docker build -t casky-tollbooth .

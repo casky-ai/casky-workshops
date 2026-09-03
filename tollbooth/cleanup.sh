@@ -6,7 +6,7 @@
 # What this does NOT touch (on purpose):
 #   - casky-runner-phase1's own containers (casky-runner, casky-db, skill-lab, …)
 #     — that's your persistent dev environment, not a workshop-run asset.
-#   - The kalilinux/kali-rolling IMAGE — expensive to re-pull, kept by default.
+#   - The casky-tollbooth IMAGE (pulled from GHCR or built locally) — pass --with-image to remove it too.
 #     Pass --with-image to remove it too.
 #   - Postgres investigation records from casky harness runs — history, not
 #     litter; delete those yourself via casky-ui or psql if you actually want to.
@@ -14,7 +14,7 @@
 # Usage:
 #   ./cleanup.sh                                    # container + copied evidence files
 #   ./cleanup.sh --casky-runner-path ../../casky-runner-phase1
-#   ./cleanup.sh --with-image                        # also remove kalilinux/kali-rolling
+#   ./cleanup.sh --with-image                        # also remove the casky-tollbooth image
 
 set -uo pipefail
 cd "$(dirname "$0")"
@@ -36,13 +36,13 @@ else
 fi
 
 if [ "$WITH_IMAGE" -eq 1 ]; then
-  if docker image inspect kalilinux/kali-rolling >/dev/null 2>&1; then
-    docker rmi kalilinux/kali-rolling >/dev/null && echo "  removed image: kalilinux/kali-rolling"
+  if docker image inspect casky-tollbooth >/dev/null 2>&1; then
+    docker rmi casky-tollbooth >/dev/null && echo "  removed image: casky-tollbooth"
   else
-    echo "  kalilinux/kali-rolling image not present"
+    echo "  casky-tollbooth image not present"
   fi
 else
-  echo "  (kalilinux/kali-rolling image kept — pass --with-image to remove it too)"
+  echo "  (casky-tollbooth image kept — pass --with-image to remove it too)"
 fi
 
 echo

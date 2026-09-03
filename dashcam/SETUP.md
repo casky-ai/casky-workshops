@@ -37,7 +37,7 @@ as FastLane/Tailgate/TollBooth's containers.
 
 ### Prerequisites
 
-- Docker (the base image, `kalilinux/kali-rolling`, is pulled automatically by `docker build`).
+- Docker (no local build needed — `docker pull` fetches the pre-built image from GHCR).
 - A `.env` file **in this folder** (`dashcam/.env`, copied from `casky-runner-phase1/.env`,
   quotes stripped — same steps as the other workshops' Section 1).
 
@@ -46,9 +46,16 @@ as FastLane/Tailgate/TollBooth's containers.
 ```bash
 # Run every command below from THIS folder (casky-workshops/dashcam/).
 
-# 0. Build the image once — Python, Presidio, spaCy's small model, Claude Code, and the
-#    3 skills are all baked in at build time (see Dockerfile).
-docker build -t casky-dashcam .
+# 0. Pull the pre-built image from GHCR (rebuilt nightly with the latest patches) instead
+#    of building locally — much faster at a live session.
+docker pull ghcr.io/casky-ai/casky-dashcam:latest
+docker tag ghcr.io/casky-ai/casky-dashcam:latest casky-dashcam
+
+# Fallback, kept for reference — Python, Presidio, spaCy's small model, Claude Code, and
+# the 3 skills are still baked into the image at build time (see Dockerfile); rebuild
+# locally if you're iterating on the Dockerfile/skill list itself, or if GHCR is
+# unreachable:
+#   docker build -t casky-dashcam .
 
 docker run -d --name kali-dashcam \
   --env-file .env \
