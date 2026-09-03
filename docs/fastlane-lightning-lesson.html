@@ -82,18 +82,28 @@
       <li>This repo, checked out; every command below runs from <code>fastlane/</code>.</li>
     </ul>
 
-    <h3>Build and run it</h3>
+    <h3>Pull and run it</h3>
     <pre><code>cd casky-workshops/fastlane
-docker build -f Dockerfile.demo -t loopline-demo:latest .
-docker run -d --name loopline-demo -p 8787:8787 loopline-demo:latest</code></pre>
+
+# Pull the pre-built image from GHCR (rebuilt nightly with the latest patches) instead
+# of building locally — much faster at a live session.
+docker pull ghcr.io/casky-ai/casky-loopline:latest
+docker tag ghcr.io/casky-ai/casky-loopline:latest casky-loopline
+
+docker run -d --name casky-loopline -p 8787:8787 casky-loopline
+
+# Fallback, kept for reference — rebuild locally if you're iterating on Dockerfile.demo
+# itself, or if GHCR is unreachable (offline/air-gapped venue):
+#   docker build -f Dockerfile.demo -t casky-loopline .</code></pre>
     <p>Open <a href="http://localhost:8787" target="_blank" rel="noopener">http://localhost:8787</a>,
     Loopline's own landing page: dark CyberForge theme, checkered-flag stripe, and a
     plainly-labeled synthetic-demo notice at the bottom.</p>
 
     <div class="callout callout-teal">
       <span class="callout-label">Verified end-to-end</span>
-      <p>Built, run, and checked just before publishing this page. Homepage returns 200, both
-      scripts below return the expected finding, no manual fixups needed.</p>
+      <p><code>docker pull ghcr.io/casky-ai/casky-loopline:latest</code> confirmed working (no
+      <code>docker login</code> needed, publicly pullable). Homepage returns 200, both scripts
+      below return the expected finding, no manual fixups needed.</p>
     </div>
 
     <h2 id="story">How Loopline broke it</h2>
@@ -188,7 +198,7 @@ docker run -d --name loopline-demo -p 8787:8787 loopline-demo:latest</code></pre
 
     <hr class="rule">
     <h2 id="cleanup">Cleanup</h2>
-    <pre><code>docker stop loopline-demo && docker rm loopline-demo</code></pre>
+    <pre><code>docker stop casky-loopline && docker rm casky-loopline</code></pre>
     <p>Non-destructive, nothing else on your machine is touched. For the Casky investigation
     containers, see <a href="fastlane-help.html#cleanup">Cleanup</a> on the Troubleshooting
     page.</p>

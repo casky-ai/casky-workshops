@@ -159,7 +159,7 @@ HOME_HTML = """<!doctype html>
 
 class LooplineHandler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
-        sys.stderr.write("[loopline-demo] %s - %s\n" % (self.address_string(), fmt % args))
+        sys.stderr.write("[casky-loopline] %s - %s\n" % (self.address_string(), fmt % args))
 
     def do_GET(self):
         path = urlparse(self.path).path
@@ -195,8 +195,8 @@ class LooplineHandler(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     server = HTTPServer(("0.0.0.0", PORT), LooplineHandler)
-    print(f"[loopline-demo] serving synthetic Loopline on http://localhost:{PORT}  (Ctrl+C to stop)")
+    print(f"[casky-loopline] serving synthetic Loopline on http://localhost:{PORT}  (Ctrl+C to stop)")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\n[loopline-demo] stopped")
+        print("\n[casky-loopline] stopped")
