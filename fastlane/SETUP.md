@@ -14,7 +14,7 @@ data, two different ways of driving the investigation.
 
 ### Prerequisites
 
-- Docker (the base image, `kalilinux/kali-rolling`, is pulled automatically by `docker build`).
+- Docker (no local build needed — `docker pull` fetches the pre-built image from GHCR).
 - A `.env` file **in this folder** (`fastlane/.env`, copied from `casky-runner-phase1/.env`,
   quotes stripped) — same steps as TollBooth/Tailgate's Section 1.
 
@@ -23,11 +23,15 @@ data, two different ways of driving the investigation.
 ```bash
 # Run every command below from THIS folder (casky-workshops/fastlane/).
 
-# 0. Build the image once — tools, Claude Code, and the 10 skills are baked in at build
-#    time (see Dockerfile), so there's nothing left to live-install over docker exec.
-#    Rebuild only if you edit setup-skills.sh's skill list; data/ and the scenario scripts
-#    are bind-mounted below, not baked in, so editing those doesn't need a rebuild.
-docker build -t casky-fastlane .
+# 0. Pull the pre-built image from GHCR (rebuilt nightly with the latest patches) instead
+#    of building locally — much faster at a live session.
+docker pull ghcr.io/casky-ai/casky-fastlane:latest
+docker tag ghcr.io/casky-ai/casky-fastlane:latest casky-fastlane
+
+# Fallback, kept for reference — tools, Claude Code, and the 10 skills are still baked
+# into the image at build time (see Dockerfile); rebuild locally if you're iterating on
+# the Dockerfile/skill list itself, or if GHCR is unreachable (offline/air-gapped venue):
+#   docker build -t casky-fastlane .
 
 docker run -d --name kali-fastlane \
   --env-file .env \
@@ -48,8 +52,9 @@ export PATH="$HOME/.local/bin:$PATH"
 claude
 ```
 
-**Verified just now** — `docker build` finishes clean in ~80s (Claude Code 2.1.258, 10/10 skills
-linked), and `verify.sh` passes 12/12 against a container run from that image:
+**Verified just now** — `docker pull ghcr.io/casky-ai/casky-fastlane:latest` (no `docker login`
+needed, publicly pullable), Claude Code 2.1.258 on `PATH`, 10/10 skills linked, and `verify.sh`
+passes 12/12 against a container run from that image:
 
 ```
 == tooling ==

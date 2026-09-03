@@ -64,12 +64,13 @@
     <h2 id="option-a">Option A — Docker (recommended, same pattern as every other workshop here)</h2>
     <p>A <code>Dockerfile</code> bakes in Python, Presidio plus the <code>en_core_web_sm</code>
     spaCy model, Claude Code, and the skill set at build time — no live installs over
-    <code>docker exec</code>, same approach as the other workshops' containers.</p>
+    <code>docker exec</code>, same approach as the other workshops' containers. Rebuilt nightly
+    and published to GHCR, so a live session pulls it instead of building locally.</p>
 
     <h3>Prerequisites</h3>
     <ul>
-      <li>Docker (the base image, <code>kalilinux/kali-rolling</code>, is pulled automatically by
-        <code>docker build</code>).</li>
+      <li>Docker (no local build needed — <code>docker pull</code> fetches the pre-built image
+        from GHCR).</li>
       <li>A <code>.env</code> file <strong>in the <code>dashcam/</code> folder</strong> (copied
         from <code>casky-runner-phase1/.env</code>, quotes stripped):
 <pre><code>cp /path/to/casky-runner-phase1/.env dashcam/.env
@@ -80,9 +81,16 @@ sed -i.bak -E 's/^([A-Z_][A-Z0-9_]*)="(.*)"$/\1=\2/' dashcam/.env && rm dashcam/
     <h3>Steps</h3>
 <pre><code># Run every command below from THIS folder (casky-workshops/dashcam/).
 
-# 0. Build the image once — Python, Presidio, spaCy's small model, Claude Code, and
-#    the 3 skills are all baked in at build time.
-docker build -t casky-dashcam .
+# 0. Pull the pre-built image from GHCR (rebuilt nightly with the latest patches) instead
+#    of building locally — much faster at a live session.
+docker pull ghcr.io/casky-ai/casky-dashcam:latest
+docker tag ghcr.io/casky-ai/casky-dashcam:latest casky-dashcam
+
+# Fallback, kept for reference — Python, Presidio, spaCy's small model, Claude Code, and
+# the 3 skills are still baked into the image at build time (see Dockerfile); rebuild
+# locally if you're iterating on the Dockerfile/skill list itself, or if GHCR is
+# unreachable:
+#   docker build -t casky-dashcam .
 
 docker run -d --name kali-dashcam \
   --env-file .env \
