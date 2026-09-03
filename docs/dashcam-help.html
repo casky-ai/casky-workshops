@@ -57,7 +57,7 @@
     <h2>Troubleshooting</h2>
 
     <div class="callout callout-amber">
-      <span class="callout-label">"name already in use" on docker run --name kali-dashcam</span>
+      <span class="callout-label">"name already in use" on docker run --name casky-dashcam</span>
       <p>Not broken — setup already succeeded once. Either reuse the existing container (skip
       straight to <code>./verify.sh</code>) or run <code>./cleanup.sh</code> first.</p>
     </div>
@@ -76,7 +76,7 @@
       <span class="callout-label">Commands fail with "no such file" / "no matches found"</span>
       <p>Almost always a wrong working directory. Every command on the Setup page assumes you're in
       <code>casky-workshops/dashcam/</code>:</p>
-<pre><code>docker exec kali-dashcam test -f /root/dashcam/verify.sh \
+<pre><code>docker exec casky-dashcam test -f /root/dashcam/verify.sh \
   && echo "[+] mount OK" || echo "[!] wrong directory — re-run from casky-workshops/dashcam/"</code></pre>
     </div>
 
@@ -98,7 +98,7 @@
 
     <h2 id="cleanup">Cleanup</h2>
     <p><code>./cleanup.sh</code> removes everything a run of this exercise creates: the
-    <code>kali-dashcam</code> container (Option A), and the local venv plus cloned upstream skills
+    <code>casky-dashcam</code> container (Option A), and the local venv plus cloned upstream skills
     repo (Option B). Safe to re-run.</p>
 
 <pre><code>./cleanup.sh                # container + venv + cloned upstream skills repo

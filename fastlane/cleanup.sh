@@ -29,10 +29,10 @@ while [ $# -gt 0 ]; do case "$1" in
 esac; done
 
 echo "== Section 1: Kali container =="
-if docker ps -a --format '{{.Names}}' | grep -qx kali-fastlane; then
-  docker rm -f kali-fastlane >/dev/null && echo "  removed container: kali-fastlane"
+if docker ps -a --format '{{.Names}}' | grep -qx casky-fastlane; then
+  docker rm -f casky-fastlane >/dev/null && echo "  removed container: casky-fastlane"
 else
-  echo "  no kali-fastlane container found — already clean"
+  echo "  no casky-fastlane container found — already clean"
 fi
 
 if [ "$WITH_IMAGE" -eq 1 ]; then

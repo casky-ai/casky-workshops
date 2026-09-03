@@ -92,19 +92,19 @@ docker tag ghcr.io/casky-ai/casky-dashcam:latest casky-dashcam
 # unreachable:
 #   docker build -t casky-dashcam .
 
-docker run -d --name kali-dashcam \
+docker run -d --name casky-dashcam \
   --env-file .env \
   -v "$(pwd)":/root/dashcam \
   casky-dashcam
 
-docker exec kali-dashcam test -f /root/dashcam/verify.sh \
+docker exec casky-dashcam test -f /root/dashcam/verify.sh \
   && echo "[+] mount OK" || echo "[!] wrong directory"
 
 # 1. Run ./verify.sh — expect 10/10 PASS.
-docker exec -w /root/dashcam kali-dashcam ./verify.sh
+docker exec -w /root/dashcam casky-dashcam ./verify.sh
 
 # 2. Bash into the container and start Claude Code interactively.
-docker exec -it -w /root/dashcam kali-dashcam bash
+docker exec -it -w /root/dashcam casky-dashcam bash
 #   ...now inside the container's shell:
 export PATH="$HOME/.local/bin:$PATH"
 ./start.sh

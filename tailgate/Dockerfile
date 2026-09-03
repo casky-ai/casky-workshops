@@ -2,7 +2,7 @@
 # Build once, reuse for every attendee's laptop instead of live-installing over `docker exec`:
 #
 #   docker build -t casky-tailgate .
-#   docker run -d --name kali-tailgate --env-file .env -v "$(pwd)":/root/tailgate casky-tailgate
+#   docker run -d --name casky-tailgate --env-file .env -v "$(pwd)":/root/tailgate casky-tailgate
 #
 # See SETUP.md Section 1 for the full flow (this replaces that section's old apt-get/curl/
 # setup-skills.sh docker-exec steps — the image already has them baked in).

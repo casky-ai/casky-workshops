@@ -2,7 +2,7 @@
 # Build once, reuse for every attendee's laptop instead of live-installing over `docker exec`:
 #
 #   docker build -t casky-tollbooth .
-#   docker run -d --name kali-tollbooth --env-file .env -v "$(pwd)":/root/tollbooth casky-tollbooth
+#   docker run -d --name casky-tollbooth --env-file .env -v "$(pwd)":/root/tollbooth casky-tollbooth
 #
 # See SETUP.md Section 1 for the full flow (this replaces that section's old apt-get/curl/
 # setup-skills.sh docker-exec steps — the image already has them baked in).

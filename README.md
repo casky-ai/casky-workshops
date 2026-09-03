@@ -58,7 +58,7 @@ Right before attendees arrive, run:
 ./scripts/workshop-check.sh
 ```
 
-It checks both sections in one pass — `kali-tollbooth` (tooling, lab data, `verify.sh`'s 9/9) and
+It checks both sections in one pass — `casky-tollbooth` (tooling, lab data, `verify.sh`'s 9/9) and
 the [`casky-box`](casky-box/) Casky Box stack (containers healthy, `casky-ui` reachable, evidence
 mount, API key) — plus the wiki and companion blog links above. Exits non-zero if anything needs
 attention before you start. Pass `--skip-network` on flaky venue wifi, or set `CASKY_BOX_DIR`

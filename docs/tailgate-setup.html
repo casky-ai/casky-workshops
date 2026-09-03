@@ -103,19 +103,19 @@ docker tag ghcr.io/casky-ai/casky-tailgate:latest casky-tailgate
 #   docker build -t casky-tailgate .
 
 # 1. Start a persistent container with this folder mounted + the shared key available
-docker run -d --name kali-tailgate \
+docker run -d --name casky-tailgate \
   --env-file .env \
   -v "$(pwd)":/root/tailgate \
   casky-tailgate
 
-docker exec kali-tailgate test -f /root/tailgate/verify.sh \
+docker exec casky-tailgate test -f /root/tailgate/verify.sh \
   && echo "[+] mount OK" || echo "[!] wrong directory — re-run from casky-workshops/tailgate/"
 
 # 2. Run ./verify.sh — expect 14/14 PASS.
-docker exec -w /root/tailgate kali-tailgate ./verify.sh
+docker exec -w /root/tailgate casky-tailgate ./verify.sh
 
 # 3. Bash into the container and start Claude Code interactively.
-docker exec -it -w /root/tailgate kali-tailgate bash
+docker exec -it -w /root/tailgate casky-tailgate bash
 #   ...now inside the container's shell:
 export PATH="$HOME/.local/bin:$PATH"
 ./start.sh    # welcome banner + sanity check
@@ -164,7 +164,7 @@ This laptop is READY.</code></pre>
     <p>Work Tailgate or GuestList inside that interactive Claude Code session (skills already
     mounted). <code>exit</code> the <code>claude</code> session and the container shell (two
     <code>exit</code>s) between attendees, then run
-    <code>docker exec -w /root/tailgate kali-tailgate ./reset.sh</code> from outside to restore
+    <code>docker exec -w /root/tailgate casky-tailgate ./reset.sh</code> from outside to restore
     the data.</p>
 
     <hr class="rule">

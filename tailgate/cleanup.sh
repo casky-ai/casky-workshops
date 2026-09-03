@@ -30,10 +30,10 @@ while [ $# -gt 0 ]; do case "$1" in
 esac; done
 
 echo "== Section 1: Kali container =="
-if docker ps -a --format '{{.Names}}' | grep -qx kali-tailgate; then
-  docker rm -f kali-tailgate >/dev/null && echo "  removed container: kali-tailgate"
+if docker ps -a --format '{{.Names}}' | grep -qx casky-tailgate; then
+  docker rm -f casky-tailgate >/dev/null && echo "  removed container: casky-tailgate"
 else
-  echo "  no kali-tailgate container found — already clean"
+  echo "  no casky-tailgate container found — already clean"
 fi
 
 if [ "$WITH_IMAGE" -eq 1 ]; then

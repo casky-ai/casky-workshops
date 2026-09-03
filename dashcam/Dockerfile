@@ -2,7 +2,7 @@
 # Build once, reuse for every attendee's laptop instead of live-installing over `docker exec`:
 #
 #   docker build -t casky-dashcam .
-#   docker run -d --name kali-dashcam --env-file .env -v "$(pwd)":/root/dashcam casky-dashcam
+#   docker run -d --name casky-dashcam --env-file .env -v "$(pwd)":/root/dashcam casky-dashcam
 #
 # See SETUP.md for the full flow (this replaces its old venv/pip/curl/setup-skills.sh steps —
 # the image already has them baked in; no venv needed since the whole container is dedicated

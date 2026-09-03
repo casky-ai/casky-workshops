@@ -59,7 +59,7 @@
     <h2>Troubleshooting</h2>
 
     <div class="callout callout-amber">
-      <span class="callout-label">"name already in use" on docker run --name kali-fastlane</span>
+      <span class="callout-label">"name already in use" on docker run --name casky-fastlane</span>
       <p>Not broken — setup already succeeded once. Either reuse the existing container (skip
       straight to <code>./verify.sh</code>) or run <code>./cleanup.sh</code> first.</p>
     </div>
@@ -77,7 +77,7 @@
       <p>Almost always a wrong working directory. Every command on the Setup page assumes you're in
       <code>casky-workshops/fastlane/</code>:</p>
 <pre><code># Section 1 (inside the Kali container)
-docker exec kali-fastlane test -f /root/fastlane/verify.sh \
+docker exec casky-fastlane test -f /root/fastlane/verify.sh \
   && echo "[+] mount OK" || echo "[!] wrong directory — re-run from casky-workshops/fastlane/"
 
 # Section 2 (on the host, before copying evidence)
@@ -99,19 +99,19 @@ test -f app/rls-policies.json && echo "[+] correct folder" || echo "[!] cd to ca
 
     <h2 id="cleanup">Cleanup</h2>
     <p><code>./cleanup.sh</code> removes everything a run of this exercise creates outside the
-    <code>fastlane/</code> folder: the <code>kali-fastlane</code> container and any evidence files
+    <code>fastlane/</code> folder: the <code>casky-fastlane</code> container and any evidence files
     copied into <code>casky-box/evidence/</code>. Safe to re-run.</p>
 
 <pre><code>./cleanup.sh                                                  # container + copied evidence
 ./cleanup.sh --casky-box-path ../casky-box                    # if casky-box/ was moved elsewhere
-./cleanup.sh --with-image                                      # also remove kalilinux/kali-rolling</code></pre>
+./cleanup.sh --with-image                                      # also remove the casky-fastlane image</code></pre>
 
     <p>It does <strong>not</strong> touch Casky Box's own containers (<code>casky-runner</code>,
     <code>casky-db</code>, <code>casky-ui</code>), and doesn't delete Postgres investigation
     records — those are history, not litter.</p>
 
     <p>If the evidence files get modified mid-exercise, restore them with:</p>
-<pre><code>docker exec -w /root/fastlane kali-fastlane ./reset.sh</code></pre>
+<pre><code>docker exec -w /root/fastlane casky-fastlane ./reset.sh</code></pre>
 
     <hr class="rule">
     <p style="color:var(--ink-dim); font-size:0.9rem;">
