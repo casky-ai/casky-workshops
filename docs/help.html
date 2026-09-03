@@ -91,31 +91,32 @@ test -f lab-tollbooth.pcap && echo "[+] correct folder" || echo "[!] cd to casky
       <p>Almost certainly the quoted-value bug — see the <a href="setup.html#section1">Section 1
       prerequisites</a> on the Setup page. <code>docker run --env-file</code> does not strip quotes
       from <code>.env</code> values the way <code>docker-compose</code> does, so a key copied
-      straight from <code>casky-runner-phase1/.env</code> ends up starting with a literal
+      straight from <code>casky-box/.env</code> ends up starting with a literal
       <code>"</code> character. Re-run the <code>sed</code> fix from the Setup page and confirm
       with the <code>grep -c '^sk-ant-'</code> check before retrying.</p>
     </div>
 
     <div class="callout callout-amber">
       <span class="callout-label">Casky Box itself won't start / docker compose networking errors</span>
-      <p>That's a <code>casky-runner-phase1</code> issue, not a TollBooth/OpenDoor one — see that
-      repo's own README troubleshooting section (it covers stale exited-container/network-ID
-      conflicts and has a <code>scripts/fix-stack.sh</code> for it).</p>
+      <p>That's a <a href="https://github.com/casky-ai/casky-workshops/blob/main/casky-box/README.md">casky-box</a>
+      issue, not a TollBooth/OpenDoor one — check <code>docker compose logs</code> in that folder
+      (stale exited-container/network-ID conflicts are the usual cause — <code>docker compose down</code>
+      then <code>up -d</code> again clears most of them).</p>
     </div>
 
     <h2 id="cleanup">Cleanup</h2>
     <p><code>./cleanup.sh</code> removes everything a run of this exercise creates outside the
     <code>tollbooth/</code> folder: the <code>kali-tollbooth</code> container (Section 1) and any
-    evidence files Section 2 copied into <code>casky-runner-phase1/evidence/</code>. Safe to
+    evidence files Section 2 copied into <code>casky-box/evidence/</code>. Safe to
     re-run — it reports what it found and skips what's already gone.</p>
 
 <pre><code>./cleanup.sh                                                  # container + copied evidence
-./cleanup.sh --casky-runner-path ../../casky-runner-phase1    # if that repo isn't a sibling of this one
+./cleanup.sh --casky-box-path ../casky-box                    # if casky-box/ was moved elsewhere
 ./cleanup.sh --with-image                                      # also remove the kalilinux/kali-rolling image</code></pre>
 
-    <p>It does <strong>not</strong> touch <code>casky-runner-phase1</code>'s own containers
-    (<code>casky-runner</code>, <code>casky-db</code>, <code>skill-lab</code>, …) — those are the
-    persistent dev/workshop environment, not per-run litter — and it doesn't delete Postgres
+    <p>It does <strong>not</strong> touch Casky Box's own containers
+    (<code>casky-runner</code>, <code>casky-db</code>, <code>casky-ui</code>, …) — those are shared
+    across workshops/attendees, not per-run litter — and it doesn't delete Postgres
     investigation records from <code>casky harness</code> runs, since those are history, not
     litter.</p>
 

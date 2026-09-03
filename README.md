@@ -43,6 +43,13 @@ Dockerfile or when GHCR is unreachable:
 - `ghcr.io/casky-ai/casky-dashcam`
 - `ghcr.io/casky-ai/casky-loopline` (the FastLane Lightning Lesson's Loopline demo server)
 
+Each workshop's "Section 2 — run on Casky Box" points at [`casky-box/`](casky-box/) instead — a
+thin `docker-compose.yml` that pulls Casky Box itself (built and published from its own repo, not
+this one) straight from GHCR: `ghcr.io/casky-ai/skills-library`, `ghcr.io/casky-ai/box/runner`, and
+`ghcr.io/casky-ai/box/ui`. There used to be a separate `casky-runner-phase1` repo you had to clone
+and build for this; that's retired as a workshop dependency now that both images publish a rolling
+`:latest` on every push to that repo's `main`.
+
 ## Readiness check
 
 Right before attendees arrive, run:
@@ -52,10 +59,10 @@ Right before attendees arrive, run:
 ```
 
 It checks both sections in one pass — `kali-tollbooth` (tooling, lab data, `verify.sh`'s 9/9) and
-the `casky-runner-phase1` Casky Box stack (containers healthy, `casky-ui` reachable, evidence
+the [`casky-box`](casky-box/) Casky Box stack (containers healthy, `casky-ui` reachable, evidence
 mount, API key) — plus the wiki and companion blog links above. Exits non-zero if anything needs
-attention before you start. Pass `--skip-network` on flaky venue wifi, or set `CASKY_RUNNER_DIR`
-if `casky-runner-phase1` isn't a sibling of this repo.
+attention before you start. Pass `--skip-network` on flaky venue wifi, or set `CASKY_BOX_DIR`
+if `casky-box/` was moved elsewhere.
 
 ## Wiki
 

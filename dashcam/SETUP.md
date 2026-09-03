@@ -38,7 +38,7 @@ as FastLane/Tailgate/TollBooth's containers.
 ### Prerequisites
 
 - Docker (no local build needed — `docker pull` fetches the pre-built image from GHCR).
-- A `.env` file **in this folder** (`dashcam/.env`, copied from `casky-runner-phase1/.env`,
+- A `.env` file **in this folder** (`dashcam/.env`, copied from `casky-box/.env`,
   quotes stripped — same steps as the other workshops' Section 1).
 
 ### Steps

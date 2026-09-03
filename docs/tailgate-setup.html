@@ -74,8 +74,8 @@
       <li>Docker (the base image, <code>kalilinux/kali-rolling</code>, is pulled automatically by
         <code>docker build</code>).</li>
       <li>A <code>.env</code> file <strong>in the <code>tailgate/</code> folder</strong> (copied from
-        <code>casky-runner-phase1/.env</code>) with a working <code>ANTHROPIC_API_KEY</code>:
-<pre><code>cp /path/to/casky-runner-phase1/.env tailgate/.env</code></pre>
+        <code>casky-box/.env</code>) with a working <code>ANTHROPIC_API_KEY</code>:
+<pre><code>cp ../casky-box/.env tailgate/.env</code></pre>
       </li>
     </ul>
 
@@ -174,10 +174,15 @@ This laptop is READY.</code></pre>
     mounted read-only, classifier picks the relevant ones from evidence automatically.</p>
 
     <h3>Prerequisites</h3>
-    <p><code>casky-runner-phase1</code> running, using its own <code>.env</code>:</p>
-<pre><code>cd /path/to/casky-runner-phase1
+    <p>Casky Box running — pulled from GHCR, no separate repo to clone, using its own
+    <code>.env</code>:</p>
+<pre><code>cd ../casky-box    # casky-workshops/casky-box, shared by every workshop
+cp .env.example .env   # first time only — then set ANTHROPIC_API_KEY
+docker compose pull
 docker compose up -d</code></pre>
-    <p>If already up from earlier, this is a no-op — confirm with <code>docker compose ps</code>.</p>
+    <p>If already up from earlier, this is a no-op — confirm with <code>docker compose ps</code>.
+    See <a href="https://github.com/casky-ai/casky-workshops/blob/main/casky-box/README.md">casky-box/README.md</a>
+    for what's in it.</p>
 
     <h3>Steps</h3>
 <pre><code># Run every command below from THIS folder (casky-workshops/tailgate/).
@@ -198,8 +203,8 @@ test -f phishing-email.eml && echo "[+] correct folder" || echo "[!] cd to casky
 
 for f in guestlist/*.json; do echo "--- $(basename "$f") ---"; cat "$f"; echo; done > guestlist-full.txt
 
-# 4. Copy both into casky-runner-phase1's evidence bind mount (live mount, no restart needed).
-cp tailgate-full.txt guestlist-full.txt /path/to/casky-runner-phase1/evidence/
+# 4. Copy both into Casky Box's evidence bind mount (live mount, no restart needed).
+cp tailgate-full.txt guestlist-full.txt ../casky-box/evidence/
 docker exec casky-runner ls /var/casky/evidence/   # confirm they're already there
 
 # 5. Investigate — Tailgate (reactive).

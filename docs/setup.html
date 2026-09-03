@@ -76,16 +76,16 @@
       <li>Docker (no local build needed — <code>docker pull</code> fetches the pre-built image
         from GHCR).</li>
       <li>A <code>.env</code> file <strong>in the <code>tollbooth/</code> folder</strong> (copied from
-        <code>casky-runner-phase1/.env</code>) with a working <code>ANTHROPIC_API_KEY</code> — the
+        <code>casky-box/.env</code>) with a working <code>ANTHROPIC_API_KEY</code> — the
         shared key. It's git-ignored and lives here, not the repo root, so every command below is
         self-contained in one folder:
-<pre><code>cp /path/to/casky-runner-phase1/.env tollbooth/.env</code></pre>
+<pre><code>cp ../casky-box/.env tollbooth/.env</code></pre>
       </li>
     </ul>
 
     <div class="callout callout-amber">
       <span class="callout-label">Strip the quotes — this will break auth otherwise</span>
-      <p><code>casky-runner-phase1/.env</code> writes values as <code>ANTHROPIC_API_KEY="sk-ant-..."</code>
+      <p><code>casky-box/.env</code> writes values as <code>ANTHROPIC_API_KEY="sk-ant-..."</code>
       (quoted). <code>docker run --env-file</code> does <strong>not</strong> strip quotes — it
       passes the literal string, quote marks included. Result: a key that starts with <code>"</code>
       instead of <code>sk-ant-</code>, and Claude Code fails with <code>Invalid API key</code> —
@@ -188,20 +188,24 @@ This laptop is READY.</code></pre>
     <strong>Path A (evidence-driven)</strong> investigation, not a lab-target exercise.</p>
 
     <h3>Prerequisites</h3>
-    <p><code>casky-runner-phase1</code> running, using <strong>its own <code>.env</code></strong> —
-    nothing to copy in here, unlike Section 1. <code>docker compose up -d</code> automatically
-    reads <code>.env</code> from the same directory as <code>docker-compose.yml</code>, no
-    <code>--env-file</code> flag needed, and (unlike Section 1's <code>docker run --env-file</code>)
-    Compose's own parser strips quotes correctly, so the file works as-is:</p>
-<pre><code>cd /path/to/casky-runner-phase1
+    <p>Casky Box running — pulled from GHCR, no separate repo to clone.
+    <code>docker compose up -d</code> automatically reads <code>.env</code> from the same directory
+    as <code>docker-compose.yml</code>, no <code>--env-file</code> flag needed, and (unlike
+    Section 1's <code>docker run --env-file</code>) Compose's own parser strips quotes correctly,
+    so the file works as-is:</p>
+<pre><code>cd ../casky-box    # casky-workshops/casky-box, shared by every workshop
+cp .env.example .env   # first time only — then set ANTHROPIC_API_KEY
+docker compose pull
 docker compose up -d</code></pre>
     <p>If <code>casky-runner</code>/<code>casky-db</code> are already up from earlier, this is a
-    no-op — just confirm with <code>docker compose ps</code>.</p>
+    no-op — just confirm with <code>docker compose ps</code>. See
+    <a href="https://github.com/casky-ai/casky-workshops/blob/main/casky-box/README.md">casky-box/README.md</a>
+    for what's in it.</p>
 
     <h3>Steps</h3>
 <pre><code># Run every command below from THIS folder (casky-workshops/tollbooth/) — cloudtrail/*.json,
 # opendoor/*.json below are relative paths. Live-caught twice: running from
-# casky-runner-phase1/ instead silently writes into the wrong repo and
+# casky-box/ instead silently writes into the wrong folder and
 # 'cloudtrail/*.json' matches nothing ("zsh: no matches found").
 cd /path/to/casky-workshops/tollbooth
 test -f lab-tollbooth.pcap && echo "[+] correct folder" || echo "[!] wrong folder — cd to casky-workshops/tollbooth first"
@@ -222,9 +226,9 @@ docker exec kali-tollbooth tshark -r /root/tollbooth/lab-tollbooth.pcap -Y http 
 # 3. OpenDoor's evidence is already text — just concatenate the configs
 for f in opendoor/*.json; do echo "--- $(basename "$f") ---"; cat "$f"; echo; done > opendoor-full.txt
 
-# 4. Copy both into casky-runner-phase1's evidence bind mount — a LIVE bind mount, not a
+# 4. Copy both into Casky Box's evidence bind mount — a LIVE bind mount, not a
 #    copy-once. Anything dropped here shows up inside the running container immediately.
-cp tollbooth-full.txt opendoor-full.txt /path/to/casky-runner-phase1/evidence/
+cp tollbooth-full.txt opendoor-full.txt ../casky-box/evidence/
 docker exec casky-runner ls /var/casky/evidence/   # confirm they're already there
 
 # 5. Investigate — TollBooth (reactive). --auto runs every step's agent for real;

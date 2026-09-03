@@ -74,10 +74,10 @@
       <li>Docker (the base image, <code>kalilinux/kali-rolling</code>, is pulled automatically by
         <code>docker build</code>).</li>
       <li>A <code>.env</code> file <strong>in the <code>fastlane/</code> folder</strong> (copied
-        from <code>casky-runner-phase1/.env</code>, quotes stripped — same fix as every other
+        from <code>casky-box/.env</code>, quotes stripped — same fix as every other
         exercise, see <a href="tailgate-setup.html#section1">Tailgate's Setup page</a> for the
         exact <code>sed</code> command if you haven't done this before):
-<pre><code>cp /path/to/casky-runner-phase1/.env fastlane/.env
+<pre><code>cp ../casky-box/.env fastlane/.env
 sed -i.bak -E 's/^([A-Z_][A-Z0-9_]*)="(.*)"$/\1=\2/' fastlane/.env && rm fastlane/.env.bak</code></pre>
       </li>
     </ul>
@@ -165,8 +165,13 @@ This laptop is READY.</code></pre>
     skills mounted read-only, classifier picks the relevant ones automatically.</p>
 
     <h3>Prerequisites</h3>
-<pre><code>cd /path/to/casky-runner-phase1
+<pre><code>cd ../casky-box    # casky-workshops/casky-box, shared by every workshop
+cp .env.example .env   # first time only — then set ANTHROPIC_API_KEY
+docker compose pull
 docker compose up -d</code></pre>
+    <p>Pulled from GHCR, no separate repo to clone — see
+    <a href="https://github.com/casky-ai/casky-workshops/blob/main/casky-box/README.md">casky-box/README.md</a>
+    for what's in it.</p>
 
     <h3>Steps</h3>
 <pre><code># Run every command below from THIS folder (casky-workshops/fastlane/).
@@ -188,7 +193,7 @@ test -f app/rls-policies.json && echo "[+] correct folder" || echo "[!] cd to ca
 
 for f in speedbump/*.json; do echo "--- $(basename "$f") ---"; cat "$f"; echo; done > speedbump-full.txt
 
-cp fastlane-full.txt speedbump-full.txt /path/to/casky-runner-phase1/evidence/
+cp fastlane-full.txt speedbump-full.txt ../casky-box/evidence/
 docker exec casky-runner ls /var/casky/evidence/
 
 # Investigate — FastLane (reactive)

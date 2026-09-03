@@ -93,21 +93,22 @@ test -f app/rls-policies.json && echo "[+] correct folder" || echo "[!] cd to ca
 
     <div class="callout callout-amber">
       <span class="callout-label">Casky Box itself won't start / docker compose networking errors</span>
-      <p>That's a <code>casky-runner-phase1</code> issue, not a FastLane/SpeedBump one — see that
-      repo's own README troubleshooting section.</p>
+      <p>That's a <a href="https://github.com/casky-ai/casky-workshops/blob/main/casky-box/README.md">casky-box</a>
+      issue, not a FastLane/SpeedBump one — see that folder's own README troubleshooting section.</p>
     </div>
 
     <h2 id="cleanup">Cleanup</h2>
     <p><code>./cleanup.sh</code> removes everything a run of this exercise creates outside the
     <code>fastlane/</code> folder: the <code>kali-fastlane</code> container and any evidence files
-    copied into <code>casky-runner-phase1/evidence/</code>. Safe to re-run.</p>
+    copied into <code>casky-box/evidence/</code>. Safe to re-run.</p>
 
 <pre><code>./cleanup.sh                                                  # container + copied evidence
-./cleanup.sh --casky-runner-path ../../casky-runner-phase1    # if that repo isn't a sibling
+./cleanup.sh --casky-box-path ../casky-box                    # if casky-box/ was moved elsewhere
 ./cleanup.sh --with-image                                      # also remove kalilinux/kali-rolling</code></pre>
 
-    <p>It does <strong>not</strong> touch <code>casky-runner-phase1</code>'s own containers, and
-    doesn't delete Postgres investigation records — those are history, not litter.</p>
+    <p>It does <strong>not</strong> touch Casky Box's own containers (<code>casky-runner</code>,
+    <code>casky-db</code>, <code>casky-ui</code>), and doesn't delete Postgres investigation
+    records — those are history, not litter.</p>
 
     <p>If the evidence files get modified mid-exercise, restore them with:</p>
 <pre><code>docker exec -w /root/fastlane kali-fastlane ./reset.sh</code></pre>

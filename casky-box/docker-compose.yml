@@ -1,0 +1,109 @@
+name: casky-box
+
+# Casky Box, pulled pre-built from GHCR — no local clone of the casky-runner
+# repo needed. Shared by every workshop's "Section 2 — Casky Box" prerequisite
+# (FastLane/SpeedBump, Tailgate/GuestList, TollBooth/OpenDoor): start it once
+# from here, then each workshop's own SETUP.md drops its evidence files into
+# ./evidence/ and `docker exec`s into the already-running casky-runner container.
+#
+# Mirrors the core services from the casky-runner repo's own docker-compose.yml
+# (skills-library init container, Postgres, the runner, the UI) using `image:`
+# only — no `build:` — so the whole setup is:
+#   docker compose pull && docker compose up -d
+#
+# There used to be a "casky-runner-phase1" sibling repo checkout required for
+# this step. That repo is being retired as a workshop dependency — Casky Box
+# itself isn't going anywhere, it just ships as a GHCR image now instead of a
+# clone-and-build. If you need to rebuild the box images yourself (developing
+# Casky Box itself, not just running a workshop against it), see that repo's
+# own README/Makefile — not needed for any workshop in this repo.
+
+services:
+  casky-skills:
+    image: ghcr.io/casky-ai/skills-library:latest
+    container_name: casky-skills
+    volumes:
+      - casky-skills-data:/opt/skills-library
+    restart: "no"
+
+  db:
+    image: postgres:16-alpine
+    container_name: casky-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: casky
+      POSTGRES_USER: casky
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-casky}
+    volumes:
+      - casky-db-data:/var/lib/postgresql/data
+    networks:
+      - casky-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U casky"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  runner:
+    image: ghcr.io/casky-ai/box/runner:latest
+    container_name: casky-runner
+    restart: unless-stopped
+    depends_on:
+      casky-skills:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      # Platform sync — set CASKY_API_KEY to enable platform mode in the harness.
+      # Leave empty to run in local mode (findings stored in /var/casky/reports/).
+      CASKY_API_KEY: ${CASKY_API_KEY:-}
+      CASKY_APP_URL: ${CASKY_APP_URL:-https://casky.ai}
+      CASKY_LOCAL_PORT: ${CASKY_LOCAL_PORT:-8765}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://casky:${DB_PASSWORD:-casky}@db:5432/casky}
+      SKILLS_LIBRARY_PATH: ${SKILLS_LIBRARY_PATH:-/opt/skills-library}
+    ports:
+      - "${CASKY_LOCAL_PORT:-8765}:8765"   # local report server (harness local mode)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - casky-reports:/var/casky/reports    # persist findings between runs
+      - casky-skills-data:/opt/skills-library:ro   # skills library (read-only)
+      # Drop workshop evidence bundles here (fastlane-full.txt, tollbooth-pcap.txt,
+      # etc.) and they show up at the same path in the container — no `docker cp`.
+      - ./evidence:/var/casky/evidence:ro
+    networks:
+      - casky-internal
+    healthcheck:
+      test: ["CMD", "casky", "help"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # Optional — the Plan/Execution/Findings/Remediation web UI. Comment this
+  # service out if `ghcr.io/casky-ai/box/ui:latest` isn't reachable; every
+  # workshop's `casky harness --auto` step works without it.
+  ui:
+    image: ghcr.io/casky-ai/box/ui:latest
+    container_name: casky-ui
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://casky:${DB_PASSWORD:-casky}@db:5432/casky}
+      CASKY_UI_ADMIN_PASSWORD: ${CASKY_UI_ADMIN_PASSWORD:-}
+    ports:
+      - "${CASKY_UI_HOST:-127.0.0.1}:${CASKY_UI_PORT:-8766}:3000"
+    networks:
+      - casky-internal
+
+networks:
+  casky-internal:
+    driver: bridge
+
+volumes:
+  casky-db-data:
+  casky-reports:
+  casky-skills-data:

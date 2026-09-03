@@ -1,5 +1,5 @@
 # Bellwood Logistics — internal netflow baseline vs. incident-window flows (synthetic).
-# Pre-summarized text (per casky-runner-phase1/evidence/README.md: no raw pcap accepted by
+# Pre-summarized text (per casky-box/evidence/README.md: no raw pcap accepted by
 # `casky harness -i` — this is the tshark/netflow-tool text-output equivalent, hand-authored
 # for this training lab). Times UTC. Baseline = prior 30 days of flows for the same host pair.
 

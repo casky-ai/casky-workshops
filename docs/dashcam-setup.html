@@ -72,8 +72,8 @@
       <li>Docker (no local build needed — <code>docker pull</code> fetches the pre-built image
         from GHCR).</li>
       <li>A <code>.env</code> file <strong>in the <code>dashcam/</code> folder</strong> (copied
-        from <code>casky-runner-phase1/.env</code>, quotes stripped):
-<pre><code>cp /path/to/casky-runner-phase1/.env dashcam/.env
+        from <code>casky-box/.env</code>, quotes stripped):
+<pre><code>cp ../casky-box/.env dashcam/.env
 sed -i.bak -E 's/^([A-Z_][A-Z0-9_]*)="(.*)"$/\1=\2/' dashcam/.env && rm dashcam/.env.bak</code></pre>
       </li>
     </ul>

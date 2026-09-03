@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Tailgate/GuestList — cleanup. Removes everything a workshop run creates OUTSIDE this
 # folder: the Section 1 Kali container, and any evidence files Section 2 copied
-# into casky-runner-phase1's evidence/ bind mount. Safe to re-run.
+# into Casky Box's evidence/ bind mount (casky-box/evidence/, shared by every
+# workshop). Safe to re-run.
 #
 # What this does NOT touch (on purpose):
-#   - casky-runner-phase1's own containers (casky-runner, casky-db, skill-lab, …)
-#     — that's your persistent dev environment, not a workshop-run asset.
+#   - Casky Box's own containers (casky-runner, casky-db, casky-ui, …) — it's shared
+#     across workshops/attendees, so this never stops or removes it.
 #   - The casky-tailgate IMAGE (pulled from GHCR or built locally) — pass --with-image to remove it too.
 #     Pass --with-image to remove it too.
 #   - Postgres investigation records from casky harness runs — history, not
@@ -13,16 +14,16 @@
 #
 # Usage:
 #   ./cleanup.sh                                    # container + copied evidence files
-#   ./cleanup.sh --casky-runner-path ../../casky-runner-phase1
+#   ./cleanup.sh --casky-box-path ../casky-box       # if casky-box/ was moved elsewhere
 #   ./cleanup.sh --with-image                        # also remove the casky-tailgate image
 
 set -uo pipefail
 cd "$(dirname "$0")"
 
-CASKY_RUNNER_PATH="${CASKY_RUNNER_PATH:-../../casky-runner-phase1}"
+CASKY_BOX_PATH="${CASKY_BOX_PATH:-../casky-box}"
 WITH_IMAGE=0
 while [ $# -gt 0 ]; do case "$1" in
-  --casky-runner-path) CASKY_RUNNER_PATH="$2"; shift 2;;
+  --casky-box-path)    CASKY_BOX_PATH="$2"; shift 2;;
   --with-image)        WITH_IMAGE=1; shift;;
   -h|--help)            grep '^#' "$0" | sed 's/^# \{0,1\}//' | sed -n '2,20p'; exit 0;;
   *) echo "unknown arg: $1"; exit 1;;
@@ -46,8 +47,8 @@ else
 fi
 
 echo
-echo "== Section 2: evidence copied into casky-runner-phase1 =="
-EV_DIR="$CASKY_RUNNER_PATH/evidence"
+echo "== Section 2: evidence copied into Casky Box =="
+EV_DIR="$CASKY_BOX_PATH/evidence"
 if [ -d "$EV_DIR" ]; then
   removed=0
   for f in tailgate-full.txt guestlist-full.txt; do
@@ -55,7 +56,7 @@ if [ -d "$EV_DIR" ]; then
   done
   [ "$removed" -eq 0 ] && echo "  no workshop evidence files found in $EV_DIR — already clean"
 else
-  echo "  $EV_DIR not found — pass --casky-runner-path <path> if casky-runner-phase1 lives elsewhere"
+  echo "  $EV_DIR not found — pass --casky-box-path <path> if casky-box/ lives elsewhere"
 fi
 
 echo
