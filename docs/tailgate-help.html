@@ -57,7 +57,7 @@
     <h2>Troubleshooting</h2>
 
     <div class="callout callout-amber">
-      <span class="callout-label">"name already in use" on docker run --name kali-tailgate</span>
+      <span class="callout-label">"name already in use" on docker run --name casky-tailgate</span>
       <p>Not broken — setup already succeeded once for this attendee/session. Either reuse the
       existing container (skip straight to <code>./verify.sh</code>) or run <code>./cleanup.sh</code>
       first for a clean container.</p>
@@ -78,7 +78,7 @@
       <p>Almost always a wrong working directory. Every command on the Setup page assumes you're in
       <code>casky-workshops/tailgate/</code>:</p>
 <pre><code># Section 1 (inside the Kali container)
-docker exec kali-tailgate test -f /root/tailgate/verify.sh \
+docker exec casky-tailgate test -f /root/tailgate/verify.sh \
   && echo "[+] mount OK" || echo "[!] wrong directory — re-run from casky-workshops/tailgate/"
 
 # Section 2 (on the host, before copying evidence)
@@ -102,20 +102,20 @@ test -f phishing-email.eml && echo "[+] correct folder" || echo "[!] cd to casky
 
     <h2 id="cleanup">Cleanup</h2>
     <p><code>./cleanup.sh</code> removes everything a run of this exercise creates outside the
-    <code>tailgate/</code> folder: the <code>kali-tailgate</code> container (Section 1) and any
+    <code>tailgate/</code> folder: the <code>casky-tailgate</code> container (Section 1) and any
     evidence files Section 2 copied into <code>casky-box/evidence/</code>. Safe to
     re-run.</p>
 
 <pre><code>./cleanup.sh                                                  # container + copied evidence
 ./cleanup.sh --casky-box-path ../casky-box                    # if casky-box/ was moved elsewhere
-./cleanup.sh --with-image                                      # also remove kalilinux/kali-rolling</code></pre>
+./cleanup.sh --with-image                                      # also remove the casky-tailgate image</code></pre>
 
     <p>It does <strong>not</strong> touch Casky Box's own containers (<code>casky-runner</code>,
     <code>casky-db</code>, <code>casky-ui</code>), and doesn't delete Postgres investigation
     records — those are history, not litter.</p>
 
     <p>If the evidence files get modified mid-exercise, restore them with:</p>
-<pre><code>docker exec -w /root/tailgate kali-tailgate ./reset.sh</code></pre>
+<pre><code>docker exec -w /root/tailgate casky-tailgate ./reset.sh</code></pre>
     <p>Do this between attendees on the same Kali container — takes under 10 seconds.</p>
 
     <hr class="rule">

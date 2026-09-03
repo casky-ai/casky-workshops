@@ -57,7 +57,7 @@
     <h2>Troubleshooting</h2>
 
     <div class="callout callout-amber">
-      <span class="callout-label">"name already in use" on docker run --name kali-tollbooth</span>
+      <span class="callout-label">"name already in use" on docker run --name casky-tollbooth</span>
       <p>Not broken — it means setup already succeeded once for this attendee/session. Either
       reuse the existing container (skip straight to <code>./verify.sh</code>) or run
       <code>./cleanup.sh</code> first for a clean container.</p>
@@ -79,7 +79,7 @@
       in <code>casky-workshops/tollbooth/</code> — both sections start with a one-line sanity
       check for exactly this reason:</p>
 <pre><code># Section 1 (inside the Kali container)
-docker exec kali-tollbooth test -f /root/tollbooth/verify.sh \
+docker exec casky-tollbooth test -f /root/tollbooth/verify.sh \
   && echo "[+] mount OK" || echo "[!] wrong directory — re-run from casky-workshops/tollbooth/"
 
 # Section 2 (on the host, before copying evidence)
@@ -106,13 +106,13 @@ test -f lab-tollbooth.pcap && echo "[+] correct folder" || echo "[!] cd to casky
 
     <h2 id="cleanup">Cleanup</h2>
     <p><code>./cleanup.sh</code> removes everything a run of this exercise creates outside the
-    <code>tollbooth/</code> folder: the <code>kali-tollbooth</code> container (Section 1) and any
+    <code>tollbooth/</code> folder: the <code>casky-tollbooth</code> container (Section 1) and any
     evidence files Section 2 copied into <code>casky-box/evidence/</code>. Safe to
     re-run — it reports what it found and skips what's already gone.</p>
 
 <pre><code>./cleanup.sh                                                  # container + copied evidence
 ./cleanup.sh --casky-box-path ../casky-box                    # if casky-box/ was moved elsewhere
-./cleanup.sh --with-image                                      # also remove the kalilinux/kali-rolling image</code></pre>
+./cleanup.sh --with-image                                      # also remove the casky-tollbooth image</code></pre>
 
     <p>It does <strong>not</strong> touch Casky Box's own containers
     (<code>casky-runner</code>, <code>casky-db</code>, <code>casky-ui</code>, …) — those are shared
@@ -122,7 +122,7 @@ test -f lab-tollbooth.pcap && echo "[+] correct folder" || echo "[!] cd to casky
 
     <p>If <code>lab-tollbooth.pcap</code>/<code>cloudtrail/</code>/<code>opendoor/</code> get
     modified mid-exercise, restore them separately with:</p>
-<pre><code>docker exec -w /root/tollbooth kali-tollbooth ./reset.sh</code></pre>
+<pre><code>docker exec -w /root/tollbooth casky-tollbooth ./reset.sh</code></pre>
     <p>Do this between attendees on the same Kali container — takes under 10 seconds.</p>
 
     <hr class="rule">

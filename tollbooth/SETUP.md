@@ -67,19 +67,19 @@ docker tag ghcr.io/casky-ai/casky-tollbooth:latest casky-tollbooth
 #   docker build -t casky-tollbooth .
 
 # 1. Start a persistent Kali container with this folder mounted + the shared key available
-docker run -d --name kali-tollbooth \
+docker run -d --name casky-tollbooth \
   --env-file .env \
   -v "$(pwd)":/root/tollbooth \
   casky-tollbooth
 
 # Sanity check — catches a wrong-directory mount immediately instead of 3 steps from now
-docker exec kali-tollbooth test -f /root/tollbooth/verify.sh \
+docker exec casky-tollbooth test -f /root/tollbooth/verify.sh \
   && echo "[+] mount OK — verify.sh found at /root/tollbooth/verify.sh" \
-  || echo "[!] wrong directory — re-run from casky-workshops/tollbooth/, then: docker rm -f kali-tollbooth"
+  || echo "[!] wrong directory — re-run from casky-workshops/tollbooth/, then: docker rm -f casky-tollbooth"
 
 # 2. This folder is already at /root/tollbooth (bind-mounted in step 1 — no copy needed).
 #    Run ./verify.sh — expect 9/9 PASS.
-docker exec -w /root/tollbooth kali-tollbooth ./verify.sh
+docker exec -w /root/tollbooth casky-tollbooth ./verify.sh
 
 # 3. Print Arsenal-CheatSheet-Book.pdf (color; answer pages are red) — one per attendee.
 open Arsenal-CheatSheet-Book.pdf   # macOS; use your OS's print/open command
@@ -87,7 +87,7 @@ open Arsenal-CheatSheet-Book.pdf   # macOS; use your OS's print/open command
 # 4. Bash into the container and start Claude Code interactively — this is what a
 #    participant actually drives during the exercise, not one-off `docker exec` calls
 #    per command (those were only for unattended setup, steps 0-2 above).
-docker exec -it -w /root/tollbooth kali-tollbooth bash
+docker exec -it -w /root/tollbooth casky-tollbooth bash
 
 #   ...now inside the container's shell:
 export PATH="$HOME/.local/bin:$PATH"
@@ -140,7 +140,7 @@ Step 6 above (`docker exec -it ... bash`, then `claude`) is how you actually dri
 work Scenario 1 or 2 inside that interactive Claude Code session (skills already mounted), or fall
 back to the raw `tshark`/`jq` commands on the cheat sheet if the agent path isn't available.
 `exit` the `claude` session and the container shell (two `exit`s) between attendees, then
-`docker exec -w /root/tollbooth kali-tollbooth ./reset.sh` from outside to restore the data.
+`docker exec -w /root/tollbooth casky-tollbooth ./reset.sh` from outside to restore the data.
 
 ---
 
@@ -181,7 +181,7 @@ mkdir -p evidence   # this folder's own scratch output, gitignored — see evide
 
 # 1. Turn the pcap into readable evidence text (tshark isn't needed inside casky-runner —
 #    reuse the Kali container from Section 1, or run tshark locally if you have it)
-docker exec kali-tollbooth tshark -r /root/tollbooth/lab-tollbooth.pcap -Y http \
+docker exec casky-tollbooth tshark -r /root/tollbooth/lab-tollbooth.pcap -Y http \
   -T fields -e frame.time -e ip.src -e ip.dst -e http.request.method -e http.request.full_uri -e http.response.code \
   > evidence/tollbooth-pcap.txt
 
@@ -252,14 +252,14 @@ described in `blogs/blog-first-live-fire.md` back in `claude-skills-security`. O
 ## Cleanup
 
 `./cleanup.sh` removes everything a run of this exercise creates outside this folder: the
-`kali-tollbooth` container (Section 1) and any evidence files Section 2 copied into
+`casky-tollbooth` container (Section 1) and any evidence files Section 2 copied into
 `casky-box/evidence/`. Safe to re-run — reports what it found and skips what's already
 gone.
 
 ```bash
 ./cleanup.sh                                          # container + copied evidence
 ./cleanup.sh --casky-box-path ../casky-box             # if casky-box/ was moved elsewhere
-./cleanup.sh --with-image                              # also remove the kalilinux/kali-rolling image
+./cleanup.sh --with-image                              # also remove the casky-tollbooth image
 ```
 
 It does **not** touch Casky Box's own containers (`casky-runner`, `casky-db`, `casky-ui`) — those
@@ -268,7 +268,7 @@ investigation records from `casky harness` runs, since those are history, not li
 `lab-tollbooth.pcap`/`cloudtrail/`/`opendoor/` get modified mid-exercise, restore them with
 `./reset.sh` (copies back from `.pristine/`), separately from cleanup.
 
-**Re-running Section 1 setup?** `docker run --name kali-tollbooth ...` fails with "name already in
+**Re-running Section 1 setup?** `docker run --name casky-tollbooth ...` fails with "name already in
 use" if the container from a previous setup is still around — that's not broken, it just means
 setup already succeeded once. Either reuse it (skip straight to `./verify.sh`) or `./cleanup.sh`
 first for a clean container.

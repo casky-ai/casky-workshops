@@ -110,26 +110,26 @@ docker tag ghcr.io/casky-ai/casky-tollbooth:latest casky-tollbooth
 #   docker build -t casky-tollbooth .
 
 # 1. Start a persistent Kali container with this folder mounted + the shared key available
-docker run -d --name kali-tollbooth \
+docker run -d --name casky-tollbooth \
   --env-file .env \
   -v "$(pwd)":/root/tollbooth \
   casky-tollbooth
 
 # Sanity check — catches a wrong-directory mount immediately instead of 3 steps from now
-docker exec kali-tollbooth test -f /root/tollbooth/verify.sh \
+docker exec casky-tollbooth test -f /root/tollbooth/verify.sh \
   && echo "[+] mount OK — verify.sh found at /root/tollbooth/verify.sh" \
-  || echo "[!] wrong directory — re-run from casky-workshops/tollbooth/, then: docker rm -f kali-tollbooth"
+  || echo "[!] wrong directory — re-run from casky-workshops/tollbooth/, then: docker rm -f casky-tollbooth"
 
 # 2. This folder is already at /root/tollbooth (bind-mounted in step 1 — no copy needed).
 #    Run ./verify.sh — expect 9/9 PASS.
-docker exec -w /root/tollbooth kali-tollbooth ./verify.sh
+docker exec -w /root/tollbooth casky-tollbooth ./verify.sh
 
 # 3. Print Arsenal-CheatSheet-Book.pdf (color; answer pages are red) — one per attendee.
 open Arsenal-CheatSheet-Book.pdf   # macOS; use your OS's print/open command
 
 # 4. Bash into the container and start Claude Code interactively — this is what you
 #    actually drive during the exercise (steps 0-2 above were one-off unattended setup).
-docker exec -it -w /root/tollbooth kali-tollbooth bash
+docker exec -it -w /root/tollbooth casky-tollbooth bash
 
 #   ...now inside the container's shell:
 export PATH="$HOME/.local/bin:$PATH"
@@ -174,7 +174,7 @@ This laptop is READY.</code></pre>
     or fall back to the raw <code>tshark</code>/<code>jq</code> commands on the cheat sheet if the
     agent path isn't available. <code>exit</code> the <code>claude</code> session and the container
     shell (two <code>exit</code>s) between attendees, then run
-    <code>docker exec -w /root/tollbooth kali-tollbooth ./reset.sh</code> from outside to restore
+    <code>docker exec -w /root/tollbooth casky-tollbooth ./reset.sh</code> from outside to restore
     the data.</p>
 
     <hr class="rule">
@@ -213,7 +213,7 @@ mkdir -p evidence   # this folder's own scratch output, gitignored — see evide
 
 # 1. Turn the pcap into readable evidence text (tshark isn't needed inside casky-runner —
 #    reuse the Kali container from Section 1, or run tshark locally if you have it)
-docker exec kali-tollbooth tshark -r /root/tollbooth/lab-tollbooth.pcap -Y http \
+docker exec casky-tollbooth tshark -r /root/tollbooth/lab-tollbooth.pcap -Y http \
   -T fields -e frame.time -e ip.src -e ip.dst -e http.request.method -e http.request.full_uri -e http.response.code \
   > evidence/tollbooth-pcap.txt
 

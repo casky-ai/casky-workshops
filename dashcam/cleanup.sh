@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Dashcam — cleanup. Removes everything a run of this exercise creates: the kali-dashcam
+# Dashcam — cleanup. Removes everything a run of this exercise creates: the casky-dashcam
 # container (Option A), and the local venv + cloned upstream skills repo (Option B), none of
 # which is committed workshop content. Safe to re-run.
 #
@@ -24,11 +24,11 @@ while [ $# -gt 0 ]; do case "$1" in
   *) echo "unknown arg: $1"; exit 1;;
 esac; done
 
-echo "== Option A: kali-dashcam container =="
-if docker ps -a --format '{{.Names}}' 2>/dev/null | grep -qx kali-dashcam; then
-  docker rm -f kali-dashcam >/dev/null && echo "  removed container: kali-dashcam"
+echo "== Option A: casky-dashcam container =="
+if docker ps -a --format '{{.Names}}' 2>/dev/null | grep -qx casky-dashcam; then
+  docker rm -f casky-dashcam >/dev/null && echo "  removed container: casky-dashcam"
 else
-  echo "  no kali-dashcam container found — already clean"
+  echo "  no casky-dashcam container found — already clean"
 fi
 if [ "$WITH_IMAGE" -eq 1 ]; then
   if docker image inspect casky-dashcam >/dev/null 2>&1; then

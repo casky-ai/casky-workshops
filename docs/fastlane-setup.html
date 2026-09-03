@@ -95,19 +95,19 @@ docker tag ghcr.io/casky-ai/casky-fastlane:latest casky-fastlane
 # the Dockerfile/skill list itself, or if GHCR is unreachable (offline/air-gapped venue):
 #   docker build -t casky-fastlane .
 
-docker run -d --name kali-fastlane \
+docker run -d --name casky-fastlane \
   --env-file .env \
   -v "$(pwd)":/root/fastlane \
   casky-fastlane
 
-docker exec kali-fastlane test -f /root/fastlane/verify.sh \
+docker exec casky-fastlane test -f /root/fastlane/verify.sh \
   && echo "[+] mount OK" || echo "[!] wrong directory — re-run from casky-workshops/fastlane/"
 
 # 1. Run ./verify.sh — expect 12/12 PASS.
-docker exec -w /root/fastlane kali-fastlane ./verify.sh
+docker exec -w /root/fastlane casky-fastlane ./verify.sh
 
 # 2. Bash into the container and start Claude Code interactively.
-docker exec -it -w /root/fastlane kali-fastlane bash
+docker exec -it -w /root/fastlane casky-fastlane bash
 #   ...now inside the container's shell:
 export PATH="$HOME/.local/bin:$PATH"
 ./start.sh
@@ -156,7 +156,7 @@ This laptop is READY.</code></pre>
 
     <p>Work FastLane or SpeedBump inside that interactive Claude Code session. <code>exit</code>
     the <code>claude</code> session and the container shell (two <code>exit</code>s) between
-    attendees, then run <code>docker exec -w /root/fastlane kali-fastlane ./reset.sh</code>.</p>
+    attendees, then run <code>docker exec -w /root/fastlane casky-fastlane ./reset.sh</code>.</p>
 
     <hr class="rule">
 

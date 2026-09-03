@@ -54,19 +54,19 @@ docker tag ghcr.io/casky-ai/casky-tailgate:latest casky-tailgate
 #   docker build -t casky-tailgate .
 
 # 1. Start a persistent container with this folder mounted + the shared key available
-docker run -d --name kali-tailgate \
+docker run -d --name casky-tailgate \
   --env-file .env \
   -v "$(pwd)":/root/tailgate \
   casky-tailgate
 
-docker exec kali-tailgate test -f /root/tailgate/verify.sh \
+docker exec casky-tailgate test -f /root/tailgate/verify.sh \
   && echo "[+] mount OK" || echo "[!] wrong directory — re-run from casky-workshops/tailgate/"
 
 # 2. Run ./verify.sh — expect 14/14 PASS.
-docker exec -w /root/tailgate kali-tailgate ./verify.sh
+docker exec -w /root/tailgate casky-tailgate ./verify.sh
 
 # 3. Bash into the container and start Claude Code interactively.
-docker exec -it -w /root/tailgate kali-tailgate bash
+docker exec -it -w /root/tailgate casky-tailgate bash
 #   ...now inside the container's shell:
 export PATH="$HOME/.local/bin:$PATH"
 ./start.sh    # welcome banner + sanity check
@@ -122,7 +122,7 @@ This laptop is READY.
 
 Work Tailgate or GuestList inside that interactive Claude Code session (skills already mounted).
 `exit` the `claude` session and the container shell (two `exit`s) between attendees, then run
-`docker exec -w /root/tailgate kali-tailgate ./reset.sh` from outside to restore the data.
+`docker exec -w /root/tailgate casky-tailgate ./reset.sh` from outside to restore the data.
 
 ---
 
@@ -232,13 +232,13 @@ afterward for the Plan / Execution / Findings / Remediation tabs.
 ## Cleanup
 
 `./cleanup.sh` removes everything a run of this exercise creates outside this folder: the
-`kali-tailgate` container (Section 1) and any evidence files Section 2 copied into
+`casky-tailgate` container (Section 1) and any evidence files Section 2 copied into
 `casky-box/evidence/`. Safe to re-run.
 
 ```bash
 ./cleanup.sh                                                  # container + copied evidence
 ./cleanup.sh --casky-box-path ../casky-box                    # if casky-box/ was moved elsewhere
-./cleanup.sh --with-image                                      # also remove kalilinux/kali-rolling
+./cleanup.sh --with-image                                      # also remove the casky-tailgate image
 ```
 
 It does **not** touch Casky Box's own containers (`casky-runner`, `casky-db`, `casky-ui`), and
