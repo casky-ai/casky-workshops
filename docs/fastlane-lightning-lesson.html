@@ -64,6 +64,7 @@
         <li><a href="#homepage">The Loopline homepage</a></li>
         <li><a href="#story">How Loopline broke it</a></li>
         <li><a href="#checks">The five-minute check</a></li>
+        <li><a href="#agent">Now let Claude find it</a></li>
         <li><a href="#investigate">Evidence to CISO report</a></li>
         <li><a href="#cleanup">Cleanup</a></li>
       </ul>
@@ -146,9 +147,56 @@ docker run -d --name casky-loopline -p 8787:8787 casky-loopline
       No real company, customer, or credential is involved.</p>
     </div>
 
+    <h2 id="agent">Now let Claude find it</h2>
+    <p>The two checks above are deterministic — curl and grep, no AI involved, so the result
+    doesn't depend on trusting an agent. Here's the other half: point Claude Code at the same
+    two pieces of evidence with a plain-English ask, no hints beyond the filenames, and watch it
+    reach the identical findings on its own.</p>
+
+    <h3>Setup</h3>
+    <pre><code>cd casky-workshops/fastlane
+
+# Your own key, unquoted — this path doesn't need casky-box/Section 2 set up first.
+echo 'ANTHROPIC_API_KEY=sk-ant-...' > .env
+
+docker pull ghcr.io/casky-ai/casky-fastlane:latest
+docker tag ghcr.io/casky-ai/casky-fastlane:latest casky-fastlane
+docker run -d --name casky-fastlane --env-file .env -v "$(pwd)":/root/fastlane casky-fastlane
+
+docker exec -it -w /root/fastlane casky-fastlane bash
+#   ...now inside the container:
+export PATH="$HOME/.local/bin:$PATH"
+claude</code></pre>
+
+    <h3>The prompt</h3>
+    <pre><code>You are auditing Loopline, a Supabase-backed customer-support SaaS. I have two pieces of
+evidence in this folder: app/rls-policies.json (a Postgres RLS policy export) and
+app/client-bundle-excerpt.txt (strings pulled from the production client-side JS bundle).
+Investigate both files, tell me what security issues you find, which skill(s) you used, why
+each issue matters, and how to fix it. Be concise.</code></pre>
+
+    <div class="callout callout-teal">
+      <span class="callout-label">Verified just now</span>
+      <p>Claude Code, given only that prompt (10 skills mounted, no other hints), named both
+      gotchas correctly and cited the skills it used —
+      <code>testing-api-for-broken-object-level-authorization</code> for the RLS gap,
+      <code>testing-for-sensitive-data-exposure</code> for the bundle secret — with the same fix
+      each check's own explanation gives: rotate the service-role key and move it server-side;
+      <code>ALTER TABLE customers ENABLE ROW LEVEL SECURITY</code> with an org-scoped policy.
+      Unprompted, it also cross-referenced <code>app/access-log.txt</code> to confirm the
+      service-role key wasn't just present but actually used (1,842 rows pulled in one request),
+      and caught a third, related bug sitting in the same RLS export — <code>tickets</code>' policy
+      is enabled but reads <code>USING (true)</code>, which matches every row for every requester —
+      while explicitly noting it only reviewed the two files named and offering to go further.</p>
+    </div>
+
+    <p><code>exit</code> the <code>claude</code> session and the container shell (two
+    <code>exit</code>s) when you're done, then <code>docker rm -f casky-fastlane</code> — or see
+    <a href="fastlane-help.html#cleanup">Cleanup</a> on the Troubleshooting page.</p>
+
     <h2 id="investigate">Evidence to CISO report</h2>
-    <p>Two curl checks are evidence. Here's what Casky does with it, the same flow as every
-    other Casky workshop:</p>
+    <p>That was one container, one prompt, two gotchas. Here's the same evidence run through
+    Casky's full pipeline instead — the flow every other Casky workshop uses:</p>
 
     <div class="table-scroll">
       <table>
